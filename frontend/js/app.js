@@ -55,6 +55,8 @@ const ICONS = {
   sentiment_satisfied: '<span class="msym">sentiment_satisfied</span>',
   water_drop: '<span class="msym">water_drop</span>',
   share: '<span class="msym">share</span>',
+  chev_left: '<span class="msym">chevron_left</span>',
+  chev_right: '<span class="msym">chevron_right</span>',
 };
 
 /* ---------------- i18n (id / en / jp) ---------------- */
@@ -82,6 +84,12 @@ const T = {
   "page.playlist": { id: "Playlist", en: "Playlist", jp: "プレイリスト" },
   "cal.sub": { id: "Rekap kapan kamu dengerin musik.", en: "A recap of when you listened to music.", jp: "いつ音楽を聴いたかの記録。" },
   "home.sub": { id: "Selamat datang kembali — ayo putar sesuatu yang bagus hari ini.", en: "Welcome back — let's play something great today.", jp: "おかえりなさい — 今日もいい音楽をかけよう。" },
+  "home.quick": { id: "Pilihan Cepat", en: "Quick picks", jp: "クイックピック" },
+  "home.continue": { id: "Teruslah Mendengarkan", en: "Continue listening", jp: "再生の続き" },
+  "home.artists": { id: "Artis Teratas", en: "Top Artists", jp: "トップアーティスト" },
+  "home.topAlbum": { id: "Top Album", en: "Top Albums", jp: "トップアルバム" },
+  "home.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
+  "home.discover": { id: "Discover", en: "Discover", jp: "発見" },
   "explore.title": { id: "Jelajahi", en: "Explore", jp: "探索" },
   "explore.sub": { id: "Kategori, tren, dan saran untukmu.", en: "Categories, trends, and picks for you.", jp: "カテゴリ、トレンド、あなたへのおすすめ。" },
   "liked.sub": { id: "Lagu yang kamu sukai", en: "Songs you liked", jp: "高評価した曲" },
@@ -399,6 +407,7 @@ function playCurrent() {
   recordPlay();
   updateMediaSession();
   if (state.settings.dynamic_color) sampleArtColor(song);
+  scheduleNextUp();
 }
 
 function updateNowPlayingUI() {
@@ -456,12 +465,33 @@ function next(manual = true) {
   }
   if (i >= state.queue.length) {
     if (state.repeat === "all") i = 0;
-    else { if (!manual) audio.pause(); return; }
+    else if (state.nextUpSug && state.nextUpSug.length) {
+      state.queue = state.queue.concat(state.nextUpSug.map((s) => ({ ...s })));
+      state.nextUpSug = [];
+      i = state.qIndex + 1;
+    }
+    else {
+      if (manual) { advanceIntoRecs(); return; }
+      audio.pause();
+      return;
+    }
   }
   state.qIndex = i;
   state.scrobbled = false;
   state.statRecorded = false;
   playCurrent();
+}
+
+async function advanceIntoRecs() {
+  await fetchNextUp();
+  if (!state.nextUpSug || !state.nextUpSug.length) return;
+  state.queue = state.queue.concat(state.nextUpSug.map((s) => ({ ...s })));
+  state.nextUpSug = [];
+  state.qIndex += 1;
+  state.scrobbled = false;
+  state.statRecorded = false;
+  playCurrent();
+  if (npOpen) renderQueuePanel();
 }
 function prev() {
   if (!state.queue.length) return;
@@ -485,7 +515,6 @@ function recordPlay() {
       } catch {}
     }
   }, 12000);
-  st._songId = s.id;
   audio._recordTimer = st;
 }
 
@@ -679,11 +708,7 @@ const EXPLORE_CATEGORIES = [
 ];
 
 async function renderHome() {
-  viewEl.innerHTML = `<div class="page-head">
-    <div class="page-title">${greeting()}</div>
-    <div class="page-sub">${t("home.sub")}</div>
-  </div>
-  <div class="mood-row" id="moodRow">${MOODS.map(([k, l]) => `<button class="chip mood" data-mood="${k}">${l}</button>`).join("")}</div>
+  viewEl.innerHTML = `<div class="mood-row" id="moodRow">${MOODS.map(([k, l]) => `<button class="chip mood" data-mood="${k}">${l}</button>`).join("")}</div>
   <div id="homeBody"></div>`;
   injectIcons(viewEl);
   const body = $("#homeBody");
@@ -698,76 +723,120 @@ async function renderHome() {
     const gens = charts.genres || [];
     const plays = recent.plays || [];
     state.recentPlays = plays;
-    let html = "";
 
-    if (plays.length) {
-      html += `<section class="section"><div class="section-title">${ICONS.clock} Terakhir diputar</div>
-        <div class="song-table" id="recentList">${plays.map((p, i) => recentRowHtml(p, i)).join("")}</div></section>`;
-    }
-
+    let hero = null;
+    let side = [];
+    let albums = [];
     if (vids.length) {
-      const hero = vids[0];
-      const side = vids.slice(1, 3);
-      html += `<section class="section"><div class="section-title">Pilihan cepat</div>
-        <div class="quick-picks">
-          <div class="qp-hero" data-card data-type="playlist" data-browse="${esc(hero.browseId)}">
-            ${hero.art ? `<img class="qp-hero-art" src="${esc(hero.art)}" loading="lazy">` : `<div class="qp-hero-art ph">${ICONS.music}</div>`}
-            <div class="qp-hero-grad"></div>
-            <div class="qp-hero-meta">
-              <div class="qp-hero-title">${esc(hero.title || "Pilihan cepat")}</div>
-              <div class="qp-hero-sub">${esc(hero.subtitle || "Playlist · YouTube Music")}</div>
-            </div>
-            <div class="qp-hero-play">${ICONS.play}</div>
-          </div>
-          <div class="qp-side">${side.map((v) => `
-            <div class="qp-side-item" data-card data-type="playlist" data-browse="${esc(v.browseId)}">
-              ${v.art ? `<div class="qp-side-art"><img src="${esc(v.art)}" loading="lazy"></div>` : `<div class="qp-side-art ph">${ICONS.music}</div>`}
-              <div class="qp-side-meta">
-                <div class="qp-side-title">${esc(v.title || "Playlist")}</div>
-                <div class="qp-side-sub">${esc(v.subtitle || "Playlist")}</div>
-              </div>
-            </div>`).join("")}</div>
-        </div></section>`;
+      const [trendTracks, albumRes] = await Promise.all([
+        vids[0].browseId ? api(`/api/ytm/playlist/${encodeURIComponent(vids[0].browseId)}`).catch(() => null) : Promise.resolve(null),
+        api(`/api/ytm/search?q=${encodeURIComponent("top albums")}&type=albums&limit=10`).catch(() => ({ items: [] })),
+      ]);
+      if (trendTracks && trendTracks.tracks && trendTracks.tracks.length) {
+        const tk = trendTracks.tracks[0];
+        hero = { videoId: tk.videoId, title: tk.title, artist: tk.artist, art: tk.art };
+      } else {
+        hero = vids[0];
+      }
+      side = vids.slice(1, 5);
+      albums = (albumRes.items || []).slice(0, 10);
     }
+    state.homeHero = hero;
+    state.homeAlbums = albums;
 
-    const contSrc = arts.length ? arts : vids;
-    if (contSrc.length) {
-      const cType = arts.length ? "artist" : "playlist";
-      html += `<section class="section"><div class="section-title">Teruslah mendengarkan</div>
-        <div class="hscroll">${contSrc.map((c) => {
-          const t = c.name || c.title;
-          const sub = c.subscribers || c.subtitle || "";
-          return `<div class="cl-item" data-card data-type="${cType}" data-browse="${esc(c.browseId)}">
-            ${c.art ? `<div class="cl-art"><img src="${esc(c.art)}" loading="lazy"></div>` : `<div class="cl-art ph">${ICONS.music}</div>`}
-            <div class="cl-title">${esc(t || "Unknown")}</div>
-            ${sub ? `<div class="cl-sub">${esc(sub)}</div>` : ""}
-          </div>`;
-        }).join("")}</div></section>`;
-    }
+    const html = [
+      vids.length ? quickPicksHtml(hero, side) : "",
+      plays.length ? continueHtml(plays) : "",
+      arts.length ? artistsHtml(arts) : "",
+      albums.length ? albumsHtml(albums) : "",
+      vids.length ? playlistsHtml(vids) : "",
+      gens.length ? genresHtml(gens) : "",
+    ].filter(Boolean).join("");
 
-    if (vids.length) {
-      html += `<section class="section"><div class="section-title">${ICONS.stats} Charts & Playlists</div><div class="card-grid">`;
-      html += vids.map((c, i) => cardHtml(c.title, c.art, "chart", c.browseId, c.subtitle)).join("");
-      html += "</div></section>";
-    }
-    if (arts.length) {
-      html += `<section class="section"><div class="section-title">${ICONS.stats} Top Artists</div><div class="card-grid">`;
-      html += arts.map((a) => cardHtml(a.name, a.art, "artist", a.browseId, a.subscribers)).join("");
-      html += "</div></section>";
-    }
-    if (gens.length) {
-      html += `<section class="section"><div class="section-title">${ICONS.disc} Genres</div><div class="card-grid">`;
-      html += gens.map((g) => cardHtml(g.title, g.art, "chart", g.browseId, "Genre")).join("");
-      html += "</div></section>";
-    }
     if (!html) body.innerHTML = emptyState("No charts available", "Try changing the charts country in Settings.");
     else body.innerHTML = html;
   } catch (e) {
     body.innerHTML = emptyState("YouTube Music unavailable", e.message + " — set a VPN to a supported region, or use Local Files.");
   }
   injectIcons(body);
-  bindRecentRows(body);
   return chartsSkeleton(body);
+}
+
+function secHeadHtml(icon, title) {
+  return `<div class="sec-head">
+    <div class="sec-title">${icon ? `<span class="msym">${icon}</span>` : ""}<span>${esc(title)}</span></div>
+    <div class="sec-arrows">
+      <button class="icon-btn small" data-scroll-back data-ic="chev_left" title=""></button>
+      <button class="icon-btn small" data-scroll-fwd data-ic="chev_right" title=""></button>
+    </div>
+  </div>`;
+}
+
+function quickPicksHtml(hero, side) {
+  const heroImg = hero.art
+    ? `<img class="qp-hero-art" src="${esc(hero.art)}" loading="lazy">`
+    : `<div class="qp-hero-art ph">${ICONS.music}</div>`;
+  const heroInner = `${heroImg}
+    <div class="qp-hero-grad"></div>
+    <div class="qp-hero-meta">
+      <div class="qp-hero-tag">${esc(t("home.quick"))}</div>
+      <div class="qp-hero-title">${esc(hero.title || "Pilihan Cepat")}</div>
+      ${hero.artist ? `<div class="qp-hero-sub">${esc(hero.artist)}</div>` : hero.subtitle ? `<div class="qp-hero-sub">${esc(hero.subtitle)}</div>` : ""}
+    </div>
+    <div class="qp-hero-play">${ICONS.play}</div>`;
+  const heroAttrs = hero.videoId
+    ? `data-hero-play="1"`
+    : `data-card data-type="${hero.type === "chart" ? "playlist" : hero.type}" data-browse="${esc(hero.browseId)}"`;
+  const sideHtml = side.map((v) => `
+    <div class="qp-side-item" data-card data-type="playlist" data-browse="${esc(v.browseId)}">
+      ${v.art ? `<div class="qp-side-art"><img src="${esc(v.art)}" loading="lazy"></div>` : `<div class="qp-side-art ph">${ICONS.music}</div>`}
+      <div class="qp-side-meta">
+        <div class="qp-side-title">${esc(v.title || "Playlist")}</div>
+        <div class="qp-side-sub">${esc(v.subtitle || "Playlist")}</div>
+      </div>
+      <span class="qp-side-ic">${ICONS.play}</span>
+    </div>`).join("");
+  return `<section class="home-sec"><div class="quick-picks">
+    <div class="qp-hero" ${heroAttrs}>${heroInner}</div>
+    <div class="qp-side">${sideHtml}</div>
+  </div></section>`;
+}
+
+function continueHtml(plays) {
+  const items = plays.map((p, i) => {
+    const s = songFromPlay(p);
+    return `<div class="cl-item" data-cl-play="${i}">
+      ${s.art ? `<div class="cl-art"><img src="${esc(s.art)}" loading="lazy" onerror="this.remove()"></div>` : `<div class="cl-art ph">${ICONS.music}</div>`}
+      <div class="cl-title">${esc(s.title || "Untitled")}</div>
+      <div class="cl-sub">${esc(s.artist || "")}</div>
+    </div>`;
+  }).join("");
+  return `<section class="home-sec">${secHeadHtml("history", t("home.continue"))}<div class="hscroll">${items}</div></section>`;
+}
+
+function artistsHtml(arts) {
+  const items = arts.map((a) => `
+    <div class="artist-card" data-card data-type="artist" data-browse="${esc(a.browseId)}">
+      <div class="artist-art">${a.art ? `<img src="${esc(a.art)}" loading="lazy">` : `<div class="artist-art ph">${ICONS.music}</div>`}</div>
+      <div class="artist-name">${esc(a.name)}</div>
+      <div class="artist-sub">${esc(a.subscribers || "")}</div>
+    </div>`).join("");
+  return `<section class="home-sec">${secHeadHtml("mic", t("home.artists"))}<div class="hscroll">${items}</div></section>`;
+}
+
+function albumsHtml(albums) {
+  const items = albums.map((a) => cardHtml(a.title, a.art, "album", a.browseId, a.artist || a.year || "")).join("");
+  return `<section class="home-sec">${secHeadHtml("disc", t("home.topAlbum"))}<div class="hscroll">${items}</div></section>`;
+}
+
+function playlistsHtml(vids) {
+  const items = vids.map((v) => cardHtml(v.title, v.art, "playlist", v.browseId, v.subtitle || "Playlist")).join("");
+  return `<section class="home-sec">${secHeadHtml("list", t("home.playlists"))}<div class="hscroll">${items}</div></section>`;
+}
+
+function genresHtml(gens) {
+  const items = gens.map((g) => cardHtml(g.title, g.art, "playlist", g.browseId, "Genre")).join("");
+  return `<section class="home-sec">${secHeadHtml("apps", t("home.discover"))}<div class="hscroll">${items}</div></section>`;
 }
 
 function greeting() {
@@ -1690,9 +1759,7 @@ function renderQueuePanel() {
   if (!state.nextUpSug || !state.nextUpSug.length) loadNextUp();
 }
 
-async function loadNextUp() {
-  const list = $("#nextUpList");
-  if (!list) return;
+async function fetchNextUp() {
   const seed = state.current || (state.recentPlays && state.recentPlays[0] && songFromPlay(state.recentPlays[0]));
   let items = [];
   try {
@@ -1711,18 +1778,42 @@ async function loadNextUp() {
       }
     } catch {}
   }
-  if (!items.length) {
+  state.nextUpSug = items;
+  return items;
+}
+
+function renderNextUpList(list) {
+  if (!list) return;
+  if (!state.nextUpSug || !state.nextUpSug.length) {
     list.innerHTML = `<div class="lyrics-empty">${t("queue.recFail")}</div>`;
     return;
   }
-  state.nextUpSug = items;
-  list.innerHTML = items.map((s, i) => `
+  list.innerHTML = state.nextUpSug.map((s, i) => `
     <div class="queue-item sug" data-sug-play="${i}">
       <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
       <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
       <span class="sug-play-ic">${ICONS.play}</span>
     </div>`).join("");
   injectIcons(list);
+}
+
+async function loadNextUp() {
+  const list = $("#nextUpList");
+  if (!list) return;
+  await fetchNextUp();
+  renderNextUpList(list);
+}
+
+let nextUpTimer = null;
+function scheduleNextUp() {
+  if (state.nextUpSug && state.nextUpSug.length) return;
+  clearTimeout(nextUpTimer);
+  nextUpTimer = setTimeout(() => {
+    fetchNextUp().then(() => {
+      const list = $("#nextUpList");
+      if (list && state.nextUpSug && state.nextUpSug.length) renderNextUpList(list);
+    });
+  }, 250);
 }
 
 /* ---------------- EQ modal ---------------- */
@@ -1883,6 +1974,33 @@ function wireEvents() {
     }
     const plAdd = e.target.closest("[data-pl-add]");
     if (plAdd) { addSongToPlaylist(plAdd.dataset.plAdd); return; }
+
+    const heroPlay = e.target.closest("[data-hero-play]");
+    if (heroPlay) {
+      const hero = state.homeHero;
+      if (hero && hero.videoId) playQueue([{ ...hero }], 0);
+      return;
+    }
+    const clPlay = e.target.closest("[data-cl-play]");
+    if (clPlay) {
+      const p = state.recentPlays && state.recentPlays[+clPlay.dataset.clPlay];
+      if (p) playQueue([songFromPlay(p)], 0);
+      return;
+    }
+    const scrollFwd = e.target.closest("[data-scroll-fwd]");
+    if (scrollFwd) {
+      const sec = scrollFwd.closest(".home-sec");
+      const hs = sec && sec.querySelector(".hscroll");
+      if (hs) hs.scrollBy({ left: hs.clientWidth * 0.85, behavior: "smooth" });
+      return;
+    }
+    const scrollBack = e.target.closest("[data-scroll-back]");
+    if (scrollBack) {
+      const sec = scrollBack.closest(".home-sec");
+      const hs = sec && sec.querySelector(".hscroll");
+      if (hs) hs.scrollBy({ left: -hs.clientWidth * 0.85, behavior: "smooth" });
+      return;
+    }
 
     const card = e.target.closest("[data-card]");
     if (card) {

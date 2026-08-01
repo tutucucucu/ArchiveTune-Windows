@@ -44,7 +44,7 @@
   --radius-md: 20px;
   --radius-sm: 14px;
   --radius-pill: 999px;
-  --sidebar-w: 256px;
+  --sidebar-w: 240px;
   --player-h: 108px;
   /* 200ms ease transitions on every button */
   --t: 200ms ease;
@@ -125,14 +125,14 @@ body {
    Sidebar — frosted glass, no border
    ========================================================================== */
 #sidebar {
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 8px;
   background: color-mix(in srgb, var(--surface) 82%, transparent);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  padding: 20px 16px;
+  padding: 20px 14px;
 }
-.brand { display: flex; align-items: center; gap: 14px; padding: 8px 10px 20px; }
-.brand-logo { width: 46px; height: 46px; border-radius: var(--radius-sm); box-shadow: var(--shadow-2); }
+.brand { display: flex; align-items: center; gap: 14px; padding: 6px 10px 22px; }
+.brand-logo { width: 48px; height: 48px; border-radius: var(--radius-sm); box-shadow: var(--shadow-2); }
 .brand-name { font-size: 18px; font-weight: 700; letter-spacing: -0.2px;
   background: var(--accent-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .brand-sub { font-size: 11px; color: var(--text-2); letter-spacing: 0.3px; }
@@ -140,9 +140,9 @@ body {
 #nav { display: flex; flex-direction: column; gap: 4px; flex: 1; overflow-y: auto; }
 .nav-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-3); margin: 16px 16px 6px; font-weight: 600; }
 .nav-item {
-  display: flex; align-items: center; gap: 16px; width: 100%;
-  padding: 12px 16px; border: 0; border-radius: var(--radius-sm); cursor: pointer;
-  background: transparent; color: var(--text-2); font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 18px; width: 100%;
+  padding: 13px 18px; border: 0; border-radius: var(--radius-sm); cursor: pointer;
+  background: transparent; color: var(--text-2); font-size: 14.5px; font-weight: 600;
   font-family: inherit; transition: background var(--t), color var(--t); text-align: left;
   position: relative; overflow: hidden;
 }
@@ -151,8 +151,8 @@ body {
 .nav-item:hover { background: var(--surface-1); color: var(--text); }
 .nav-item.active { background: color-mix(in srgb, var(--primary) 22%, var(--surface-1)); color: var(--text); }
 .nav-item.active .ni-ic, .nav-item.active .msym { color: var(--primary-2); }
-.ni-ic { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: var(--text-2); }
-.ni-ic .msym { font-size: 24px; }
+.ni-ic { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; color: var(--text-2); }
+.ni-ic .msym { font-size: 26px; }
 
 .sidebar-footer { padding: 8px 4px; }
 .ytm-status { font-size: 12px; color: var(--text-3); text-align: center; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-1); font-weight: 500; }
@@ -311,46 +311,6 @@ body {
 }
 .chip.mood:hover { background: var(--surface-2); color: var(--text); transform: translateY(-1px); }
 .chip.mood.active { background: var(--primary); color: #fff; box-shadow: 0 6px 18px color-mix(in srgb, var(--primary) 45%, transparent); }
-
-/* ==========================================================================
-   Quick picks — big hero card + vertical previews (MetroList style)
-   ========================================================================== */
-.quick-picks { display: grid; grid-template-columns: 1.9fr 1fr; gap: 16px; }
-.qp-hero {
-  position: relative; border-radius: var(--radius-xl); overflow: hidden;
-  aspect-ratio: 16 / 10; cursor: pointer; box-shadow: var(--shadow-2);
-  transition: transform var(--t), box-shadow var(--t);
-}
-.qp-hero:hover { transform: translateY(-3px); box-shadow: var(--shadow-3); }
-.qp-hero-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.qp-hero-art.ph { display: flex; align-items: center; justify-content: center; color: var(--text-3); background: var(--surface-3); }
-.qp-hero-art.ph .msym { font-size: 64px; }
-.qp-hero-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 72%); }
-.qp-hero-meta { position: absolute; left: 26px; right: 26px; bottom: 22px; }
-.qp-hero-title { color: #fff; font-weight: 800; font-size: 26px; letter-spacing: -0.4px; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.55); }
-.qp-hero-sub { color: #d0d0d0; font-size: 14px; margin-top: 5px; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
-.qp-hero-play {
-  position: absolute; right: 24px; bottom: 22px; width: 58px; height: 58px; border-radius: 50%;
-  background: var(--play-bg); color: var(--play-fg);
-  display: flex; align-items: center; justify-content: center; box-shadow: var(--play-shadow);
-  transition: transform var(--t);
-}
-.qp-hero-play .msym { font-size: 38px; }
-.qp-hero:hover .qp-hero-play { transform: scale(1.06); }
-.qp-side { display: flex; flex-direction: column; gap: 14px; }
-.qp-side-item {
-  display: flex; align-items: center; gap: 14px; background: var(--surface-1);
-  border-radius: var(--radius-lg); padding: 10px 12px; cursor: pointer; flex: 1;
-  transition: transform var(--t), background var(--t); overflow: hidden;
-}
-.qp-side-item:hover { background: var(--surface-2); transform: translateY(-2px); }
-.qp-side-art { width: 72px; height: 72px; border-radius: var(--radius-md); overflow: hidden; flex-shrink: 0; background: var(--surface-3); }
-.qp-side-art img { width: 100%; height: 100%; object-fit: cover; }
-.qp-side-art.ph { display: flex; align-items: center; justify-content: center; color: var(--text-3); }
-.qp-side-art.ph .msym { font-size: 34px; }
-.qp-side-meta { min-width: 0; }
-.qp-side-title { font-weight: 700; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qp-side-sub { color: var(--text-2); font-size: 12.5px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ==========================================================================
    Continue listening — horizontal scrolling square albums
@@ -1036,5 +996,111 @@ body {
 @media (max-width: 720px) {
   .ch-cell { width: 9px; height: 9px; }
   .cal-cell { border-radius: var(--radius-sm); }
+}
+
+/* ==========================================================================
+   Home — Android-style sections (ArchiveTune for Windows)
+   Sections spaced 56px, Material You radii/shadows, carousels w/ arrows.
+   ========================================================================== */
+#homeBody { display: flex; flex-direction: column; gap: 64px; padding-top: 6px; }
+#homeBody .home-sec:last-child { margin-bottom: 8px; }
+.home-sec { position: relative; min-width: 0; }
+
+.sec-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+.sec-title { font-size: 20px; font-weight: 700; letter-spacing: -0.2px; display: flex; align-items: center; gap: 10px; }
+.sec-title .msym { font-size: 24px; color: var(--primary-2); }
+.sec-arrows { display: flex; gap: 8px; }
+.sec-arrows .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface-1); box-shadow: var(--shadow-1); }
+.sec-arrows .icon-btn:hover { background: var(--surface-2); transform: none; }
+
+/* ---- Quick picks: big hero card + vertical playlist previews ---- */
+.quick-picks { display: grid; grid-template-columns: 1.9fr 1fr; gap: 20px; align-items: stretch; }
+.qp-hero {
+  position: relative; border-radius: var(--radius-xl); overflow: hidden; cursor: pointer;
+  min-height: 460px; max-height: 540px; box-shadow: var(--shadow-2);
+  transition: transform var(--t), box-shadow var(--t);
+}
+.qp-hero:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
+.qp-hero-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 520ms cubic-bezier(0.16, 1, 0.3, 1); }
+.qp-hero:hover .qp-hero-art { transform: scale(1.04); }
+.qp-hero-art.ph { display: flex; align-items: center; justify-content: center; color: var(--text-3); background: var(--surface-3); }
+.qp-hero-art.ph .msym { font-size: 72px; }
+.qp-hero-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.35) 45%, transparent 74%); }
+.qp-hero-meta { position: absolute; left: 30px; right: 30px; bottom: 26px; }
+.qp-hero-tag { font-size: 12px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: rgba(255, 255, 255, 0.72); margin-bottom: 8px; }
+.qp-hero-title { color: #fff; font-weight: 800; font-size: 30px; letter-spacing: -0.5px; text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55); }
+.qp-hero-sub { color: #d5d5d5; font-size: 15px; margin-top: 6px; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6); }
+.qp-hero-play {
+  position: absolute; right: 28px; bottom: 26px; width: 64px; height: 64px; border-radius: 50%;
+  background: var(--play-bg); color: var(--play-fg); display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--play-shadow); transition: transform var(--t);
+}
+.qp-hero-play .msym { font-size: 42px; }
+.qp-hero:hover .qp-hero-play { transform: scale(1.07); }
+
+.qp-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.qp-side-item {
+  display: flex; align-items: center; gap: 14px; flex: 1; min-height: 0;
+  background: var(--surface-1); border-radius: var(--radius-lg); padding: 12px 14px;
+  cursor: pointer; overflow: hidden; box-shadow: var(--shadow-1); position: relative;
+  transition: transform var(--t), background var(--t), box-shadow var(--t);
+}
+.qp-side-item::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; pointer-events: none; transition: opacity var(--t); }
+.qp-side-item:active::after { opacity: 0.05; }
+.qp-side-item:hover { background: var(--surface-2); transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.qp-side-art { width: 64px; height: 64px; border-radius: var(--radius-md); overflow: hidden; flex-shrink: 0; background: var(--surface-3); }
+.qp-side-art img { width: 100%; height: 100%; object-fit: cover; }
+.qp-side-art.ph { display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.qp-side-art.ph .msym { font-size: 30px; }
+.qp-side-meta { min-width: 0; flex: 1; }
+.qp-side-title { font-weight: 700; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qp-side-sub { color: var(--text-2); font-size: 12.5px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qp-side-ic {
+  display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%;
+  background: var(--play-bg); color: var(--play-fg); box-shadow: var(--play-shadow);
+  opacity: 0; transform: translateY(6px); transition: opacity var(--t), transform var(--t);
+}
+.qp-side-item:hover .qp-side-ic { opacity: 1; transform: none; }
+.qp-side-ic .msym { font-size: 22px; }
+
+/* ---- Continue listening: big-cover carousel ---- */
+#homeBody .hscroll { gap: 22px; padding: 6px 4px 16px; }
+#homeBody .cl-item { width: 200px; }
+#homeBody .cl-art { width: 200px; height: 200px; border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+#homeBody .cl-title { margin-top: 12px; font-size: 15px; }
+#homeBody .cl-sub { font-size: 13px; }
+
+/* ---- Similar artists: round avatars ---- */
+.artist-card { flex-shrink: 0; width: 150px; cursor: pointer; text-align: center; scroll-snap-align: start; transition: transform var(--t); }
+.artist-card:hover { transform: translateY(-4px) scale(1.02); }
+.artist-art { width: 150px; height: 150px; border-radius: 50%; overflow: hidden; margin: 0 auto; background: var(--surface-3); box-shadow: var(--shadow-1); }
+.artist-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.artist-art.ph { display: flex; align-items: center; justify-content: center; color: var(--text-3); }
+.artist-art.ph .msym { font-size: 46px; }
+.artist-name { font-weight: 700; font-size: 14px; margin-top: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artist-sub { color: var(--text-2); font-size: 12px; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* cards inside carousels get a fixed width */
+#homeBody .hscroll > .card { width: 176px; flex-shrink: 0; scroll-snap-align: start; }
+
+/* staggered entrance for home sections */
+#homeBody .home-sec { animation: fadeUp 520ms cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+#homeBody .home-sec:nth-child(2) { animation-delay: 90ms; }
+#homeBody .home-sec:nth-child(3) { animation-delay: 180ms; }
+#homeBody .home-sec:nth-child(4) { animation-delay: 270ms; }
+#homeBody .home-sec:nth-child(5) { animation-delay: 360ms; }
+#homeBody .home-sec:nth-child(6) { animation-delay: 450ms; }
+
+@media (max-width: 1180px) {
+  .qp-hero { min-height: 400px; }
+}
+@media (max-width: 900px) {
+  #homeBody { gap: 48px; }
+  .qp-hero { min-height: 320px; max-height: 380px; }
+  .qp-hero-title { font-size: 24px; }
+  .qp-hero-play { width: 54px; height: 54px; }
+  .qp-hero-play .msym { font-size: 36px; }
+  .artist-card, .artist-art { width: 120px; }
+  .artist-art { height: 120px; }
 }
 
