@@ -1555,24 +1555,30 @@ function syncNpVizState() {
 function renderQueuePanel() {
   const qp = $("#queuePanel");
   if (qp.classList.contains("hidden")) return;
-  let body;
-  if (state.queue.length) {
-    body = state.queue.map((s, i) => `
+  const queueRows = state.queue.length
+    ? state.queue.map((s, i) => `
       <div class="queue-item ${i === state.qIndex ? "active" : ""}" data-q-go="${i}">
         <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
         <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
         <button class="icon-btn small" data-q-del="${i}">${ICONS.x}</button>
-      </div>`).join("");
-  } else {
-    body = `<div class="lyrics-empty">Queue masih kosong — ini beberapa rekomendasi buat kamu.</div>
-      <div id="nextUpList" class="queue-sug">${loadingHtml()}</div>`;
-  }
+      </div>`).join("")
+    : '<div class="lyrics-empty">Queue masih kosong — lagu yang kamu pilih akan muncul di sini.</div>';
+  const recHtml = state.nextUpSug && state.nextUpSug.length
+    ? state.nextUpSug.map((s, i) => `
+      <div class="queue-item sug" data-sug-play="${i}">
+        <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
+        <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
+        <span class="sug-play-ic">${ICONS.play}</span>
+      </div>`).join("")
+    : loadingHtml();
   qp.innerHTML = `<div class="q-head">
     <div class="q-head-title">${state.queue.length ? `Up next (${state.queue.length})` : "Up next"}</div>
     <button class="icon-btn" data-close="queue" data-ic="x" title="Close"></button>
-  </div>${body}`;
+  </div>${queueRows}
+  <div class="q-sec-title">Rekomendasi</div>
+  <div id="nextUpList" class="queue-sug">${recHtml}</div>`;
   injectIcons(qp);
-  if (!state.queue.length) loadNextUp();
+  if (!state.nextUpSug || !state.nextUpSug.length) loadNextUp();
 }
 
 async function loadNextUp() {

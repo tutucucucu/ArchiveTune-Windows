@@ -990,6 +990,7 @@ body {
 /* queue panel header */
 .q-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .q-head-title { font-size: 18px; font-weight: 700; letter-spacing: -0.2px; }
+.q-sec-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-2); margin: 16px 0 8px; }
 .queue-sug { display: flex; flex-direction: column; gap: 6px; }
 .queue-item.sug { cursor: pointer; }
 .queue-item.sug.dead { opacity: 0.6; cursor: default; }
