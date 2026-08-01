@@ -1581,16 +1581,21 @@ async function loadNextUp() {
   const seed = state.current || (state.recentPlays && state.recentPlays[0] && songFromPlay(state.recentPlays[0]));
   let items = [];
   try {
-    if (seed && seed.title) {
-      const q = `${seed.title} ${seed.artist || ""}`.trim();
-      const data = await api(`/api/ytm/search?q=${encodeURIComponent(q)}&type=songs&limit=6`);
-      if (data.items && data.items.length) items = data.items;
-    }
-    if (!items.length) {
-      const data = await api("/api/ytm/search?q=trending&type=songs&limit=6");
+    if (seed && seed.videoId) {
+      const data = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=15`);
       if (data.items && data.items.length) items = data.items;
     }
   } catch {}
+  if (!items.length) {
+    try {
+      const data = await api("/api/ytm/charts?country=US");
+      const chart = data.videos && data.videos[0];
+      if (chart && chart.browseId) {
+        const pl = await api(`/api/ytm/playlist/${encodeURIComponent(chart.browseId)}`);
+        if (pl.tracks && pl.tracks.length) items = pl.tracks.slice(0, 15);
+      }
+    } catch {}
+  }
   if (!items.length) {
     list.innerHTML = '<div class="lyrics-empty">Tidak bisa memuat rekomendasi. Coba putar lagu dulu!</div>';
     return;

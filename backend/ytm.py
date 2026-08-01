@@ -260,6 +260,27 @@ def get_liked():
     return {"tracks": songs}
 
 
+def next_up(video_id, limit=20):
+    """Real 'up next' radio recommendations from YouTube's autoplay algorithm."""
+    try:
+        res = get_client().get_watch_playlist(video_id, limit=limit + 1)
+    except Exception as e:
+        return {"items": [], "error": str(e)}
+    tracks = []
+    seen = set()
+    for t in res.get("tracks", []):
+        vid = t.get("videoId")
+        if not vid or vid == video_id or vid in seen:
+            continue
+        s = _song_from_ytm(t)
+        if s:
+            seen.add(vid)
+            tracks.append(s)
+        if len(tracks) >= limit:
+            break
+    return {"items": tracks}
+
+
 def get_charts(country="US"):
     try:
         data = get_client().get_charts(country=country)

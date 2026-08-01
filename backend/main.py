@@ -97,6 +97,11 @@ def ytm_liked():
     return ytm.get_liked()
 
 
+@app.get("/api/ytm/nextup/{video_id}")
+def ytm_nextup(video_id: str, limit: int = 20):
+    return ytm.next_up(video_id, limit)
+
+
 @app.get("/api/ytm/charts")
 def ytm_charts(country: str = "US"):
     return ytm.get_charts(country)
