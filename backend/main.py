@@ -26,6 +26,13 @@ def frontend_dir():
 app = FastAPI(title="ArchiveTune")
 
 
+@app.middleware("http")
+async def no_store_cache(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 # ---------------- models ----------------
 
 
