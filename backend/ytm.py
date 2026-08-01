@@ -1,0 +1,406 @@
+import threading
+import time
+
+import yt_dlp
+from ytmusicapi import YTMusic
+
+from library import get_settings, save_settings
+
+_client = None
+_client_lock = threading.Lock()
+
+STREAM_CACHE = {}
+STREAM_TTL = 5 * 3600
+
+
+def get_client():
+    global _client
+    with _client_lock:
+        settings = get_settings()
+        cookie = (settings.get("ytm_cookie") or "").strip()
+        if _client is None:
+            if cookie:
+                try:
+                    _client = YTMusic("oauth.json" if False else None)
+                except Exception:
+                    _client = None
+            try:
+                _client = YTMusic() if not cookie else YTMusic(auth=cookie)
+            except Exception:
+                _client = YTMusic()
+        return _client
+
+
+def reset_client():
+    global _client
+    _client = None
+
+
+def _thumb(thumbs):
+    if not thumbs:
+        return None
+    t = thumbs[-1]
+    return _hd(t.get("url"))
+
+
+def _hd(url):
+    """Upgrade thumbnail URLs to the highest available resolution."""
+    if not url:
+        return url
+    for low, high in (("hqdefault", "maxresdefault"), ("mqdefault", "maxresdefault"), ("sddefault", "maxresdefault")):
+        if low in url:
+            return url.replace(low, high)
+    if "=w" in url or "=s" in url:
+        base = url.split("=")[0]
+        return base + "=w544-h544-l90-rj"
+    return url
+
+
+def _artist_name(artists):
+    if not artists:
+        return "Unknown Artist"
+    return ", ".join(a.get("name", "") for a in artists if a.get("name"))
+
+
+def _parse_dur(value):
+    if not value:
+        return 0
+    if isinstance(value, int):
+        return value
+    parts = [int(p) for p in str(value).split(":") if p]
+    if not parts:
+        return 0
+    sec = 0
+    for p in parts:
+        sec = sec * 60 + p
+    return sec
+
+
+def _artists_list(artists):
+    if not artists:
+        return []
+    return [{"name": a.get("name", ""), "browseId": a.get("id")} for a in artists if a.get("name")]
+
+
+def _song_from_ytm(y):
+    video_id = y.get("videoId") or y.get("videoId")
+    if not video_id:
+        return None
+    return {
+        "id": "ytm:" + video_id,
+        "videoId": video_id,
+        "title": y.get("title") or y.get("name") or "Unknown",
+        "artist": _artist_name(y.get("artists")),
+        "artists": _artists_list(y.get("artists")),
+        "album": (y.get("album") or {}).get("name") if isinstance(y.get("album"), dict) else (y.get("album") or "Unknown"),
+        "duration": y.get("duration_seconds") or 0,
+        "art": _thumb(y.get("thumbnails")),
+        "browseId": (y.get("album") or {}).get("id") if isinstance(y.get("album"), dict) else None,
+        "source": "ytm",
+        "explicit": y.get("explicit") or False,
+    }
+
+
+def search(query, filter_type="songs", limit=25):
+    try:
+        res = get_client().search(query, filter=filter_type, limit=limit)
+    except Exception:
+        return {"items": [], "error": "YouTube Music search failed. If you are in a region without YouTube Music, use a VPN."}
+    items = []
+    for item in res:
+        if filter_type == "songs":
+            s = _song_from_ytm(item)
+            if s:
+                items.append(s)
+        elif filter_type == "albums":
+            items.append(
+                {
+                    "type": "album",
+                    "browseId": item.get("browseId"),
+                    "title": item.get("title"),
+                    "artist": _artist_name(item.get("artists")),
+                    "year": item.get("year"),
+                    "art": _thumb(item.get("thumbnails")),
+                }
+            )
+        elif filter_type == "artists":
+            items.append(
+                {
+                    "type": "artist",
+                    "browseId": item.get("browseId"),
+                    "name": item.get("artist"),
+                    "subscribers": item.get("subscribers"),
+                    "art": _thumb(item.get("thumbnails")),
+                }
+            )
+        elif filter_type == "videos":
+            s = _song_from_ytm(item)
+            if s:
+                if not s.get("duration"):
+                    s["duration"] = _parse_dur(item.get("duration"))
+                s["album"] = "Video"
+                items.append(s)
+        elif filter_type == "playlists":
+            items.append(
+                {
+                    "type": "playlist",
+                    "browseId": item.get("browseId"),
+                    "title": item.get("title"),
+                    "artist": _artist_name(item.get("artists")),
+                    "art": _thumb(item.get("thumbnails")),
+                    "trackCount": item.get("trackCount") or item.get("resultType"),
+                }
+            )
+    return {"items": items}
+
+
+def get_song(video_id):
+    try:
+        info = get_client().get_song(video_id)
+    except Exception as e:
+        return {"error": str(e)}
+    vd = info.get("videoDetails") or {}
+    if not vd.get("videoId"):
+        return {"error": "Song not found"}
+    return {
+        "id": "ytm:" + vd.get("videoId"),
+        "videoId": vd.get("videoId"),
+        "title": vd.get("title", "Unknown"),
+        "artist": vd.get("author", "Unknown Artist"),
+        "album": (info.get("microformat") or {}).get("musicSquareThumbnailRenderer") or "Unknown",
+        "duration": int(vd.get("lengthSeconds") or 0),
+        "art": (vd.get("thumbnail") or {}).get("thumbnails")[-1].get("url") if vd.get("thumbnail") else None,
+        "source": "ytm",
+        "playability": (info.get("playabilityStatus") or {}).get("status"),
+    }
+
+
+def get_album(browse_id):
+    try:
+        a = get_client().get_album(browse_id)
+    except Exception as e:
+        return {"error": str(e)}
+    tracks = [t for t in (_song_from_ytm(t) for t in a.get("tracks", [])) if t]
+    for t in tracks:
+        t["album"] = a.get("title", "Unknown")
+        t["browseId"] = browse_id
+    return {
+        "title": a.get("title"),
+        "artist": _artist_name(a.get("artists")),
+        "year": a.get("year"),
+        "art": _thumb(a.get("thumbnails")),
+        "description": a.get("description"),
+        "trackCount": len(tracks),
+        "tracks": tracks,
+    }
+
+
+def get_artist(browse_id):
+    try:
+        a = get_client().get_artist(browse_id)
+    except Exception as e:
+        return {"error": str(e)}
+    albums = []
+    for al in a.get("albums", {}).get("results", []):
+        albums.append(
+            {
+                "browseId": al.get("browseId"),
+                "title": al.get("title"),
+                "year": al.get("year"),
+                "art": _thumb(al.get("thumbnails")),
+            }
+        )
+    return {
+        "name": a.get("name"),
+        "art": _thumb(a.get("thumbnails")),
+        "subscribers": a.get("subscribers"),
+        "description": a.get("description"),
+        "albums": albums,
+        "songs_browse_id": (a.get("songs") or {}).get("browseId"),
+    }
+
+
+def get_artist_songs(browse_id):
+    try:
+        tracks = get_client().get_artist_songs(browse_id, limit=200)
+    except Exception as e:
+        return {"error": str(e)}
+    songs = []
+    for t in tracks:
+        s = _song_from_ytm(t)
+        if s:
+            songs.append(s)
+    return {"tracks": songs}
+
+
+def get_playlist(browse_id):
+    try:
+        p = get_client().get_playlist(browse_id, limit=500)
+    except Exception as e:
+        return {"error": str(e)}
+    tracks = [t for t in (_song_from_ytm(t) for t in p.get("tracks", [])) if t]
+    return {
+        "title": p.get("title"),
+        "description": p.get("description"),
+        "art": _thumb(p.get("thumbnails")),
+        "trackCount": p.get("trackCount", len(tracks)),
+        "tracks": tracks,
+    }
+
+
+def get_liked():
+    try:
+        c = get_client()
+        if not c.is_authenticated():
+            return {"error": "Not signed in to YouTube Music"}
+        tracks = c.get_liked_songs(limit=500).get("tracks", [])
+    except Exception as e:
+        return {"error": str(e)}
+    songs = [s for s in (_song_from_ytm(t) for t in tracks) if s]
+    return {"tracks": songs}
+
+
+def get_charts(country="US"):
+    try:
+        data = get_client().get_charts(country=country)
+    except Exception as e:
+        return {"error": str(e)}
+    result = {"videos": [], "artists": [], "genres": []}
+    for t in data.get("videos", []):
+        result["videos"].append(
+            {
+                "type": "chart",
+                "browseId": t.get("playlistId"),
+                "title": t.get("title"),
+                "art": _thumb(t.get("thumbnails")),
+            }
+        )
+    for a in data.get("artists", [])[:20]:
+        result["artists"].append(
+            {
+                "type": "artist",
+                "browseId": a.get("browseId"),
+                "name": a.get("title"),
+                "subscribers": a.get("subscribers"),
+                "art": _thumb(a.get("thumbnails")),
+            }
+        )
+    for g in data.get("genres", [])[:12]:
+        result["genres"].append(
+            {
+                "type": "chart",
+                "browseId": g.get("playlistId"),
+                "title": g.get("title"),
+                "art": _thumb(g.get("thumbnails")),
+            }
+        )
+    return result
+
+
+def get_mood_categories():
+    try:
+        cats = get_client().get_mood_categories()
+    except Exception as e:
+        return {"error": str(e)}
+    return {"items": [{"browseId": c.get("browseId"), "name": c.get("title"), "art": _thumb(c.get("thumbnails"))} for c in cats]}
+
+
+def get_home():
+    try:
+        c = get_client()
+        if not c.is_authenticated():
+            return {"error": "Not signed in"}
+        home = c.get_home(limit=12)
+    except Exception as e:
+        return {"error": str(e)}
+    sections = []
+    for section in home:
+        title = section.get("title")
+        items = []
+        for item in section.get("contents", []):
+            if item.get("title") is None:
+                continue
+            it = {
+                "browseId": item.get("browseId"),
+                "title": item.get("title"),
+                "subtitle": item.get("subtitle"),
+                "art": _thumb(item.get("thumbnails")),
+            }
+            if item.get("playlistId"):
+                it["playlistId"] = item["playlistId"]
+            if item.get("videoId"):
+                it["videoId"] = item["videoId"]
+            items.append(it)
+        if items:
+            sections.append({"title": title, "items": items})
+    return {"sections": sections}
+
+
+def _pick_stream(info):
+    formats = info.get("formats") or []
+    best = None
+    for f in formats:
+        acodec = f.get("acodec")
+        vcodec = f.get("vcodec")
+        if not acodec or acodec == "none":
+            continue
+        if vcodec not in (None, "none"):
+            continue
+        if not f.get("url"):
+            continue
+        score = 0
+        abr = f.get("abr") or 0
+        score = abr
+        if f.get("ext") == "m4a":
+            score += 1000000
+        elif f.get("ext") == "webm":
+            score += 500000
+        if best is None or score > best[0]:
+            best = (score, f)
+    if best:
+        return best[1]
+    if info.get("url"):
+        return info
+    return None
+
+
+def get_stream(video_id):
+    now = time.time()
+    cached = STREAM_CACHE.get(video_id)
+    if cached and cached["expires"] > now:
+        return cached["url"], cached["headers"]
+    opts = {
+        "format": "bestaudio/best",
+        "quiet": True,
+        "no_warnings": True,
+        "noplaylist": True,
+        "skip_download": True,
+        "socket_timeout": 30,
+        "nocheckcertificate": True,
+    }
+    try:
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            info = ydl.extract_info("https://www.youtube.com/watch?v=" + video_id, download=False)
+    except Exception as e:
+        raise RuntimeError(f"Stream extraction failed: {e}")
+    fmt = _pick_stream(info)
+    if not fmt:
+        raise RuntimeError("No playable stream found")
+    url = fmt.get("url")
+    headers = fmt.get("http_headers") or {}
+    headers.setdefault("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36")
+    STREAM_CACHE[video_id] = {"url": url, "headers": headers, "expires": now + STREAM_TTL}
+    return url, headers
+
+
+def auth_status():
+    try:
+        c = get_client()
+        return {"authenticated": bool(c.is_authenticated()), "account": None}
+    except Exception:
+        return {"authenticated": False, "account": None}
+
+
+def save_cookie(cookie):
+    save_settings({"ytm_cookie": cookie})
+    reset_client()

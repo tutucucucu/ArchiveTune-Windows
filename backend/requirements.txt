@@ -1,0 +1,8 @@
+fastapi>=0.115
+uvicorn>=0.30
+ytmusicapi>=1.8
+yt-dlp>=2025.1.1
+mutagen>=1.47
+requests>=2.32
+Pillow>=10.0
+pywebview>=5.0

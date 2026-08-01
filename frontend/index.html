@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArchiveTune</title>
+<link rel="icon" href="/static/img/icon.png">
+<link rel="stylesheet" href="/static/fonts/fonts.css">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div id="app" class="dark">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <nav id="nav">
+      <button class="nav-item active" data-nav="home"><span class="ni-ic" data-ic="home"></span>Home</button>
+      <button class="nav-item" data-nav="search"><span class="ni-ic" data-ic="search"></span>Search</button>
+      <div class="nav-label">Library</div>
+      <button class="nav-item" data-nav="liked"><span class="ni-ic" data-ic="heart"></span>Liked Songs</button>
+      <button class="nav-item" data-nav="playlists"><span class="ni-ic" data-ic="list"></span>Playlists</button>
+      <button class="nav-item" data-nav="local"><span class="ni-ic" data-ic="folder"></span>Local Files</button>
+      <div class="nav-label">More</div>
+      <button class="nav-item" data-nav="calendar"><span class="ni-ic" data-ic="calendar_month"></span>Calendar</button>
+      <button class="nav-item" data-nav="stats"><span class="ni-ic" data-ic="stats"></span>Statistics</button>
+      <button class="nav-item" data-nav="settings"><span class="ni-ic" data-ic="gear"></span>Settings</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div id="ytmStatus" class="ytm-status">YouTube Music: guest</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div id="main-col">
+    <header id="topbar">
+      <div class="hdr-brand">
+        <img class="hdr-logo" src="/static/img/icon.png" alt="ArchiveTune">
+        <span class="hdr-name">ArchiveTune</span>
+      </div>
+      <div class="search-wrap">
+        <button id="searchBack" class="s-btn" data-ic="back" title="Back"></button>
+        <input id="searchInput" type="text" placeholder="Search songs, albums, artists, playlists..." autocomplete="off" spellcheck="false">
+        <button id="searchClear" class="s-btn hidden" data-ic="x" title="Clear"></button>
+        <button id="searchFilter" class="s-btn" data-ic="tune" title="Filters"></button>
+      </div>
+      <div class="topbar-right">
+        <button id="historyBtn" class="icon-btn" data-ic="history" title="History"></button>
+        <button id="calendarBtn" class="icon-btn" data-ic="calendar_month" title="Calendar"></button>
+        <button id="eqToggle" class="icon-btn" data-ic="eq" title="Equalizer"></button>
+        <button id="settingsBtn" class="icon-btn" data-ic="settings" title="Settings"></button>
+      </div>
+    </header>
+    <main id="view"></main>
+  </div>
+
+  <!-- Floating mini player -->
+  <footer id="player" class="player hidden">
+    <div class="mp-main" id="mpMain" title="Now Playing">
+      <div class="player-art-wrap" id="playerArtWrap">
+        <img id="playerArt" alt="" draggable="false">
+        <div id="playerDiscOverlay" class="disc-overlay"></div>
+      </div>
+      <div class="player-info">
+        <div class="player-title" id="playerTitle">Nothing playing</div>
+        <div class="player-artist" id="playerArtist">ArchiveTune</div>
+      </div>
+    </div>
+    <div class="mp-controls">
+      <button id="pPrev" class="icon-btn" data-ic="prev" title="Previous"></button>
+      <button id="pPlay" class="play-btn" data-ic="play" title="Play"></button>
+      <button id="pNext" class="icon-btn" data-ic="next" title="Next"></button>
+    </div>
+    <span class="p-time mp-time" id="pCur">0:00</span>
+    <span class="p-time mp-time" id="pDur">0:00</span>
+    <div class="p-bar" id="pBar"><div class="p-bar-fill" id="pBarFill"></div><div class="p-bar-dot" id="pBarDot"></div></div>
+    <div class="mp-hidden">
+      <button id="pLike" class="icon-btn" data-ic="heart-out" title="Like"></button>
+      <button id="pShuffle" class="icon-btn" data-ic="shuffle" title="Shuffle"></button>
+      <button id="pRepeat" class="icon-btn" data-ic="repeat" title="Repeat"></button>
+      <button id="pQueue" class="icon-btn" data-ic="queue" title="Queue"></button>
+      <button id="pLyrics" class="icon-btn" data-ic="lyrics" title="Lyrics"></button>
+      <button id="volToggle" class="icon-btn small" data-ic="volume" title="Volume"></button>
+      <div class="p-bar vol" id="volBar"><div class="p-bar-fill" id="volFill"></div></div>
+    </div>
+  </footer>
+
+  <!-- Bottom navigation -->
+  <nav id="bnav">
+    <button class="bnav-item active" data-nav="home"><span class="bnav-ic" data-ic="home"></span><span class="bnav-label">Beranda</span></button>
+    <button class="bnav-item" data-nav="search"><span class="bnav-ic" data-ic="search"></span><span class="bnav-label">Cari</span></button>
+    <button class="bnav-item" data-nav="liked"><span class="bnav-ic" data-ic="heart"></span><span class="bnav-label">Pustaka</span></button>
+  </nav>
+
+  <!-- Visualizer canvas -->
+  <canvas id="viz" width="300" height="64" class="hidden"></canvas>
+
+  <!-- Now Playing overlay -->
+  <div id="nowPlaying" class="overlay hidden">
+    <div class="np-backdrop" data-close="np"></div>
+    <div class="np-panel">
+      <div class="np-head">
+        <button class="icon-btn" data-close="np" data-ic="down"></button>
+        <span class="np-head-title">Now Playing</span>
+        <div class="np-head-actions">
+          <button class="icon-btn" id="npShare" data-ic="share" title="Share link"></button>
+          <button class="icon-btn" id="npLike" data-ic="heart-out"></button>
+        </div>
+      </div>
+      <div class="np-body">
+        <div class="np-left">
+          <div class="np-art-frame" id="npArtFrame">
+            <img id="npArt" alt="">
+          </div>
+        </div>
+        <div class="np-right">
+          <div class="np-song">
+            <div class="np-title" id="npTitle">Nothing playing</div>
+            <div class="np-artist" id="npArtist">ArchiveTune</div>
+          </div>
+          <div class="np-rom-row"><button id="npRom" class="rom-btn hidden" type="button">ROM</button></div>
+          <div id="lyricsWrap" class="lyrics-wrap">
+            <div id="lyrics" class="lyrics"><div class="lyrics-empty" id="lyricsEmpty">Loading lyrics...</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="np-controls">
+        <div class="p-bar" id="npBar"><div class="p-bar-fill" id="npBarFill"></div></div>
+        <div class="np-times"><span id="npCur">0:00</span><span id="npDur">0:00</span></div>
+        <canvas id="npViz" width="320" height="80" class="np-viz"></canvas>
+        <div class="np-buttons">
+          <button id="npLike2" class="icon-btn" data-ic="heart-out"></button>
+          <button id="npShuffle" class="icon-btn" data-ic="shuffle"></button>
+          <button id="npPrev" class="icon-btn" data-ic="prev"></button>
+          <button id="npPlay" class="play-btn big" data-ic="play"></button>
+          <button id="npNext" class="icon-btn" data-ic="next"></button>
+          <button id="npRepeat" class="icon-btn" data-ic="repeat"></button>
+          <button id="npQueue" class="icon-btn" data-ic="queue"></button>
+        </div>
+      </div>
+      <div id="queuePanel" class="queue-panel hidden"></div>
+    </div>
+  </div>
+
+  <!-- EQ modal -->
+  <div id="eqModal" class="overlay hidden">
+    <div class="eq-card">
+      <div class="eq-head">
+        <h3>Equalizer</h3>
+        <button class="icon-btn" data-close="eq" data-ic="x"></button>
+      </div>
+      <div class="eq-bands" id="eqBands"></div>
+      <div class="eq-foot">
+        <button id="eqReset" class="btn ghost">Reset</button>
+        <label class="switch">
+          <input type="checkbox" id="eqEnable"> <span></span> Enable EQ
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Playlist modal -->
+  <div id="playlistModal" class="overlay hidden">
+    <div class="eq-card">
+      <div class="eq-head"><h3 id="plModalTitle">Save to playlist</h3><button class="icon-btn" data-close="pl" data-ic="x"></button></div>
+      <div id="plList" class="pl-list"></div>
+      <div class="pl-new">
+        <input id="plNewName" type="text" placeholder="New playlist name...">
+        <button id="plNewCreate" class="btn">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <audio id="audio"></audio>
+</div>
+<script src="/static/js/app.js"></script>
+</body>
+</html>
