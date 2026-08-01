@@ -94,7 +94,7 @@ def _song_from_ytm(y):
         "artists": _artists_list(y.get("artists")),
         "album": (y.get("album") or {}).get("name") if isinstance(y.get("album"), dict) else (y.get("album") or "Unknown"),
         "duration": y.get("duration_seconds") or 0,
-        "art": _thumb(y.get("thumbnails")),
+        "art": _thumb(y.get("thumbnails") or y.get("thumbnail")),
         "browseId": (y.get("album") or {}).get("id") if isinstance(y.get("album"), dict) else None,
         "source": "ytm",
         "explicit": y.get("explicit") or False,

@@ -57,6 +57,99 @@ const ICONS = {
   share: '<span class="msym">share</span>',
 };
 
+/* ---------------- i18n (id / en / jp) ---------------- */
+const T = {
+  "nav.home": { id: "Beranda", en: "Home", jp: "ホーム" },
+  "nav.search": { id: "Cari", en: "Search", jp: "検索" },
+  "nav.library": { id: "Pustaka", en: "Library", jp: "ライブラリ" },
+  "nav.liked": { id: "Lagu Disukai", en: "Liked Songs", jp: "高評価の曲" },
+  "nav.bliked": { id: "Pustaka", en: "Liked", jp: "高評価" },
+  "nav.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
+  "nav.local": { id: "File Lokal", en: "Local Files", jp: "ローカルファイル" },
+  "nav.more": { id: "Lainnya", en: "More", jp: "その他" },
+  "nav.calendar": { id: "Kalender", en: "Calendar", jp: "カレンダー" },
+  "nav.stats": { id: "Statistik", en: "Statistics", jp: "統計" },
+  "nav.settings": { id: "Pengaturan", en: "Settings", jp: "設定" },
+  "page.search": { id: "Cari", en: "Search", jp: "検索" },
+  "page.settings": { id: "Pengaturan", en: "Settings", jp: "設定" },
+  "page.calendar": { id: "Kalender", en: "Calendar", jp: "カレンダー" },
+  "page.stats": { id: "Statistik", en: "Statistics", jp: "統計" },
+  "page.liked": { id: "Lagu Disukai", en: "Liked Songs", jp: "高評価の曲" },
+  "page.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
+  "page.local": { id: "File Lokal", en: "Local Files", jp: "ローカルファイル" },
+  "page.album": { id: "Album", en: "Album", jp: "アルバム" },
+  "page.artist": { id: "Artis", en: "Artist", jp: "アーティスト" },
+  "page.playlist": { id: "Playlist", en: "Playlist", jp: "プレイリスト" },
+  "cal.sub": { id: "Rekap kapan kamu dengerin musik.", en: "A recap of when you listened to music.", jp: "いつ音楽を聴いたかの記録。" },
+  "home.sub": { id: "Selamat datang kembali — ayo putar sesuatu yang bagus hari ini.", en: "Welcome back — let's play something great today.", jp: "おかえりなさい — 今日もいい音楽をかけよう。" },
+  "explore.title": { id: "Jelajahi", en: "Explore", jp: "探索" },
+  "explore.sub": { id: "Kategori, tren, dan saran untukmu.", en: "Categories, trends, and picks for you.", jp: "カテゴリ、トレンド、あなたへのおすすめ。" },
+  "liked.sub": { id: "Lagu yang kamu sukai", en: "Songs you liked", jp: "高評価した曲" },
+  "playlists.sub": { id: "Buat dan kelola playlist.", en: "Create and manage playlists.", jp: "プレイリストの作成と管理。" },
+  "local.sub": { id: "Scan folder di PC ini buat mainin koleksi musik kamu.", en: "Scan a folder on this PC to play your music collection.", jp: "このPCのフォルダをスキャンして音楽コレクションを再生。" },
+  "stats.sub": { id: "Riwayat dengerin kamu, dari log scrobble lokal.", en: "Your listening history, powered by your local scrobble log.", jp: "ローカルのスクロブルログによる聴取履歴。" },
+  "search.placeholder": { id: "Cari lagu, album, artis, playlist...", en: "Search songs, albums, artists, playlists...", jp: "曲、アルバム、アーティスト、プレイリストを検索..." },
+  "player.nothing": { id: "Belum ada lagu", en: "Nothing playing", jp: "再生中なし" },
+  "np.title": { id: "Sedang Diputar", en: "Now Playing", jp: "再生中" },
+  "eq.title": { id: "Equalizer", en: "Equalizer", jp: "イコライザー" },
+  "eq.reset": { id: "Reset", en: "Reset", jp: "リセット" },
+  "eq.enable": { id: "Aktifkan EQ", en: "Enable EQ", jp: "EQを有効にする" },
+  "pl.save": { id: "Simpan ke playlist", en: "Save to playlist", jp: "プレイリストに保存" },
+  "pl.namePh": { id: "Nama playlist baru...", en: "New playlist name...", jp: "新しいプレイリスト名..." },
+  "pl.create": { id: "Buat", en: "Create", jp: "作成" },
+  "ytm.guest": { id: "YouTube Music: tamu", en: "YouTube Music: guest", jp: "YouTube Music: ゲスト" },
+  "ytm.signed": { id: "YouTube Music: masuk", en: "YouTube Music: signed in", jp: "YouTube Music: ログイン中" },
+  "ytm.offline": { id: "YouTube Music: offline", en: "YouTube Music: offline", jp: "YouTube Music: オフライン" },
+  "ytm.guestDesc": { id: "Mode tamu — hanya cari & putar", en: "Guest mode — search & playback only", jp: "ゲストモード — 検索と再生のみ" },
+  "ytm.signedDesc": { id: "Masuk — akses akun aktif", en: "Signed in — account access enabled", jp: "ログイン中 — アカウント利用可" },
+  "queue.upnext": { id: "Berikutnya", en: "Up next", jp: "次に再生" },
+  "queue.recs": { id: "Rekomendasi", en: "Recommendations", jp: "おすすめ" },
+  "queue.empty": { id: "Queue masih kosong — lagu yang kamu pilih akan muncul di sini.", en: "Queue is empty — songs you pick will show up here.", jp: "キューは空です — 選んだ曲がここに表示されます。" },
+  "queue.recFail": { id: "Tidak bisa memuat rekomendasi. Coba putar lagu dulu!", en: "Could not load recommendations. Try playing a song first!", jp: "おすすめを読み込めませんでした。曲を再生してみてください！" },
+  "lyrics.loading": { id: "Memuat lirik...", en: "Loading lyrics...", jp: "歌詞を読み込み中..." },
+  "time.justNow": { id: "baru saja", en: "just now", jp: "たった今" },
+  "time.sec": { id: " dtk lalu", en: " sec ago", jp: "秒前" },
+  "time.min": { id: " mnt lalu", en: " min ago", jp: "分前" },
+  "time.hour": { id: " jam lalu", en: " hr ago", jp: "時間前" },
+  "time.day": { id: " hari lalu", en: " days ago", jp: "日前" },
+  "time.week": { id: " mgg lalu", en: " wk ago", jp: "週間前" },
+  "share.copied": { id: "Link disalin!", en: "Link copied!", jp: "リンクをコピーしました！" },
+  "liked.added": { id: "Ditambahkan ke Lagu Disukai", en: "Added to Liked Songs", jp: "高評価の曲に追加しました" },
+  "liked.removed": { id: "Dihapus dari Lagu Disukai", en: "Removed from Liked Songs", jp: "高評価の曲から削除しました" },
+  "greet.night": { id: "Selamat malam", en: "Good evening", jp: "こんばんは" },
+  "greet.morning": { id: "Selamat pagi", en: "Good morning", jp: "おはようございます" },
+  "greet.noon": { id: "Selamat siang", en: "Good afternoon", jp: "こんにちは" },
+  "greet.evening": { id: "Selamat sore", en: "Good afternoon", jp: "こんにちは" },
+  "set.lang": { id: "Bahasa", en: "Language", jp: "言語" },
+  "set.langDesc": { id: "Bahasa tampilan aplikasi", en: "App display language", jp: "アプリの表示言語" },
+  "set.appearance": { id: "Tampilan", en: "Appearance", jp: "外観" },
+  "set.theme": { id: "Tema", en: "Theme", jp: "テーマ" },
+  "set.themeDesc": { id: "Mode gelap atau terang", en: "Dark or light mode", jp: "ダーク/ライトモード" },
+  "set.accent": { id: "Warna aksen", en: "Accent color", jp: "アクセントカラー" },
+  "set.accentDesc": { id: "Pilih warna favoritmu", en: "Pick your favorite color", jp: "お気に入りの色を選ぶ" },
+  "set.dynamic": { id: "Warna dinamis", en: "Dynamic color", jp: "ダイナミックカラー" },
+  "set.dynamicDesc": { id: "Aksen mengikuti warna sampul album", en: "Change accent from album art", jp: "アルバムアートからアクセントを変更" },
+  "set.playback": { id: "Pemutaran", en: "Playback", jp: "再生" },
+  "set.speed": { id: "Kecepatan putar", en: "Playback speed", jp: "再生速度" },
+  "set.speedDesc": { id: "Tempo pemutaran", en: "Tempo of playback", jp: "再生テンポ" },
+};
+
+function t(key) {
+  const lang = (state.settings && state.settings.lang) || "id";
+  const e = T[key];
+  if (!e) return key;
+  return e[lang] || e.id || key;
+}
+
+function applyLang(rerender = true) {
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    const key = el.dataset.i18n;
+    if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") el.placeholder = t(key);
+    else el.textContent = t(key);
+  });
+  if (rerender && state.view) navigate(state.view, state.viewParams);
+}
+
 /* ---------------- helpers ---------------- */
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -116,12 +209,12 @@ async function shareSong(song) {
   const url = `https://music.youtube.com/watch?v=${song.videoId}`;
   try {
     await navigator.clipboard.writeText(url);
-    toast("Link disalin ke clipboard");
+    toast(t("share.copied"));
   } catch {
     const ta = document.createElement("textarea");
     ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
     document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); toast("Link disalin ke clipboard"); }
+    try { document.execCommand("copy"); toast(t("share.copied")); }
     catch { toast(url); }
     ta.remove();
   }
@@ -407,7 +500,7 @@ async function scrobbleNow() {
 
 async function loadLyrics(song) {
   state.lyrics = null;
-  $("#lyrics").innerHTML = '<div class="lyrics-empty">Loading lyrics...</div>';
+  $("#lyrics").innerHTML = `<div class="lyrics-empty">${t("lyrics.loading")}</div>`;
   if (song.source === "local") {
     $("#lyrics").innerHTML = '<div class="lyrics-empty">No lyrics for local files (search YTM instead).</div>';
     return;
@@ -490,7 +583,7 @@ async function toggleLike(song) {
     else state.likedIds.delete(song.id);
     syncLikeButtons();
     if (state.view === "liked") navigate("liked");
-    toast(res.liked ? "Added to Liked Songs" : "Removed from Liked Songs");
+    toast(res.liked ? t("liked.added") : t("liked.removed"));
   } catch (e) { toast(e.message); }
 }
 
@@ -588,7 +681,7 @@ const EXPLORE_CATEGORIES = [
 async function renderHome() {
   viewEl.innerHTML = `<div class="page-head">
     <div class="page-title">${greeting()}</div>
-    <div class="page-sub">Selamat datang kembali — ayo putar sesuatu yang bagus hari ini.</div>
+    <div class="page-sub">${t("home.sub")}</div>
   </div>
   <div class="mood-row" id="moodRow">${MOODS.map(([k, l]) => `<button class="chip mood" data-mood="${k}">${l}</button>`).join("")}</div>
   <div id="homeBody"></div>`;
@@ -679,10 +772,11 @@ async function renderHome() {
 
 function greeting() {
   const h = new Date().getHours();
-  if (h < 5) return "Good night";
-  if (h < 12) return "Good morning";
-  if (h < 17) return "Good afternoon";
-  return "Good evening";
+  if (h < 4) return t("greet.night");
+  if (h < 11) return t("greet.morning");
+  if (h < 15) return t("greet.noon");
+  if (h < 18) return t("greet.evening");
+  return t("greet.night");
 }
 
 function chartsSkeleton(body) {
@@ -709,14 +803,16 @@ function emptyState(title, sub) {
 
 function timeAgo(ts) {
   const s = Math.max(0, Date.now() / 1000 - (ts || 0));
-  if (s < 60) return "baru saja";
-  const m = Math.floor(s / 60);
-  if (m < 60) return m + " mnt lalu";
+  if (s < 5) return t("time.justNow");
+  const sec = Math.floor(s);
+  if (sec < 60) return sec + t("time.sec");
+  const m = Math.floor(sec / 60);
+  if (m < 60) return m + t("time.min");
   const h = Math.floor(m / 60);
-  if (h < 24) return h + " jam lalu";
+  if (h < 24) return h + t("time.hour");
   const d = Math.floor(h / 24);
-  if (d < 7) return d + " hari lalu";
-  return Math.floor(d / 7) + " mgg lalu";
+  if (d < 7) return d + t("time.day");
+  return Math.floor(d / 7) + t("time.week");
 }
 
 function hdArt(url) {
@@ -844,8 +940,8 @@ async function renderSearchAll(results, q) {
 
 async function renderExploreLanding(body) {
   body.innerHTML = `<div class="page-head">
-    <div class="page-title">Jelajahi</div>
-    <div class="page-sub">Kategori, tren, dan saran untukmu.</div>
+    <div class="page-title">${t("explore.title")}</div>
+    <div class="page-sub">${t("explore.sub")}</div>
   </div><div id="exploreContent">${loadingHtml()}</div>`;
   const content = $("#exploreContent");
   try {
@@ -945,7 +1041,7 @@ function songTableHtml(songs, showAlbum = true, actions = true) {
 }
 
 async function renderLiked() {
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">Liked Songs</div><div class="page-sub" id="likedCount"></div>
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.liked")}</div><div class="page-sub" id="likedCount"></div>
     <div style="margin-top:14px"><button class="btn" id="likedPlayAll">${ICONS.play} Play all</button></div></div>
     <div id="likedBody">${loadingHtml()}</div>`;
   injectIcons(viewEl);
@@ -970,7 +1066,7 @@ async function renderLiked() {
 }
 
 async function renderPlaylists() {
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">Your Playlists</div><div class="page-sub">Create and manage playlists.</div>
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.playlists")}</div><div class="page-sub">${t("playlists.sub")}</div>
     <div style="margin-top:14px"><button class="btn" id="plCreate">${ICONS.plus} New playlist</button></div></div>
     <div id="plGrid"></div>`;
   injectIcons(viewEl);
@@ -1040,8 +1136,8 @@ async function renderLocalPlaylist(pid) {
 
 async function renderLocal() {
   const root = state.settings.local_root || "";
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">Local Files</div>
-    <div class="page-sub">Scan a folder on this PC to play your music collection.</div>
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.local")}</div>
+    <div class="page-sub">${t("local.sub")}</div>
     <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
       <button class="btn ghost" id="localBrowse">${ICONS.folder} Choose folder</button>
       <button class="btn ghost" id="localRescan">Rescan</button>
@@ -1216,7 +1312,7 @@ async function renderPlaylist(browseId) {
 }
 
 async function renderStats() {
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">Listening Statistics</div><div class="page-sub">Your listening history, powered by your local scrobble log.</div></div>
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.stats")}</div><div class="page-sub">${t("stats.sub")}</div></div>
   <div class="stat-cards" id="statCards"></div>
   <div class="set-group"><h3>${ICONS.stats} Top Artists</h3><div class="bar-chart" id="statArtists"></div></div>
   <div class="set-group"><h3>${ICONS.music} Top Songs</h3><div class="bar-chart" id="statSongs"></div></div>
@@ -1266,7 +1362,7 @@ async function renderCalendar() {
   CAL_STATE.y = now.getFullYear();
   CAL_STATE.m = now.getMonth();
   CAL_STATE.sel = "";
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">Calendar</div><div class="page-sub">Rekap kapan kamu dengerin musik.</div></div>
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.calendar")}</div><div class="page-sub">${t("cal.sub")}</div></div>
   <div class="cal-card">
     <h3>${ICONS.calendar_month} Tahun ini</h3>
     <div class="cal-heat-grid" id="calHeat"></div>
@@ -1398,25 +1494,34 @@ async function renderSettings() {
   const s = state.settings;
   const accents = ["#ff4f8b", "#e91e63", "#9c27b0", "#7c4dff", "#3f51b5", "#00bcd4", "#00c853", "#ffb300", "#ff5722"];
   viewEl.innerHTML = `
-  <div class="page-head"><div class="page-title">Settings</div></div>
+  <div class="page-head"><div class="page-title">${t("page.settings")}</div></div>
 
-  <div class="set-group"><h3>${ICONS.sun} Appearance</h3>
-    <div class="set-row"><div><div class="set-label">Theme</div><div class="set-desc">Dark or light mode</div></div>
+  <div class="set-group"><h3>${ICONS.info || ICONS.gear} ${t("set.lang")}</h3>
+    <div class="set-row"><div><div class="set-label">${t("set.lang")}</div><div class="set-desc">${t("set.langDesc")}</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="chip ${(s.lang || "id") === "id" ? "active" : ""}" data-lang="id">Indonesia</button>
+        <button class="chip ${(s.lang || "id") === "en" ? "active" : ""}" data-lang="en">English</button>
+        <button class="chip ${(s.lang || "id") === "jp" ? "active" : ""}" data-lang="jp">日本語</button>
+      </div></div>
+  </div>
+
+  <div class="set-group"><h3>${ICONS.sun} ${t("set.appearance")}</h3>
+    <div class="set-row"><div><div class="set-label">${t("set.theme")}</div><div class="set-desc">${t("set.themeDesc")}</div></div>
       <div style="display:flex;gap:8px">
         <button class="chip ${s.theme !== "light" ? "active" : ""}" data-theme-set="dark">Dark</button>
         <button class="chip ${s.theme === "light" ? "active" : ""}" data-theme-set="light">Light</button>
       </div></div>
-    <div class="set-row"><div><div class="set-label">Accent color</div><div class="set-desc">Pick your favorite cute color</div></div>
+    <div class="set-row"><div><div class="set-label">${t("set.accent")}</div><div class="set-desc">${t("set.accentDesc")}</div></div>
       <div class="swatches">${accents.map((a) => `<div class="swatch ${(s.accent || "#ff4f8b").toLowerCase() === a ? "active" : ""}" data-accent="${a}" style="background:${a}"></div>`).join("")}
       <input type="color" id="accentCustom" value="${s.accent || "#ff4f8b"}"></div></div>
-    <div class="set-row"><div><div class="set-label">Dynamic color</div><div class="set-desc">Change accent from album art</div></div>
+    <div class="set-row"><div><div class="set-label">${t("set.dynamic")}</div><div class="set-desc">${t("set.dynamicDesc")}</div></div>
       <label class="switch"><input type="checkbox" id="setDynamic" ${s.dynamic_color ? "checked" : ""}><span></span></label></div>
     <div class="set-row"><div><div class="set-label">Charts country</div><div class="set-desc">Region for home charts</div></div>
       <select id="setCountry"><option>US</option><option>ID</option><option>JP</option><option>GB</option><option>IN</option><option>KR</option><option>BR</option><option>DE</option><option>FR</option><option>PH</option><option>SG</option><option>MY</option></select></div>
   </div>
 
-  <div class="set-group"><h3>${ICONS.eq} Playback</h3>
-    <div class="set-row"><div><div class="set-label">Playback speed</div><div class="set-desc">Tempo of playback</div></div>
+  <div class="set-group"><h3>${ICONS.eq} ${t("set.playback")}</h3>
+    <div class="set-row"><div><div class="set-label">${t("set.speed")}</div><div class="set-desc">${t("set.speedDesc")}</div></div>
       <select id="setSpeed">${[0.5, 0.75, 1, 1.25, 1.5, 2].map((v) => `<option value="${v}" ${(+s.speed || 1) === v ? "selected" : ""}>${v}×</option>`).join("")}</select></div>
     <div class="set-row"><div><div class="set-label">Equalizer</div><div class="set-desc">10-band EQ & visualizer</div></div>
       <button class="btn ghost" id="setOpenEq">Open EQ</button></div>
@@ -1447,6 +1552,10 @@ async function renderSettings() {
   viewEl.querySelectorAll("[data-theme-set]").forEach((b) => b.addEventListener("click", async () => {
     await setSetting("theme", b.dataset.themeSet);
     renderSettings();
+  }));
+  viewEl.querySelectorAll("[data-lang]").forEach((b) => b.addEventListener("click", async () => {
+    await setSetting("lang", b.dataset.lang);
+    applyLang();
   }));
   viewEl.querySelectorAll("[data-accent]").forEach((b) => b.addEventListener("click", async () => {
     await setSetting("accent", b.dataset.accent);
@@ -1513,14 +1622,14 @@ async function updateYtmStatus() {
     const st = await api("/api/ytm/status");
     const el = $("#ytmStatus");
     if (el) {
-      el.textContent = st.authenticated ? "YouTube Music: signed in" : "YouTube Music: guest";
+      el.textContent = st.authenticated ? t("ytm.signed") : t("ytm.guest");
       el.className = "ytm-status " + (st.authenticated ? "online" : "");
     }
     const txt = $("#ytmStatusText");
-    if (txt) txt.textContent = st.authenticated ? "Signed in — account access enabled" : "Guest mode — search & playback only";
+    if (txt) txt.textContent = st.authenticated ? t("ytm.signedDesc") : t("ytm.guestDesc");
   } catch {
     const el = $("#ytmStatus");
-    if (el) { el.textContent = "YouTube Music: offline"; el.className = "ytm-status offline"; }
+    if (el) { el.textContent = t("ytm.offline"); el.className = "ytm-status offline"; }
   }
 }
 
@@ -1562,7 +1671,7 @@ function renderQueuePanel() {
         <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
         <button class="icon-btn small" data-q-del="${i}">${ICONS.x}</button>
       </div>`).join("")
-    : '<div class="lyrics-empty">Queue masih kosong — lagu yang kamu pilih akan muncul di sini.</div>';
+    : `<div class="lyrics-empty">${t("queue.empty")}</div>`;
   const recHtml = state.nextUpSug && state.nextUpSug.length
     ? state.nextUpSug.map((s, i) => `
       <div class="queue-item sug" data-sug-play="${i}">
@@ -1572,10 +1681,10 @@ function renderQueuePanel() {
       </div>`).join("")
     : loadingHtml();
   qp.innerHTML = `<div class="q-head">
-    <div class="q-head-title">${state.queue.length ? `Up next (${state.queue.length})` : "Up next"}</div>
+    <div class="q-head-title">${state.queue.length ? `${t("queue.upnext")} (${state.queue.length})` : t("queue.upnext")}</div>
     <button class="icon-btn" data-close="queue" data-ic="x" title="Close"></button>
   </div>${queueRows}
-  <div class="q-sec-title">Rekomendasi</div>
+  <div class="q-sec-title">${t("queue.recs")}</div>
   <div id="nextUpList" class="queue-sug">${recHtml}</div>`;
   injectIcons(qp);
   if (!state.nextUpSug || !state.nextUpSug.length) loadNextUp();
@@ -1603,7 +1712,7 @@ async function loadNextUp() {
     } catch {}
   }
   if (!items.length) {
-    list.innerHTML = '<div class="lyrics-empty">Tidak bisa memuat rekomendasi. Coba putar lagu dulu!</div>';
+    list.innerHTML = `<div class="lyrics-empty">${t("queue.recFail")}</div>`;
     return;
   }
   state.nextUpSug = items;
@@ -1989,6 +2098,7 @@ async function init() {
     state.settings = {};
   }
   applySettingsToUi();
+  applyLang(false);
   try {
     const liked = await api("/api/library/liked");
     state.likedIds = new Set((liked.songs || []).map((s) => s.id));

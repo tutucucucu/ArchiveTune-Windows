@@ -47,6 +47,7 @@ DEFAULT_SETTINGS = {
     "shuffle": False,
     "repeat": "off",
     "ytm_cookie": "",
+    "lang": "id",
     "local_root": "",
     "lastfm_api_key": "",
     "lastfm_api_secret": "",

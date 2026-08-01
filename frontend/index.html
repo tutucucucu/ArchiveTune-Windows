@@ -14,19 +14,19 @@
   <!-- Sidebar -->
   <aside id="sidebar">
     <nav id="nav">
-      <button class="nav-item active" data-nav="home"><span class="ni-ic" data-ic="home"></span>Home</button>
-      <button class="nav-item" data-nav="search"><span class="ni-ic" data-ic="search"></span>Search</button>
-      <div class="nav-label">Library</div>
-      <button class="nav-item" data-nav="liked"><span class="ni-ic" data-ic="heart"></span>Liked Songs</button>
-      <button class="nav-item" data-nav="playlists"><span class="ni-ic" data-ic="list"></span>Playlists</button>
-      <button class="nav-item" data-nav="local"><span class="ni-ic" data-ic="folder"></span>Local Files</button>
-      <div class="nav-label">More</div>
-      <button class="nav-item" data-nav="calendar"><span class="ni-ic" data-ic="calendar_month"></span>Calendar</button>
-      <button class="nav-item" data-nav="stats"><span class="ni-ic" data-ic="stats"></span>Statistics</button>
-      <button class="nav-item" data-nav="settings"><span class="ni-ic" data-ic="gear"></span>Settings</button>
+      <button class="nav-item active" data-nav="home"><span class="ni-ic" data-ic="home"></span><span data-i18n="nav.home">Home</span></button>
+      <button class="nav-item" data-nav="search"><span class="ni-ic" data-ic="search"></span><span data-i18n="nav.search">Search</span></button>
+      <div class="nav-label" data-i18n="nav.library">Library</div>
+      <button class="nav-item" data-nav="liked"><span class="ni-ic" data-ic="heart"></span><span data-i18n="nav.liked">Liked Songs</span></button>
+      <button class="nav-item" data-nav="playlists"><span class="ni-ic" data-ic="list"></span><span data-i18n="nav.playlists">Playlists</span></button>
+      <button class="nav-item" data-nav="local"><span class="ni-ic" data-ic="folder"></span><span data-i18n="nav.local">Local Files</span></button>
+      <div class="nav-label" data-i18n="nav.more">More</div>
+      <button class="nav-item" data-nav="calendar"><span class="ni-ic" data-ic="calendar_month"></span><span data-i18n="nav.calendar">Calendar</span></button>
+      <button class="nav-item" data-nav="stats"><span class="ni-ic" data-ic="stats"></span><span data-i18n="nav.stats">Statistics</span></button>
+      <button class="nav-item" data-nav="settings"><span class="ni-ic" data-ic="gear"></span><span data-i18n="nav.settings">Settings</span></button>
     </nav>
     <div class="sidebar-footer">
-      <div id="ytmStatus" class="ytm-status">YouTube Music: guest</div>
+      <div id="ytmStatus" class="ytm-status" data-i18n="ytm.guest">YouTube Music: guest</div>
     </div>
   </aside>
 
@@ -39,7 +39,7 @@
       </div>
       <div class="search-wrap">
         <button id="searchBack" class="s-btn" data-ic="back" title="Back"></button>
-        <input id="searchInput" type="text" placeholder="Search songs, albums, artists, playlists..." autocomplete="off" spellcheck="false">
+        <input id="searchInput" type="text" placeholder="Search songs, albums, artists, playlists..." data-i18n="search.placeholder" autocomplete="off" spellcheck="false">
         <button id="searchClear" class="s-btn hidden" data-ic="x" title="Clear"></button>
         <button id="searchFilter" class="s-btn" data-ic="tune" title="Filters"></button>
       </div>
@@ -61,7 +61,7 @@
         <div id="playerDiscOverlay" class="disc-overlay"></div>
       </div>
       <div class="player-info">
-        <div class="player-title" id="playerTitle">Nothing playing</div>
+        <div class="player-title" id="playerTitle" data-i18n="player.nothing">Nothing playing</div>
         <div class="player-artist" id="playerArtist">ArchiveTune</div>
       </div>
     </div>
@@ -86,9 +86,9 @@
 
   <!-- Bottom navigation -->
   <nav id="bnav">
-    <button class="bnav-item active" data-nav="home"><span class="bnav-ic" data-ic="home"></span><span class="bnav-label">Beranda</span></button>
-    <button class="bnav-item" data-nav="search"><span class="bnav-ic" data-ic="search"></span><span class="bnav-label">Cari</span></button>
-    <button class="bnav-item" data-nav="liked"><span class="bnav-ic" data-ic="heart"></span><span class="bnav-label">Pustaka</span></button>
+    <button class="bnav-item active" data-nav="home"><span class="bnav-ic" data-ic="home"></span><span class="bnav-label" data-i18n="nav.home">Beranda</span></button>
+    <button class="bnav-item" data-nav="search"><span class="bnav-ic" data-ic="search"></span><span class="bnav-label" data-i18n="nav.search">Cari</span></button>
+    <button class="bnav-item" data-nav="liked"><span class="bnav-ic" data-ic="heart"></span><span class="bnav-label" data-i18n="nav.bliked">Pustaka</span></button>
   </nav>
 
   <!-- Visualizer canvas -->
@@ -100,7 +100,7 @@
     <div class="np-panel">
       <div class="np-head">
         <button class="icon-btn" data-close="np" data-ic="down"></button>
-        <span class="np-head-title">Now Playing</span>
+        <span class="np-head-title" data-i18n="np.title">Now Playing</span>
         <div class="np-head-actions">
           <button class="icon-btn" id="npShare" data-ic="share" title="Share link"></button>
           <button class="icon-btn" id="npLike" data-ic="heart-out"></button>
@@ -114,7 +114,7 @@
         </div>
         <div class="np-right">
           <div class="np-song">
-            <div class="np-title" id="npTitle">Nothing playing</div>
+            <div class="np-title" id="npTitle" data-i18n="player.nothing">Nothing playing</div>
             <div class="np-artist" id="npArtist">ArchiveTune</div>
           </div>
           <div class="np-rom-row"><button id="npRom" class="rom-btn hidden" type="button">ROM</button></div>
@@ -145,14 +145,14 @@
   <div id="eqModal" class="overlay hidden">
     <div class="eq-card">
       <div class="eq-head">
-        <h3>Equalizer</h3>
+        <h3 data-i18n="eq.title">Equalizer</h3>
         <button class="icon-btn" data-close="eq" data-ic="x"></button>
       </div>
       <div class="eq-bands" id="eqBands"></div>
       <div class="eq-foot">
-        <button id="eqReset" class="btn ghost">Reset</button>
+        <button id="eqReset" class="btn ghost" data-i18n="eq.reset">Reset</button>
         <label class="switch">
-          <input type="checkbox" id="eqEnable"> <span></span> Enable EQ
+          <input type="checkbox" id="eqEnable"> <span></span> <span data-i18n="eq.enable">Enable EQ</span>
         </label>
       </div>
     </div>
@@ -161,11 +161,11 @@
   <!-- Playlist modal -->
   <div id="playlistModal" class="overlay hidden">
     <div class="eq-card">
-      <div class="eq-head"><h3 id="plModalTitle">Save to playlist</h3><button class="icon-btn" data-close="pl" data-ic="x"></button></div>
+      <div class="eq-head"><h3 id="plModalTitle" data-i18n="pl.save">Save to playlist</h3><button class="icon-btn" data-close="pl" data-ic="x"></button></div>
       <div id="plList" class="pl-list"></div>
       <div class="pl-new">
-        <input id="plNewName" type="text" placeholder="New playlist name...">
-        <button id="plNewCreate" class="btn">Create</button>
+        <input id="plNewName" type="text" placeholder="New playlist name..." data-i18n="pl.namePh">
+        <button id="plNewCreate" class="btn" data-i18n="pl.create">Create</button>
       </div>
     </div>
   </div>
