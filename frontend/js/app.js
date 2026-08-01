@@ -875,7 +875,7 @@ async function renderSearch() {
     if (state.searchType === "songs" || state.searchType === "videos") {
       state.renderList = data.items;
       results.innerHTML = searchListHtml(data.items, { title: "Top results" });
-      bindSongRows(results, data.items);
+      bindSearchRows(results, data.items);
       markPlaying();
       return;
     }
@@ -934,7 +934,7 @@ async function renderSearchAll(results, q) {
   if (rList.length) html += `<section class="srch-section">${searchGridHtml("artists", rList)}</section>`;
   if (pList.length) html += `<section class="srch-section">${searchGridHtml("playlists", pList)}</section>`;
   results.innerHTML = html;
-  bindSongRows(results, combined);
+  bindSearchRows(results, combined);
   markPlaying();
 }
 
@@ -1817,6 +1817,16 @@ function bindSongRows(container, songs) {
     row.addEventListener("click", (e) => {
       if (e.target.closest("button")) return;
       playQueue(songs, +row.dataset.i);
+    });
+  });
+}
+
+function bindSearchRows(container, songs) {
+  container.querySelectorAll(".song-row[data-i]").forEach((row) => {
+    row.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      const song = songs[+row.dataset.i];
+      if (song) playQueue([song], 0);
     });
   });
 }
