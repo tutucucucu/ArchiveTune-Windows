@@ -1,10 +1,24 @@
 @echo off
 chcp 65001 >nul
 title ArchiveTune for Windows
-echo Starting ArchiveTune...
-where python >nul 2>nul || (echo Python not found in PATH. Install Python 3.11+ and try again. & pause & exit /b 1)
-python -c "import fastapi, ytmusicapi, yt_dlp, mutagen, uvicorn" 2>nul || (
-  echo Installing dependencies...
-  pip install -r backend\requirements.txt --disable-pip-version-check -q
+echo Starting ArchiveTune (browser mode)...
+
+set "PY="
+py -3 -c "import sys" >nul 2>nul && set "PY=py -3"
+if not defined PY python -c "import sys" >nul 2>nul && set "PY=python"
+if not defined PY python3 -c "import sys" >nul 2>nul && set "PY=python3"
+if not defined PY (
+  echo [!] Python not found. Install Python 3.10+ from https://www.python.org/downloads/
+  echo     and make sure "Add python.exe to PATH" is checked during install.
+  echo.
+  pause
+  exit /b 1
 )
-python backend\main.py
+
+%PY% -c "import fastapi, ytmusicapi, yt_dlp, mutagen, uvicorn, webview" 2>nul || (
+  echo Installing dependencies...
+  %PY% -m pip install -r backend\requirements.txt --disable-pip-version-check -q
+)
+
+%PY% backend\main.py --browser
+pause
