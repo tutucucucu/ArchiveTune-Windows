@@ -6,17 +6,33 @@ echo   Building ArchiveTune.exe  (onefile)
 echo ==========================================
 echo.
 
-where pyinstaller >nul 2>nul
-if errorlevel 1 (
-  echo [!] pyinstaller not found - installing...
-  pip install pyinstaller --disable-pip-version-check
+set "PY="
+py -3 -c "import sys" >nul 2>nul && set "PY=py -3"
+if not defined PY python -c "import sys" >nul 2>nul && set "PY=python"
+if not defined PY python3 -c "import sys" >nul 2>nul && set "PY=python3"
+if not defined PY (
+  echo [!] Python not found.
+  echo     Install Python 3.10+ from https://www.python.org/downloads/
+  echo     and make sure "Add python.exe to PATH" is checked during install.
+  echo.
+  pause
+  exit /b 1
 )
+echo Using: %PY%
+echo.
 
 echo [1/2] Installing dependencies...
-pip install -r backend\requirements.txt --disable-pip-version-check -q
+%PY% -m pip install -r backend\requirements.txt --disable-pip-version-check -q
+%PY% -m pip install pyinstaller --disable-pip-version-check -q
 
 echo [2/2] Running PyInstaller...
-pyinstaller ArchiveTune.spec --noconfirm
+%PY% -m PyInstaller ArchiveTune.spec --noconfirm
+if errorlevel 1 (
+  echo.
+  echo [!] Build failed - close ArchiveTune.exe first, then try again.
+  pause
+  exit /b 1
+)
 
 echo.
 echo Done! Your app is at:  dist\ArchiveTune.exe
