@@ -56,6 +56,7 @@ const ICONS = {
   sentiment_satisfied: '<span class="msym">sentiment_satisfied</span>',
   water_drop: '<span class="msym">water_drop</span>',
   share: '<span class="msym">share</span>',
+  radio: '<span class="msym">radio</span>',
   chev_left: '<span class="msym">chevron_left</span>',
   chev_right: '<span class="msym">chevron_right</span>',
 };
@@ -110,6 +111,7 @@ const T = {
   "share.noLink": { id: "Tidak ada link untuk lagu ini", en: "No link for this song", jp: "この曲のリンクはありません" },
   "common.play": { id: "Putar", en: "Play", jp: "再生" },
   "common.shuffle": { id: "Acak", en: "Shuffle", jp: "シャッフル" },
+  "common.radio": { id: "Radio", en: "Radio", jp: "ラジオ" },
   "song.title": { id: "Judul", en: "Title", jp: "タイトル" },
   "song.artist": { id: "Artis", en: "Artist", jp: "アーティスト" },
   "song.album": { id: "Album", en: "Album", jp: "アルバム" },
@@ -1633,7 +1635,7 @@ async function renderAlbum(browseId) {
     const a = await api("/api/ytm/album/" + browseId);
     if (a.error) throw new Error(a.error);
     viewEl.innerHTML = `<div class="hero">
-      <div class="hero-art">${a.art ? `<img src="${esc(a.art)}">` : `<div class="card-art placeholder">${ICONS.music}</div>`}</div>
+      <div class="hero-art${a.art ? "" : " ph"}">${ICONS.music}${a.art ? `<img src="${esc(a.art)}" alt="" onerror="var h=this.parentElement;this.remove();h.classList.add('ph')">` : ""}</div>
       <div class="hero-meta">
         <div class="hero-type">${t("page.album")}</div>
         <div class="hero-title">${esc(a.title)}</div>
@@ -1661,23 +1663,45 @@ async function renderArtist(browseId) {
   try {
     const a = await api("/api/ytm/artist/" + browseId);
     if (a.error) throw new Error(a.error);
+    const subLine = [a.subscribers, a.monthlyListeners].filter(Boolean).join(" • ");
     viewEl.innerHTML = `<div class="hero artist-hero">
-      <div class="hero-art">${a.art ? `<img src="${esc(a.art)}">` : `<div class="card-art placeholder" style="border-radius:50%">${ICONS.music}</div>`}</div>
+      <div class="hero-art${a.art ? "" : " ph"}">${ICONS.music}${a.art ? `<img src="${esc(a.art)}" alt="" onerror="var h=this.parentElement;this.remove();h.classList.add('ph')">` : ""}</div>
       <div class="hero-meta">
         <div class="hero-type">${t("page.artist")}</div>
         <div class="hero-title">${esc(a.name)}</div>
-        <div class="hero-sub">${a.subscribers ? esc(a.subscribers) : ""}</div>
-        <div class="hero-actions"><button class="btn-stadium" id="arPlayTop">${ICONS.play} ${t("common.playTop")}</button></div>
+        <div class="hero-sub">${subLine ? esc(subLine) : ""}</div>
+        <div class="hero-actions">
+          <button class="btn-stadium" id="arPlayTop">${ICONS.play} ${t("common.playTop")}</button>
+          <button class="circ" id="arShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
+          ${a.songs_browse_id ? `<button class="circ" id="arRadio" data-ic="radio" title="${t("common.radio")}"></button>` : ""}
+        </div>
       </div></div>
       <div class="section"><div class="section-title">${t("search.albums")}</div><div id="arAlbums" class="card-grid"></div></div>
       <div class="section"><div class="section-title">${t("common.topSongs")}</div><div id="arSongs"></div></div>`;
     injectIcons(viewEl);
-    $("#arAlbums").innerHTML = (a.albums || []).map((al) => cardHtml(al.title, al.art, "album", al.browseId, al.year || "")).join("") || emptyState(t("artist.noAlbums"), "");
+    $("#arAlbums").innerHTML = (a.albums || []).map((al) => cardHtml(al.title, al.art, "album", al.browseId, al.year || t("page.album"))).join("") || emptyState(t("artist.noAlbums"), "");
     if (a.songs_browse_id) {
       $("#arPlayTop").addEventListener("click", async () => {
         const res = await api("/api/ytm/artist/" + browseId + "/songs");
         if (res.tracks) playQueue(res.tracks, 0);
       });
+      $("#arShuffle").addEventListener("click", async () => {
+        const res = await api("/api/ytm/artist/" + browseId + "/songs");
+        if (res.tracks && res.tracks.length) {
+          state.shuffle = true;
+          playQueue(res.tracks, Math.floor(Math.random() * res.tracks.length));
+          syncShuffle();
+        }
+      });
+      if (a.songs_browse_id) {
+        $("#arRadio").addEventListener("click", async () => {
+          const songs = await api("/api/ytm/artist/" + browseId + "/songs");
+          const seed = songs.tracks && songs.tracks[0];
+          if (!seed || !seed.videoId) return;
+          const res = await api("/api/ytm/nextup/" + seed.videoId + "?limit=40");
+          if (res.items && res.items.length) playQueue(res.items, 0);
+        });
+      }
       const res = await api("/api/ytm/artist/" + browseId + "/songs");
       if (res.error) $("#arSongs").innerHTML = emptyState(t("artist.noSongs"), res.error);
       else {
@@ -1701,7 +1725,7 @@ async function renderPlaylist(browseId) {
     if (p.error) throw new Error(p.error);
     const tracks = p.tracks || [];
     viewEl.innerHTML = `<div class="hero">
-      <div class="hero-art">${p.art ? `<img src="${esc(p.art)}">` : `<div class="card-art placeholder">${ICONS.list}</div>`}</div>
+      <div class="hero-art${p.art ? "" : " ph"}">${ICONS.list}${p.art ? `<img src="${esc(p.art)}" alt="" onerror="var h=this.parentElement;this.remove();h.classList.add('ph')">` : ""}</div>
       <div class="hero-meta">
         <div class="hero-type">${t("page.playlist")}</div>
         <div class="hero-title">${esc(p.title)}</div>
