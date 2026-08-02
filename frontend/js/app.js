@@ -200,6 +200,8 @@ const T = {
   "home.discover": { id: "Discover", en: "Discover", jp: "発見" },
   "explore.title": { id: "Jelajahi", en: "Explore", jp: "探索" },
   "explore.sub": { id: "Kategori, tren, dan saran untukmu.", en: "Categories, trends, and picks for you.", jp: "カテゴリ、トレンド、あなたへのおすすめ。" },
+  "explore.moods": { id: "Mood & Genre", en: "Mood & Genre", jp: "気分とジャンル" },
+  "explore.suggestions": { id: "Saran", en: "Suggestions", jp: "おすすめ" },
   "liked.sub": { id: "Lagu yang kamu sukai", en: "Songs you liked", jp: "高評価した曲" },
   "playlists.sub": { id: "Buat dan kelola playlist.", en: "Create and manage playlists.", jp: "プレイリストの作成と管理。" },
   "local.sub": { id: "Scan folder di PC ini buat mainin koleksi musik kamu.", en: "Scan a folder on this PC to play your music collection.", jp: "このPCのフォルダをスキャンして音楽コレクションを再生。" },
@@ -1338,16 +1340,18 @@ async function renderExploreLanding(body) {
     const gens = charts.genres || [];
     let html = "";
 
-    html += `<section class="section"><div class="section-title">${ICONS.apps} ${t("explore.title")}</div>
-      <div class="exp-grid">${EXPLORE_CATEGORIES.map((c, i) => `
-        <button class="exp-card grad-${i % 6}" data-mood="${c.id}">
-          <span class="exp-ic">${ICONS[c.icon]}</span>
+    html += `<section class="section"><div class="section-title">${t("explore.moods")}</div>
+      <div class="exp-grid">${EXPLORE_CATEGORIES.map((c, i) => {
+        const art = vids[i % Math.max(1, vids.length)];
+        return `<button class="exp-card grad-${i % 6}" data-mood="${c.id}">
+          ${art && art.art ? `<span class="exp-thumb"><img src="${esc(art.art)}" loading="lazy" alt=""></span>` : `<span class="exp-ic">${ICONS[c.icon]}</span>`}
           <span class="exp-label">${t(c.subKey)}</span>
-        </button>`).join("")}</div></section>`;
+        </button>`;
+      }).join("")}</div></section>`;
 
     if (vids.length) {
-      html += `<section class="section"><div class="section-title">${ICONS.trending_up} Suggestions</div>
-        <div class="sugg-list">${vids.slice(0, 10).map((v, i) => `
+      html += `<section class="section"><div class="section-title">${ICONS.trending_up} ${t("explore.suggestions")}</div>
+        <div class="sugg-grid">${vids.slice(0, 10).map((v, i) => `
           <div class="sugg-row" data-card data-type="playlist" data-browse="${esc(v.browseId)}">
             <span class="sugg-rank">${i + 1}</span>
             ${v.art ? `<div class="sugg-art"><img src="${esc(v.art)}" loading="lazy"></div>` : `<div class="sugg-art ph">${ICONS.music}</div>`}
