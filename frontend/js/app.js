@@ -2316,7 +2316,7 @@ function wireEvents() {
     });
   };
   seekBar($("#pBar"), $("#pBarFill"), $("#pBarDot"), (p) => { audio.currentTime = p * (audio.duration || 0); });
-  seekBar($("#npBar"), $("#npBarFill"), null, (p) => { audio.currentTime = p * (audio.duration || 0); });
+  seekBar($("#npBar"), $("#npBarFill"), $("#npBarDot"), (p) => { audio.currentTime = p * (audio.duration || 0); });
   seekBar($("#volBar"), $("#volFill"), null, async (p) => {
     audio.volume = p;
     audio.muted = false;
@@ -2356,6 +2356,7 @@ function wireEvents() {
     $("#pBarFill").style.width = pct + "%";
     $("#pBarDot").style.left = pct + "%";
     $("#npBarFill").style.width = pct + "%";
+    $("#npBarDot").style.left = pct + "%";
     highlightLyric();
     if (!state.scrobbled && dur && cur > dur * 0.5) scrobbleNow();
     const xf = getXfade();

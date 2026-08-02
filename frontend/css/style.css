@@ -30,9 +30,9 @@
   --on-primary-container: color-mix(in srgb, var(--primary) 55%, var(--text));
   --on-danger: #ffb4ab;
   --danger-container: color-mix(in srgb, #ff5d6c 22%, var(--surface));
-  /* play button = big white circle (Android 14 style) */
-  --play-bg: #ffffff;
-  --play-fg: #121212;
+  /* play button = filled accent pill */
+  --play-bg: var(--primary);
+  --play-fg: #ffffff;
   --play-shadow: 0 10px 26px rgba(0, 0, 0, 0.38);
   /* elevation / shadows — kept subtle */
   --shadow-1: 0 1px 4px rgba(0, 0, 0, 0.22);
@@ -220,19 +220,20 @@ body {
    ========================================================================== */
 .play-btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 54px; height: 54px; border-radius: 50%; border: 0; cursor: pointer;
+  height: 54px; min-width: 68px; padding: 0 20px;
+  border-radius: var(--radius-pill); border: 0; cursor: pointer;
   background: var(--play-bg); color: var(--play-fg);
   box-shadow: var(--play-shadow);
   transition: transform var(--t), box-shadow var(--t), filter var(--t);
   position: relative; overflow: hidden;
 }
-.play-btn .msym { font-size: 34px; }
-.play-btn::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: currentColor; opacity: 0; pointer-events: none; transition: opacity var(--t); }
+.play-btn .msym { font-size: 32px; }
+.play-btn::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; pointer-events: none; transition: opacity var(--t); }
 .play-btn:active::after { opacity: 0.14; }
-.play-btn:hover { transform: scale(1.06); filter: brightness(1.03); }
+.play-btn:hover { transform: scale(1.05); filter: brightness(1.04); }
 .play-btn:active { transform: scale(0.94); }
-.play-btn.big { width: 74px; height: 74px; }
-.play-btn.big .msym { font-size: 46px; }
+.play-btn.big { height: 72px; min-width: 96px; padding: 0 30px; }
+.play-btn.big .msym { font-size: 44px; }
 
 /* ==========================================================================
    Generic buttons — tonal rounded rectangles (lighter than bg)
@@ -508,10 +509,10 @@ body {
   left: calc((100vw + var(--sidebar-w)) / 2);
   transform: translateX(-50%);
   bottom: 22px;
-  width: min(640px, calc(100vw - var(--sidebar-w) - 48px));
-  min-height: 92px;
+  width: min(680px, calc(100vw - var(--sidebar-w) - 48px));
+  min-height: 100px;
   display: flex; align-items: center; gap: 16px;
-  padding: 16px 22px 24px;
+  padding: 16px 22px 26px;
   background: color-mix(in srgb, var(--surface-1) 88%, transparent);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -537,30 +538,37 @@ body {
 .player-artist { font-size: 13px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 .player-artist:hover { text-decoration: underline; color: var(--text); }
 
-.mp-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.mp-controls .play-btn { width: 64px; height: 64px; box-shadow: 0 8px 26px rgba(255, 255, 255, 0.14), var(--play-shadow); }
-.mp-controls .play-btn .msym { font-size: 40px; }
-.mp-controls .icon-btn { width: 44px; height: 44px; }
+.mp-controls {
+  display: flex; align-items: center; gap: 2px; flex-shrink: 0;
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  border-radius: var(--radius-pill); padding: 5px 6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.mp-controls .play-btn { height: 52px; min-width: 66px; box-shadow: 0 8px 26px rgba(0, 0, 0, 0.24); }
+.mp-controls .play-btn .msym { font-size: 36px; }
+.mp-controls .icon-btn { width: 46px; height: 46px; }
+.mp-controls .icon-btn .msym { font-size: 27px; }
 
-/* thin Material progress line along the bottom of the pill */
-.player .p-bar { position: absolute; left: 22px; right: 22px; bottom: 14px; height: 3px; }
+/* Material progress line along the bottom of the pill */
+.player .p-bar { position: absolute; left: 22px; right: 22px; bottom: 13px; height: 5px; }
 .player .p-bar-fill { background: var(--primary); }
+.player .p-bar-dot { height: 14px; }
 .mp-time, .mp-hidden { display: none; }
 
 /* generic Material slider (also used by Now Playing overlay + volume) */
 .p-time { font-size: 11.5px; color: var(--text-3); font-variant-numeric: tabular-nums; text-align: center; }
 .p-bar {
-  height: 4px; border-radius: var(--radius-pill); background: var(--surface-3); cursor: pointer;
+  height: 7px; border-radius: var(--radius-pill); background: var(--surface-3); cursor: pointer;
   position: relative; display: flex; align-items: center;
 }
 .p-bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: var(--radius-pill); background: var(--primary); width: 0%; }
 .p-bar-dot {
-  position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--primary);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4); left: 0%; transform: translateX(-50%);
-  opacity: 0; transition: opacity var(--t); pointer-events: none;
+  position: absolute; width: 6px; height: 18px; border-radius: 3px; background: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45); left: 0%; transform: translateX(-50%);
+  opacity: 0.85; transition: opacity var(--t); pointer-events: none;
 }
 .p-bar:hover .p-bar-dot { opacity: 1; }
-.p-bar.vol { width: 110px; }
+.p-bar.vol { width: 110px; height: 4px; }
 
 /* ==========================================================================
    Overlays — frosted backdrop
@@ -615,7 +623,8 @@ body {
 .rom-btn:hover { background: var(--surface-2); color: var(--text); transform: translateY(-1px); }
 .rom-btn.active { background: color-mix(in srgb, var(--primary) 22%, var(--surface-1)); color: var(--primary-2); border-color: color-mix(in srgb, var(--primary) 40%, transparent); }
 .rom-btn.hidden { display: none; }
-.lyrics-wrap { flex: 1; overflow-y: auto; margin-top: 4px; padding-right: 10px; scrollbar-width: thin; }
+.lyrics-wrap { flex: 1; overflow-y: auto; margin-top: 4px; padding-right: 4px; scrollbar-width: none; }
+.lyrics-wrap::-webkit-scrollbar { display: none; width: 0; }
 .lyrics { min-height: 100%; display: flex; flex-direction: column; text-align: center; }
 .lyrics.synced { justify-content: flex-start; padding: 46vh 0 46vh; }
 .lyric-line {
@@ -642,7 +651,13 @@ body {
 .np-controls { padding: 14px 36px 22px; }
 .np-times { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); margin-top: 8px; font-variant-numeric: tabular-nums; }
 .np-viz { display: block; width: 190px; height: 44px; margin-top: 10px; opacity: 0.9; }
-.np-buttons { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 14px; }
+.np-buttons {
+  display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 16px;
+  background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+  border-radius: var(--radius-pill); padding: 7px 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+.np-buttons .icon-btn .msym { font-size: 26px; }
 
 .queue-panel {
   position: absolute; inset: 0; background: var(--surface);
@@ -764,7 +779,10 @@ body {
 }
 @keyframes toastIn { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
-#viz { position: fixed; bottom: var(--player-h); right: 18px; z-index: 30; pointer-events: none; }
+#viz {
+  position: fixed; bottom: calc(var(--player-h) + 12px); left: 50%; transform: translateX(-50%);
+  z-index: 30; pointer-events: none; width: 230px; height: 49px; opacity: 0.85;
+}
 
 /* ==========================================================================
    Responsive
