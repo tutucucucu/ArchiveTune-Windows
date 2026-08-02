@@ -532,9 +532,44 @@ function prev() {
 
 /* ---------------- crossfade (ala Apple Music) ---------------- */
 let xfadeTimer = null;
+let xfadeUiTimer = null;
 state.xfadeActive = false;
 state.xfadeLoaded = false;
 state.xfadeNextIndex = null;
+
+const XFADE_UI_ELS = ["#playerArt", "#playerTitle", "#playerArtist", "#npArt", "#npTitle", "#npArtist"];
+
+function xfadeUiReset() {
+  clearTimeout(xfadeUiTimer);
+  xfadeUiTimer = null;
+  XFADE_UI_ELS.forEach((sel) => {
+    const el = $(sel);
+    if (el) { el.style.transition = ""; el.style.opacity = ""; }
+  });
+}
+
+function uiCrossfadeTo(song) {
+  if (!song) return;
+  const xf = getXfade();
+  const half = (xf / 2) * 1000;
+  const fade = (sel, to) => {
+    const el = $(sel);
+    if (el) { el.style.transition = `opacity ${half / 1000}s ease`; el.style.opacity = to; }
+  };
+  XFADE_UI_ELS.forEach((sel) => fade(sel, 0));
+  clearTimeout(xfadeUiTimer);
+  xfadeUiTimer = setTimeout(() => {
+    const src = artUrl(song) || "/static/img/icon.png";
+    $("#playerArt").src = src;
+    $("#playerTitle").textContent = song.title;
+    $("#playerArtist").textContent = song.artist || "";
+    $("#npArt").src = src;
+    $("#npTitle").textContent = song.title;
+    $("#npArtist").textContent = song.artist || "";
+    XFADE_UI_ELS.forEach((sel) => fade(sel, 1));
+    setTimeout(() => { XFADE_UI_ELS.forEach((sel) => { const el = $(sel); if (el) { el.style.transition = ""; } }); }, half + 100);
+  }, half);
+}
 
 function getXfade() {
   const v = parseFloat(state.settings.crossfade);
@@ -564,6 +599,7 @@ function resetXfade() {
   state.xfadeActive = false;
   state.xfadeLoaded = false;
   state.xfadeNextIndex = null;
+  xfadeUiReset();
   audioXfade.pause();
   audioXfade.removeAttribute("src");
   try { audioXfade.load(); } catch {}
@@ -573,7 +609,10 @@ function resetXfade() {
 function cancelXfade() {
   const wasActive = state.xfadeActive;
   resetXfade();
-  if (wasActive) audio.volume = state.settings.volume ?? 1;
+  if (wasActive) {
+    audio.volume = state.settings.volume ?? 1;
+    if (state.current) updateNowPlayingUI();
+  }
 }
 
 function preloadXfade() {
@@ -594,6 +633,8 @@ function startXfadePlayback() {
   if (audio.paused || !audio.duration) return;
   state.xfadeActive = true;
   const baseVol = state.settings.volume ?? 1;
+  const nextSong = state.xfadeNextIndex != null ? state.queue[state.xfadeNextIndex] : null;
+  uiCrossfadeTo(nextSong);
   audioXfade.play().catch(() => cancelXfade());
   const xf = getXfade();
   const dt = 0.05;
