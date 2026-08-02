@@ -1,3 +1,4 @@
+import re
 import threading
 import time
 
@@ -50,9 +51,12 @@ def _hd(url):
     for low, high in (("hqdefault", "maxresdefault"), ("mqdefault", "maxresdefault"), ("sddefault", "maxresdefault")):
         if low in url:
             return url.replace(low, high)
-    if "=w" in url or "=s" in url:
-        base = url.split("=")[0]
-        return base + "=w544-h544-l90-rj"
+    m = re.search(r"=w\d+(?:-h\d+)?(?:-[a-z0-9]+)*$", url)
+    if m:
+        return url[: m.start()] + "=w544-h544-l90-rj"
+    m = re.search(r"=s\d+(?:-c)?$", url)
+    if m:
+        return url[: m.start()] + "=w544-h544-l90-rj"
     return url
 
 
@@ -215,18 +219,28 @@ def get_artist(browse_id):
         "art": _thumb(a.get("thumbnails")),
         "subscribers": a.get("subscribers"),
         "description": a.get("description"),
+        "monthlyListeners": a.get("monthlyListeners"),
+        "views": a.get("views"),
+        "radioId": a.get("radioId"),
+        "shuffleId": a.get("shuffleId"),
         "albums": albums,
         "songs_browse_id": (a.get("songs") or {}).get("browseId"),
     }
 
 
 def get_artist_songs(browse_id):
+    """Top songs for an artist. ytmusicapi 1.12 removed get_artist_songs, so we
+    resolve the artist's 'Top songs' playlist browse id and fetch it instead."""
     try:
-        tracks = get_client().get_artist_songs(browse_id, limit=200)
+        artist = get_client().get_artist(browse_id)
+        songs_browse_id = (artist.get("songs") or {}).get("browseId")
+        if not songs_browse_id:
+            return {"error": "No top songs available for this artist"}
+        p = get_client().get_playlist(songs_browse_id, limit=200)
     except Exception as e:
         return {"error": str(e)}
     songs = []
-    for t in tracks:
+    for t in p.get("tracks", []):
         s = _song_from_ytm(t)
         if s:
             songs.append(s)

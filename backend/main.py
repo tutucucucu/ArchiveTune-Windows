@@ -299,10 +299,12 @@ def lib_play(song: SongPayload):
 
 
 @app.get("/api/lyrics")
-def get_lyrics(title: str = "", artist: str = "", duration: int = 0):
+def get_lyrics(title: str = "", artist: str = "", duration: int = 0, provider: str = "auto", video_id: str = ""):
     if not title:
         return {"error": "no title"}
-    return lyrics.search_lyrics(title, artist or "Unknown Artist", duration or None)
+    if provider in ("", "auto"):
+        provider = library.get_settings().get("lyrics_provider") or "auto"
+    return lyrics.search_lyrics(title, artist or "Unknown Artist", duration or None, video_id or None, provider)
 
 
 # ---------------- last.fm scrobbling ----------------

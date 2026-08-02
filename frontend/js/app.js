@@ -425,6 +425,14 @@ function updateNowPlayingUI() {
   if (npOpen) syncNpVizState();
 }
 
+function openArtistFromCurrent() {
+  const a = state.current && state.current.artists && state.current.artists[0];
+  if (a && a.browseId) {
+    closeNowPlaying();
+    navigate("artist", { browseId: a.browseId });
+  }
+}
+
 function syncLikeButtons() {
   const liked = state.current ? state.likedIds.has(state.current.id) : false;
   ["#pLike", "#npLike", "#npLike2"].forEach((sel) => {
@@ -527,24 +535,34 @@ async function scrobbleNow() {
   try { await api("/api/scrobble/scrobble", { method: "POST", body: JSON.stringify(s) }); } catch {}
 }
 
-async function loadLyrics(song) {
+async function loadLyrics(song, provider) {
   state.lyrics = null;
   $("#lyrics").innerHTML = `<div class="lyrics-empty">${t("lyrics.loading")}</div>`;
   if (song.source === "local") {
     $("#lyrics").innerHTML = '<div class="lyrics-empty">No lyrics for local files (search YTM instead).</div>';
+    setLyricsProviderUi(null);
     return;
   }
+  setLyricsProviderUi(provider || state.settings.lyrics_provider || "auto");
   try {
-    const data = await api(`/api/lyrics?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist || "")}&duration=${song.duration || 0}`);
+    const data = await api(`/api/lyrics?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist || "")}&duration=${song.duration || 0}&provider=${encodeURIComponent(provider || "auto")}&video_id=${encodeURIComponent(song.videoId || "")}`);
     if (data.error) {
       $("#lyrics").innerHTML = `<div class="lyrics-empty">${esc(data.error)}</div>`;
       return;
     }
     state.lyrics = data;
+    setLyricsProviderUi(data.provider || "auto");
     renderLyrics();
   } catch {
     $("#lyrics").innerHTML = '<div class="lyrics-empty">Could not load lyrics.</div>';
   }
+}
+
+function setLyricsProviderUi(provider) {
+  const row = $("#lyrProviders");
+  if (!row) return;
+  row.classList.toggle("hidden", !provider || provider === "auto");
+  $$("#lyrProviders .lp-btn").forEach((b) => b.classList.toggle("active", b.dataset.lyrProvider === provider));
 }
 
 function renderLyrics() {
@@ -857,7 +875,7 @@ function chartsSkeleton(body) {
 
 function cardHtml(title, art, type, browseId, sub) {
   const artHtml = art
-    ? `<div class="card-art"><img src="${esc(art)}" loading="lazy" onerror="this.parentElement.classList.add('placeholder');this.remove()"></div>`
+    ? `<div class="card-art">${ICONS.music}<img src="${esc(art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('placeholder')"></div>`
     : `<div class="card-art placeholder">${ICONS.music}</div>`;
   return `<div class="card" data-card data-type="${type}" data-browse="${esc(browseId)}">
     ${artHtml}
@@ -902,7 +920,7 @@ function songFromPlay(p) {
 function recentRowHtml(p, i) {
   const art = hdArt(p.art);
   const artHtml = art
-    ? `<div class="s-art"><img src="${esc(art)}" loading="lazy" onerror="this.remove()"></div>`
+    ? `<div class="s-art">${ICONS.music}<img src="${esc(art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>`
     : `<div class="s-art ph">${ICONS.music}</div>`;
   return `<div class="song-row recent-row" data-i="${i}">
     <span class="num">${i + 1}</span>
@@ -1076,7 +1094,7 @@ function loadingHtml() {
 
 function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
   const artHtml = s.art
-    ? `<div class="s-art"><img src="${esc(s.art)}" loading="lazy" onerror="this.remove()"></div>`
+    ? `<div class="s-art">${ICONS.music}<img src="${esc(s.art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>`
     : `<div class="s-art ph">${ICONS.music}</div>`;
   const acts = actions
     ? `<div class="s-actions">
@@ -2080,6 +2098,8 @@ function wireEvents() {
   bind("#npLike", () => { if (state.current) toggleLike(state.current); });
   bind("#npLike2", () => { if (state.current) toggleLike(state.current); });
   bind("#npShare", () => shareSong(state.current));
+  bind("#playerArtist", (e) => { e.stopPropagation(); openArtistFromCurrent(); });
+  bind("#npArtist", () => openArtistFromCurrent());
   bind("#pShuffle", () => { state.shuffle = !state.shuffle; setSetting("shuffle", state.shuffle); syncShuffle(); });
   bind("#npShuffle", () => { state.shuffle = !state.shuffle; setSetting("shuffle", state.shuffle); syncShuffle(); });
   bind("#pRepeat", () => cycleRepeat());
@@ -2093,6 +2113,11 @@ function wireEvents() {
     renderLyrics();
   });
   bind("#pLyrics", () => { openNowPlaying(); $("#queuePanel").classList.add("hidden"); if (state.current) loadLyrics(state.current); });
+  $$("#lyrProviders .lp-btn").forEach((b) => b.addEventListener("click", () => {
+    const p = b.dataset.lyrProvider;
+    setSetting("lyrics_provider", p);
+    if (state.current) loadLyrics(state.current, p);
+  }));
   bind("#npToggle", () => openNowPlaying());
   bind("#themeToggle", () => setSetting("theme", state.settings.theme === "light" ? "dark" : "light"));
   bind("#eqToggle", () => openEq());
