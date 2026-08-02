@@ -932,14 +932,15 @@ async function toggleLike(song) {
 }
 
 async function openPlaylistModal(song) {
-  state.pendingSong = song;
+  const arr = Array.isArray(song) ? song : [song];
+  state.pendingSong = arr;
   await loadPlaylists();
   const modal = $("#playlistModal");
   const list = $("#plList");
   list.innerHTML = state.playlists.map((p) =>
     `<div class="pl-row" data-pl-add="${p.id}"><div class="lib-art ph">${ICONS.list}</div><div><div class="lib-name">${esc(p.name)}</div><div class="lib-count">${p.songs.length} ${t("lib.songs")}</div></div><span style="margin-left:auto;color:var(--primary)">${ICONS.plus}</span></div>`
   ).join("") || `<div class="lyrics-empty">${t("playlists.none")}</div>`;
-  $("#plModalTitle").textContent = `${t("pl.save")}: "${song.title}"`;
+  $("#plModalTitle").textContent = arr.length > 1 ? `${t("pl.save")}: ${arr.length} ${t("lib.tracks")}` : `${t("pl.save")}: "${arr[0].title}"`;
   injectIcons(modal);
   modal.classList.remove("hidden");
   $("#plNewCreate").addEventListener("click", async () => {
@@ -947,7 +948,7 @@ async function openPlaylistModal(song) {
     if (!name) { toast(t("toast.plName")); return; }
     try {
       const p = await api("/api/library/playlists", { method: "POST", body: JSON.stringify({ name }) });
-      await api(`/api/library/playlists/${p.id}/songs`, { method: "POST", body: JSON.stringify(song) });
+      for (const s of arr) await api(`/api/library/playlists/${p.id}/songs`, { method: "POST", body: JSON.stringify(s) });
       toast(t("toast.plCreated"));
       $("#playlistModal").classList.add("hidden");
       await loadPlaylists();
@@ -956,10 +957,10 @@ async function openPlaylistModal(song) {
 }
 
 async function addSongToPlaylist(pid) {
-  const song = state.pendingSong;
-  if (!song) return;
+  const arr = Array.isArray(state.pendingSong) ? state.pendingSong : state.pendingSong ? [state.pendingSong] : [];
+  if (!arr.length) return;
   try {
-    await api(`/api/library/playlists/${pid}/songs`, { method: "POST", body: JSON.stringify(song) });
+    for (const s of arr) await api(`/api/library/playlists/${pid}/songs`, { method: "POST", body: JSON.stringify(s) });
     toast(t("toast.plAdded"));
     $("#playlistModal").classList.add("hidden");
   } catch (e) { toast(e.message); }
@@ -1389,9 +1390,10 @@ function loadingHtml() {
   return '<div class="empty-state"><div class="es-ic" style="animation:discspin 1s linear infinite">' + ICONS.disc + '</div><p>' + t("common.loading") + '</p></div>';
 }
 
-function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
-  const artHtml = s.art
-    ? `<div class="s-art">${ICONS.music}<img src="${esc(s.art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>`
+function songRowHtml(s, i, { showAlbum = true, actions = true, list = false, artFallback = "" } = {}) {
+  const artSrc = s.art || artFallback;
+  const artHtml = artSrc
+    ? `<div class="s-art">${ICONS.music}<img src="${esc(artSrc)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>`
     : `<div class="s-art ph">${ICONS.music}</div>`;
   const acts = actions
     ? `<div class="s-actions">
@@ -1405,6 +1407,15 @@ function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
         </div>
       </div>`
     : "";
+  if (list) {
+    const sub = [s.artist, s.duration ? fmtTime(s.duration) : ""].filter(Boolean).join(" • ");
+    return `<div class="song-row srow-list" data-i="${i}" data-sid="${esc(s.id)}">
+    <span class="num">${i + 1}</span>
+    ${artHtml}
+    <div class="s-main"><span class="s-title">${esc(s.title)}</span>${sub ? `<span class="s-sub">${esc(sub)}</span>` : ""}</div>
+    ${acts}
+  </div>`;
+  }
   return `<div class="song-row" data-i="${i}" data-sid="${esc(s.id)}">
     <span class="num">${i + 1}</span>
     ${artHtml}
@@ -1416,11 +1427,13 @@ function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
   </div>`;
 }
 
-function songTableHtml(songs, showAlbum = true, actions = true) {
-  const head = `<div class="song-table-head">
+function songTableHtml(songs, showAlbum = true, actions = true, list = false, artFallback = "") {
+  const head = list
+    ? `<div class="song-table-head srow-list-head"><span></span><span></span><span>${t("song.title")}</span><span></span></div>`
+    : `<div class="song-table-head">
     <span></span><span></span><span>${t("song.title")}</span><span>${t("song.artist")}</span>${showAlbum ? `<span class='h-album'>${t("song.album")}</span>` : ""}<span style='text-align:right'>${t("song.duration")}</span><span></span>
   </div>`;
-  const rows = songs.map((s, i) => songRowHtml(s, i, { showAlbum, actions })).join("");
+  const rows = songs.map((s, i) => songRowHtml(s, i, { showAlbum, actions, list, artFallback })).join("");
   return `<div class="song-table">${head}${rows}</div>`;
 }
 
@@ -1613,18 +1626,20 @@ async function renderAlbum(browseId) {
       <div class="hero-meta">
         <div class="hero-type">${t("page.album")}</div>
         <div class="hero-title">${esc(a.title)}</div>
-        <div class="hero-sub">${esc(a.artist)} • ${a.year || ""}</div>
+        <div class="hero-sub">${esc(a.artist)}${a.year ? " • " + esc(a.year) : ""}</div>
         <div class="hero-actions">
-          <button class="btn" id="alPlay">${ICONS.play} ${t("common.play")}</button>
-          <button class="btn ghost" id="alShuffle">${ICONS.shuffle} ${t("common.shuffle")}</button>
+          <button class="btn-stadium" id="alPlay">${ICONS.play} ${t("common.play")}</button>
+          <button class="circ" id="alShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
+          <button class="circ" id="alAdd" data-ic="plus" title="${t("pl.addTo")}"></button>
         </div>
       </div></div><div id="alTracks"></div>`;
     const tracks = a.tracks || [];
     state.renderList = tracks;
-    $("#alTracks").innerHTML = songTableHtml(tracks);
+    $("#alTracks").innerHTML = songTableHtml(tracks, false, true, true, a.art || "");
     bindSongRows($("#alTracks"), tracks);
     $("#alPlay").addEventListener("click", () => playQueue(tracks, 0));
     $("#alShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(tracks, Math.floor(Math.random() * tracks.length)); syncShuffle(); });
+    $("#alAdd").addEventListener("click", () => openPlaylistModal(tracks));
     markPlaying();
   } catch (e) { viewEl.innerHTML = emptyState("Error", e.message); }
   injectIcons(viewEl);
@@ -1641,7 +1656,7 @@ async function renderArtist(browseId) {
         <div class="hero-type">${t("page.artist")}</div>
         <div class="hero-title">${esc(a.name)}</div>
         <div class="hero-sub">${a.subscribers ? esc(a.subscribers) : ""}</div>
-        <div class="hero-actions"><button class="btn" id="arPlayTop">${ICONS.play} ${t("common.playTop")}</button></div>
+        <div class="hero-actions"><button class="btn-stadium" id="arPlayTop">${ICONS.play} ${t("common.playTop")}</button></div>
       </div></div>
       <div class="section"><div class="section-title">${t("search.albums")}</div><div id="arAlbums" class="card-grid"></div></div>
       <div class="section"><div class="section-title">${t("common.topSongs")}</div><div id="arSongs"></div></div>`;
@@ -1681,15 +1696,17 @@ async function renderPlaylist(browseId) {
         <div class="hero-title">${esc(p.title)}</div>
         <div class="hero-sub">${p.trackCount || tracks.length} ${t("lib.songs")}${p.description ? " • " + esc(p.description) : ""}</div>
         <div class="hero-actions">
-          <button class="btn" id="plPlay">${ICONS.play} ${t("common.play")}</button>
-          <button class="btn ghost" id="plShuffle">${ICONS.shuffle} ${t("common.shuffle")}</button>
+          <button class="btn-stadium" id="plPlay">${ICONS.play} ${t("common.play")}</button>
+          <button class="circ" id="plShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
+          <button class="circ" id="plAdd" data-ic="plus" title="${t("pl.addTo")}"></button>
         </div>
       </div></div><div id="plTracks"></div>`;
     state.renderList = tracks;
-    $("#plTracks").innerHTML = songTableHtml(tracks);
+    $("#plTracks").innerHTML = songTableHtml(tracks, false, true, true, p.art || "");
     bindSongRows($("#plTracks"), tracks);
     $("#plPlay").addEventListener("click", () => playQueue(tracks, 0));
     $("#plShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(tracks, Math.floor(Math.random() * tracks.length)); syncShuffle(); });
+    $("#plAdd").addEventListener("click", () => openPlaylistModal(tracks));
     markPlaying();
   } catch (e) { viewEl.innerHTML = emptyState("Error", e.message); }
   injectIcons(viewEl);
