@@ -513,7 +513,8 @@ body {
   min-height: 100px;
   display: flex; align-items: center; gap: 16px;
   padding: 16px 22px 26px;
-  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  background-color: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  background-image: linear-gradient(color-mix(in srgb, var(--primary) 16%, transparent), color-mix(in srgb, var(--primary) 16%, transparent));
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: 30px;
@@ -682,9 +683,10 @@ body {
 .queue-item.active .q-sub { color: color-mix(in srgb, var(--on-primary-container) 72%, transparent); }
 .queue-item .q-dur { color: var(--text-3); font-size: 12.5px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .queue-item.active .q-dur { color: color-mix(in srgb, var(--on-primary-container) 65%, transparent); }
-.queue-item .q-del { margin-left: auto; opacity: 0; flex-shrink: 0; }
-.queue-item.active .q-del { color: var(--on-primary-container); }
-.queue-item:hover .q-del, .queue-item.active .q-del { opacity: 1; }
+.queue-item .q-more { position: relative; margin-left: auto; flex-shrink: 0; display: flex; align-items: center; }
+.queue-item .q-more .icon-btn { color: var(--text-3); }
+.queue-item .q-more .icon-btn:hover { background: transparent; color: var(--text); }
+.queue-item.active .q-more .icon-btn { color: var(--on-primary-container); }
 
 /* animated equalizer overlay on the active queue item's thumbnail */
 .q-eq {
@@ -1013,9 +1015,6 @@ body {
 .queue-sug { display: flex; flex-direction: column; gap: 4px; }
 .queue-item.sug { cursor: pointer; }
 .queue-item.sug.dead { opacity: 0.6; cursor: default; }
-.sug-play-ic { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: var(--play-bg); color: var(--play-fg); box-shadow: var(--play-shadow); flex-shrink: 0; margin-left: auto; opacity: 0; transform: scale(0.92); transition: opacity var(--t), transform var(--t); }
-.sug-play-ic .msym { font-size: 21px; }
-.queue-item.sug:hover .sug-play-ic { opacity: 1; transform: scale(1); }
 .cal-cnt-sm { font-size: 11px; color: var(--primary-2); font-weight: 700; background: color-mix(in srgb, var(--primary) 16%, transparent); border-radius: var(--radius-pill); padding: 2px 8px; }
 
 /* calendar cards */

@@ -225,6 +225,9 @@ const T = {
   "queue.upnextSub": { id: "Antrean selanjutnya", en: "Your queued songs", jp: "キュー内の曲" },
   "queue.recsSub": { id: "Memutar otomatis musik serupa", en: "Auto-playing similar music", jp: "似た曲を自動再生" },
   "queue.remove": { id: "Hapus dari antrean", en: "Remove from queue", jp: "キューから削除" },
+  "queue.more": { id: "Opsi lainnya", en: "More options", jp: "その他のオプション" },
+  "queue.playNext": { id: "Putar berikutnya", en: "Play next", jp: "次に再生" },
+  "queue.addToQueue": { id: "Tambah ke antrean", en: "Add to queue", jp: "キューに追加" },
   "lyrics.loading": { id: "Memuat lirik...", en: "Loading lyrics...", jp: "歌詞を読み込み中..." },
   "time.justNow": { id: "baru saja", en: "just now", jp: "たった今" },
   "time.sec": { id: " dtk lalu", en: " sec ago", jp: "秒前" },
@@ -1932,7 +1935,12 @@ function renderQueuePanel() {
         </div>
         <div class="q-info"><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
         <span class="q-dur">${fmtTime(s.duration)}</span>
-        <button class="icon-btn small q-del" data-q-del="${i}" title="${t("queue.remove")}">${ICONS.x}</button>
+        <div class="q-more">
+          <button class="icon-btn small" data-more title="${t("queue.more")}">${ICONS.more}</button>
+          <div class="s-more-menu" data-more-menu>
+            <button class="m-item" data-q-del="${i}">${ICONS.trash}<span>${t("queue.remove")}</span></button>
+          </div>
+        </div>
       </div>`).join("")
     : `<div class="lyrics-empty">${t("queue.empty")}</div>`;
   const recHtml = state.nextUpSug && state.nextUpSug.length
@@ -1941,7 +1949,13 @@ function renderQueuePanel() {
         <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
         <div class="q-info"><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
         <span class="q-dur">${fmtTime(s.duration)}</span>
-        <span class="sug-play-ic">${ICONS.play}</span>
+        <div class="q-more">
+          <button class="icon-btn small" data-more title="${t("queue.more")}">${ICONS.more}</button>
+          <div class="s-more-menu" data-more-menu>
+            <button class="m-item" data-sug-next="${i}">${ICONS.next}<span>${t("queue.playNext")}</span></button>
+            <button class="m-item" data-sug-add="${i}">${ICONS.plus}<span>${t("queue.addToQueue")}</span></button>
+          </div>
+        </div>
       </div>`).join("")
     : loadingHtml();
   qp.innerHTML = `<div class="queue-inner">
@@ -1996,7 +2010,13 @@ function renderNextUpList(list) {
       <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
       <div class="q-info"><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
       <span class="q-dur">${fmtTime(s.duration)}</span>
-      <span class="sug-play-ic">${ICONS.play}</span>
+      <div class="q-more">
+        <button class="icon-btn small" data-more title="${t("queue.more")}">${ICONS.more}</button>
+        <div class="s-more-menu" data-more-menu>
+          <button class="m-item" data-sug-next="${i}">${ICONS.next}<span>${t("queue.playNext")}</span></button>
+          <button class="m-item" data-sug-add="${i}">${ICONS.plus}<span>${t("queue.addToQueue")}</span></button>
+        </div>
+      </div>
     </div>`).join("");
   injectIcons(list);
 }
@@ -2089,15 +2109,24 @@ function sampleArtColor(song) {
       const c = cv.getContext("2d");
       c.drawImage(img, 0, 0, 32, 32);
       const data = c.getImageData(0, 0, 32, 32).data;
-      let r = 0, g = 0, b = 0, n = 0;
+      let sr = 0, sg = 0, sb = 0, sn = 0;
+      let ar = 0, ag = 0, ab = 0, an = 0;
       for (let i = 0; i < data.length; i += 4) {
         if (data[i + 3] < 200) continue;
         const rr = data[i], gg = data[i + 1], bb = data[i + 2];
-        if (rr + gg + bb < 60) continue; // skip near black
-        r += rr; g += gg; b += bb; n++;
+        if (Math.max(rr, gg, bb) < 32) continue; // skip near black
+        ar += rr; ag += gg; ab += bb; an++;
+        if (Math.max(rr, gg, bb) - Math.min(rr, gg, bb) > 45) { sr += rr; sg += gg; sb += bb; sn++; }
       }
-      if (!n) return;
-      r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+      if (an < 20) return;
+      // prefer the vibrant (saturated) swatch when available, else the average
+      const use = sn > 2;
+      let r = Math.round((use ? sr : ar) / (use ? sn : an));
+      let g = Math.round((use ? sg : ag) / (use ? sn : an));
+      let b = Math.round((use ? sb : ab) / (use ? sn : an));
+      // clamp lightness so white glyphs stay readable
+      const mx = Math.max(r, g, b);
+      if (mx > 200) { const k = 200 / mx; r = Math.round(r * k); g = Math.round(g * k); b = Math.round(b * k); }
       const hex = "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
       state.dynamicApplied = true;
       setAccent(hex);
@@ -2148,7 +2177,8 @@ function wireEvents() {
   document.addEventListener("click", async (e) => {
     const moreBtn = e.target.closest("[data-more]");
     if (moreBtn) {
-      const menu = moreBtn.closest(".song-row") && moreBtn.closest(".song-row").querySelector("[data-more-menu]");
+      const row = moreBtn.closest(".song-row, .queue-item");
+      const menu = row && row.querySelector("[data-more-menu]");
       if (menu) {
         const wasOpen = menu.classList.contains("open");
         closeMoreMenus();
@@ -2241,10 +2271,24 @@ function wireEvents() {
       renderQueuePanel();
       return;
     }
+    const sugNext = e.target.closest("[data-sug-next]");
+    if (sugNext) {
+      const songs = state.nextUpSug || [];
+      const i = +sugNext.dataset.sugNext;
+      if (songs[i]) { state.queue.splice(state.qIndex + 1, 0, songs[i]); renderQueuePanel(); }
+      return;
+    }
+    const sugAdd = e.target.closest("[data-sug-add]");
+    if (sugAdd) {
+      const songs = state.nextUpSug || [];
+      const i = +sugAdd.dataset.sugAdd;
+      if (songs[i]) { state.queue.push(songs[i]); renderQueuePanel(); }
+      return;
+    }
     const qGo = e.target.closest("[data-q-go]");
-    if (qGo) { state.qIndex = +qGo.dataset.qGo; state.scrobbled = false; state.statRecorded = false; playCurrent(); renderQueuePanel(); return; }
+    if (qGo && !e.target.closest("[data-more-menu]")) { state.qIndex = +qGo.dataset.qGo; state.scrobbled = false; state.statRecorded = false; playCurrent(); renderQueuePanel(); return; }
     const sugPlay = e.target.closest("[data-sug-play]");
-    if (sugPlay) {
+    if (sugPlay && !e.target.closest("[data-more-menu]")) {
       const songs = state.nextUpSug || [];
       const i = +sugPlay.dataset.sugPlay;
       if (songs[i]) { playQueue(songs, i); renderQueuePanel(); }
