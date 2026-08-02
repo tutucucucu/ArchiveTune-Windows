@@ -222,6 +222,9 @@ const T = {
   "queue.recs": { id: "Rekomendasi", en: "Recommendations", jp: "おすすめ" },
   "queue.empty": { id: "Queue masih kosong — lagu yang kamu pilih akan muncul di sini.", en: "Queue is empty — songs you pick will show up here.", jp: "キューは空です — 選んだ曲がここに表示されます。" },
   "queue.recFail": { id: "Tidak bisa memuat rekomendasi. Coba putar lagu dulu!", en: "Could not load recommendations. Try playing a song first!", jp: "おすすめを読み込めませんでした。曲を再生してみてください！" },
+  "queue.upnextSub": { id: "Antrean selanjutnya", en: "Your queued songs", jp: "キュー内の曲" },
+  "queue.recsSub": { id: "Memutar otomatis musik serupa", en: "Auto-playing similar music", jp: "似た曲を自動再生" },
+  "queue.remove": { id: "Hapus dari antrean", en: "Remove from queue", jp: "キューから削除" },
   "lyrics.loading": { id: "Memuat lirik...", en: "Loading lyrics...", jp: "歌詞を読み込み中..." },
   "time.justNow": { id: "baru saja", en: "just now", jp: "たった今" },
   "time.sec": { id: " dtk lalu", en: " sec ago", jp: "秒前" },
@@ -1924,25 +1927,37 @@ function renderQueuePanel() {
   const queueRows = state.queue.length
     ? state.queue.map((s, i) => `
       <div class="queue-item ${i === state.qIndex ? "active" : ""}" data-q-go="${i}">
-        <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
-        <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
-        <button class="icon-btn small" data-q-del="${i}">${ICONS.x}</button>
+        <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}
+          ${i === state.qIndex ? `<span class="q-eq ${audio.paused ? "" : "an"}"><i></i><i></i><i></i></span>` : ""}
+        </div>
+        <div class="q-info"><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
+        <span class="q-dur">${fmtTime(s.duration)}</span>
+        <button class="icon-btn small q-del" data-q-del="${i}" title="${t("queue.remove")}">${ICONS.x}</button>
       </div>`).join("")
     : `<div class="lyrics-empty">${t("queue.empty")}</div>`;
   const recHtml = state.nextUpSug && state.nextUpSug.length
     ? state.nextUpSug.map((s, i) => `
       <div class="queue-item sug" data-sug-play="${i}">
         <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
-        <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
+        <div class="q-info"><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
+        <span class="q-dur">${fmtTime(s.duration)}</span>
         <span class="sug-play-ic">${ICONS.play}</span>
       </div>`).join("")
     : loadingHtml();
-  qp.innerHTML = `<div class="q-head">
-    <div class="q-head-title">${state.queue.length ? `${t("queue.upnext")} (${state.queue.length})` : t("queue.upnext")}</div>
-    <button class="icon-btn" data-close="queue" data-ic="x" title="${t("common.close")}"></button>
-  </div>${queueRows}
-  <div class="q-sec-title">${t("queue.recs")}</div>
-  <div id="nextUpList" class="queue-sug">${recHtml}</div>`;
+  qp.innerHTML = `<div class="queue-inner">
+    <div class="q-head">
+      <div class="q-head-block">
+        <div class="q-head-title">${t("queue.upnext")}${state.queue.length ? ` <span class="q-cnt">${state.queue.length}</span>` : ""}</div>
+        <div class="q-head-sub">${t("queue.upnextSub")}</div>
+      </div>
+      <button class="icon-btn" data-close="queue" data-ic="x" title="${t("common.close")}"></button>
+    </div>${queueRows}
+    <div class="q-sec">
+      <div class="q-sec-title">${t("queue.recs")}</div>
+      <div class="q-sec-sub">${t("queue.recsSub")}</div>
+    </div>
+    <div id="nextUpList" class="queue-sug">${recHtml}</div>
+  </div>`;
   injectIcons(qp);
   if (!state.nextUpSug || !state.nextUpSug.length) loadNextUp();
 }
@@ -1979,7 +1994,8 @@ function renderNextUpList(list) {
   list.innerHTML = state.nextUpSug.map((s, i) => `
     <div class="queue-item sug" data-sug-play="${i}">
       <div class="s-art">${s.art ? `<img src="${esc(s.art)}">` : ICONS.music}</div>
-      <div><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
+      <div class="q-info"><div class="q-title">${esc(s.title)}</div><div class="q-sub">${esc(s.artist || "")}</div></div>
+      <span class="q-dur">${fmtTime(s.duration)}</span>
       <span class="sug-play-ic">${ICONS.play}</span>
     </div>`).join("");
   injectIcons(list);
@@ -2217,8 +2233,6 @@ function wireEvents() {
     const fbDir = e.target.closest("[data-fb-dir]");
     if (fbDir) { renderFolderBrowser(fbDir.dataset.fbDir); return; }
 
-    const qGo = e.target.closest("[data-q-go]");
-    if (qGo) { state.qIndex = +qGo.dataset.qGo; state.scrobbled = false; state.statRecorded = false; playCurrent(); renderQueuePanel(); return; }
     const qDel = e.target.closest("[data-q-del]");
     if (qDel) {
       state.queue.splice(+qDel.dataset.qDel, 1);
@@ -2227,6 +2241,8 @@ function wireEvents() {
       renderQueuePanel();
       return;
     }
+    const qGo = e.target.closest("[data-q-go]");
+    if (qGo) { state.qIndex = +qGo.dataset.qGo; state.scrobbled = false; state.statRecorded = false; playCurrent(); renderQueuePanel(); return; }
     const sugPlay = e.target.closest("[data-sug-play]");
     if (sugPlay) {
       const songs = state.nextUpSug || [];
