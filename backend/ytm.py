@@ -667,4 +667,57 @@ def auth_status():
 
 def save_cookie(cookie):
     save_settings({"ytm_cookie": cookie})
+
+
+def get_new_releases():
+    """Parse the FEmusic_new_releases browse page (New releases shelf)."""
+    import json as _json
+
+    try:
+        raw = get_client()._send_request("browse", {"browseId": "FEmusic_new_releases"})
+    except Exception as e:
+        return {"error": str(e)}
+    items = []
+
+    def collect(node):
+        if isinstance(node, dict):
+            m = node.get("musicTwoRowItemRenderer")
+            if m is not None:
+                try:
+                    title = _text_of(m.get("title"))
+                    nav = (m.get("navigationEndpoint") or {}).get("browseEndpoint") or {}
+                    bid = nav.get("browseId") or ""
+                    if not title or not bid.startswith("MPREb"):
+                        return
+                    sub = _text_of(m.get("subtitle"))
+                    parts = [p.strip() for p in sub.split("\u2022")] if sub else []
+                    rtype = parts[0] if parts else "Album"
+                    artists = " \u2022 ".join(parts[1:]) if len(parts) > 1 else ""
+                    explicit = False
+                    try:
+                        explicit = "MUSIC_EXPLICIT_BADGE" in _json.dumps(m.get("badges") or {})
+                    except Exception:
+                        pass
+                    th = _thumb_urls(m)
+                    items.append(
+                        {
+                            "browseId": bid,
+                            "title": title,
+                            "type": rtype,
+                            "artists": artists,
+                            "art": _hd(th[-1]) if th else None,
+                            "explicit": explicit,
+                        }
+                    )
+                except Exception:
+                    pass
+                return
+            for v in node.values():
+                collect(v)
+        elif isinstance(node, list):
+            for v in node:
+                collect(v)
+
+    collect(raw)
+    return {"items": items}
     reset_client()

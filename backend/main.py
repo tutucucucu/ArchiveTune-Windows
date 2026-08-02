@@ -119,6 +119,11 @@ def ytm_home():
     return ytm.get_home()
 
 
+@app.get("/api/ytm/new_releases")
+def ytm_new_releases():
+    return ytm.get_new_releases()
+
+
 @app.get("/api/ytm/status")
 def ytm_status():
     return ytm.auth_status()

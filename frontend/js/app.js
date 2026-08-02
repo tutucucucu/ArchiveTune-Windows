@@ -41,6 +41,7 @@ const ICONS = {
   info: '<span class="msym">info</span>',
   history: '<span class="msym">history</span>',
   calendar_month: '<span class="msym">calendar_month</span>',
+  new_releases: '<span class="msym">new_releases</span>',
   settings: '<span class="msym">settings</span>',
   back: '<span class="msym">arrow_back</span>',
   tune: '<span class="msym">tune</span>',
@@ -69,7 +70,7 @@ const T = {
   "nav.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
   "nav.local": { id: "File Lokal", en: "Local Files", jp: "ローカルファイル" },
   "nav.more": { id: "Lainnya", en: "More", jp: "その他" },
-  "nav.calendar": { id: "Kalender", en: "Calendar", jp: "カレンダー" },
+  "nav.releases": { id: "Rilisan Baru", en: "New Releases", jp: "新着リリース" },
   "nav.stats": { id: "Statistik", en: "Statistics", jp: "統計" },
   "nav.settings": { id: "Pengaturan", en: "Settings", jp: "設定" },
   "page.search": { id: "Cari", en: "Search", jp: "検索" },
@@ -82,9 +83,15 @@ const T = {
   "page.album": { id: "Album", en: "Album", jp: "アルバム" },
   "page.artist": { id: "Artis", en: "Artist", jp: "アーティスト" },
   "page.playlist": { id: "Playlist", en: "Playlist", jp: "プレイリスト" },
-  "cal.sub": { id: "Rekap kapan kamu dengerin musik.", en: "A recap of when you listened to music.", jp: "いつ音楽を聴いたかの記録。" },
-  "cal.na": { id: "Tidak tersedia", en: "Not available", jp: "利用できません" },
-  "cal.naSub": { id: "Fitur kalender tidak tersedia untuk saat ini.", en: "The calendar feature is not available right now.", jp: "カレンダー機能は現在利用できません。" },
+  "releases.title": { id: "Rilisan Baru", en: "New Releases", jp: "新着リリース" },
+  "releases.sub": { id: "Rilisan lagu terbaru dari YouTube Music.", en: "The latest releases from YouTube Music.", jp: "YouTube Music の最新リリース。" },
+  "releases.count": { id: "RILISAN", en: "RELEASES", jp: "リリース" },
+  "releases.all": { id: "Semua", en: "All", jp: "すべて" },
+  "releases.album": { id: "Album", en: "Albums", jp: "アルバム" },
+  "releases.single": { id: "Single", en: "Singles", jp: "シングル" },
+  "releases.ep": { id: "EP", en: "EPs", jp: "EP" },
+  "releases.none": { id: "Belum ada rilisan di kategori ini.", en: "No releases in this category yet.", jp: "このカテゴリのリリースはまだありません。" },
+  "releases.err": { id: "Gagal memuat rilisan baru.", en: "Failed to load new releases.", jp: "新着リリースを読み込めませんでした。" },
   "search.tabAll": { id: "Semua", en: "All", jp: "すべて" },
   "search.tabSongs": { id: "Lagu", en: "Songs", jp: "曲" },
   "search.tabVideos": { id: "Video", en: "Videos", jp: "動画" },
@@ -997,7 +1004,7 @@ function navigate(name, params = {}) {
   if (name === "playlists") return renderPlaylists();
   if (name === "local") return renderLocal();
   if (name === "stats") return renderStats();
-  if (name === "calendar") return renderCalendar();
+  if (name === "releases") return renderReleases();
   if (name === "settings") return renderSettings();
   if (name === "album") return renderAlbum(params.browseId);
   if (name === "artist") return renderArtist(params.browseId);
@@ -1755,18 +1762,70 @@ function barRow(name, val, max, art = "", round = false) {
   return `<div class="bar-row">${artHtml}<span class="b-row-txt"><span class="b-name" title="${esc(name)}">${esc(name)}</span></span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="b-val">${esc(val)}</span></div>`;
 }
 
-/* ---------------- calendar (not available) ---------------- */
-async function renderCalendar() {
-  viewEl.innerHTML = `<div class="page-head">
-    <div class="page-title">${t("page.calendar")}</div>
-    <div class="page-sub">${t("cal.sub")}</div>
-  </div>
-  <div class="cal-na">
-    <div class="cal-na-ic">${ICONS.calendar_month}</div>
-    <div class="cal-na-text">${t("cal.na")}</div>
-    <div class="cal-na-sub">${t("cal.naSub")}</div>
+/* ---------------- new releases ---------------- */
+const REL_FILTERS = ["all", "Album", "Single", "EP"];
+
+function releaseCardHtml(r) {
+  return `<div class="rel-card" data-card data-type="album" data-browse="${esc(r.browseId)}">
+    <div class="rel-art">
+      ${r.art ? `<img src="${esc(r.art)}" loading="lazy" alt="">` : `<div class="rel-art-ph">${ICONS.music}</div>`}
+      ${r.explicit ? `<span class="rel-e">E</span>` : ""}
+      <button class="rel-play" data-rel-play="${esc(r.browseId)}" title="${esc(t("common.play"))}">${ICONS.play}</button>
+    </div>
+    <div class="rel-title" title="${esc(r.title)}">${esc(r.title)}</div>
+    <div class="rel-sub" title="${esc(r.artists)}">${esc(r.artists)}</div>
   </div>`;
+}
+
+async function renderReleases() {
+  viewEl.innerHTML = `<div class="page-head">
+    <div class="page-title">${t("releases.title")}</div>
+    <div class="page-sub">${t("releases.sub")}</div>
+  </div>
+  <div id="relContent">${loadingHtml()}</div>`;
   injectIcons(viewEl);
+  const content = $("#relContent");
+  try {
+    const d = await api("/api/ytm/new_releases");
+    if (d.error) throw new Error(d.error);
+    const items = d.items || [];
+    const groups = {
+      all: items,
+      Album: items.filter((x) => x.type === "Album"),
+      Single: items.filter((x) => x.type === "Single"),
+      EP: items.filter((x) => x.type === "EP"),
+    };
+    content.innerHTML = `
+      <div class="rel-bar">
+        <div class="rel-count"><span class="rel-num">${items.length}</span><span class="rel-label">${t("releases.count")}</span></div>
+        <div class="rel-tabs">
+          ${REL_FILTERS.map((f) => `<button class="chip rel-chip${f === "all" ? " active" : ""}" data-rel-filter="${f}">${t(f === "all" ? "releases.all" : "releases." + f.toLowerCase())}</button>`).join("")}
+        </div>
+      </div>
+      <div id="relSections">${relSectionsHtml(groups, "all")}</div>`;
+    $$("#relContent .rel-chip").forEach((ch) => {
+      ch.addEventListener("click", () => {
+        $$("#relContent .rel-chip").forEach((x) => x.classList.remove("active"));
+        ch.classList.add("active");
+        $("#relSections").innerHTML = relSectionsHtml(groups, ch.dataset.relFilter);
+        injectIcons($("#relSections"));
+      });
+    });
+  } catch (e) {
+    content.innerHTML = emptyState(t("releases.err"), e.message || "");
+  }
+  injectIcons(content);
+}
+
+function relSectionsHtml(groups, filter) {
+  let html = "";
+  for (const type of ["Album", "Single", "EP"]) {
+    const list = filter === "all" ? groups[type] : filter === type ? groups[type] : [];
+    if (!list.length) continue;
+    html += `<section class="section"><div class="section-title">${t("releases." + type.toLowerCase())}<span class="rel-sec-count">${list.length}</span></div>
+      <div class="rel-grid">${list.map(releaseCardHtml).join("")}</div></section>`;
+  }
+  return html || `<div class="lyrics-empty">${t("releases.none")}</div>`;
 }
 
 async function renderSettings() {
@@ -2270,6 +2329,21 @@ function wireEvents() {
       return;
     }
 
+    const relPlay = e.target.closest("[data-rel-play]");
+    if (relPlay) {
+      const bid = relPlay.dataset.relPlay;
+      (async () => {
+        try {
+          const a = await api("/api/ytm/album/" + bid);
+          if (a.error) throw new Error(a.error);
+          if (a.tracks && a.tracks.length) playQueue(a.tracks, 0);
+        } catch (err) {
+          toast(err.message);
+        }
+      })();
+      return;
+    }
+
     const card = e.target.closest("[data-card]");
     if (card) {
       const type = card.dataset.type;
@@ -2389,7 +2463,7 @@ function wireEvents() {
   bind("#mpMain", () => openNowPlaying());
   bind("#historyBtn", () => navigate("stats"));
   bind("#settingsBtn", () => navigate("settings"));
-  bind("#calendarBtn", () => navigate("calendar"));
+  bind("#calendarBtn", () => navigate("releases"));
   bind("#searchBack", () => { if (history.length > 1) history.back(); else navigate("home"); });
   bind("#searchFilter", () => {
     const tabs = $("#searchTabs");

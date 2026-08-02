@@ -1297,3 +1297,70 @@ body {
   .artist-art { height: 120px; }
 }
 
+/* ==========================================================================
+   New Releases
+   ========================================================================== */
+.rel-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 18px 22px; margin-bottom: 28px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface-1));
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, transparent);
+  border-radius: 24px;
+}
+.rel-count { display: flex; align-items: baseline; gap: 10px; }
+.rel-num {
+  font-size: 36px; font-weight: 850; letter-spacing: -1px; line-height: 1;
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 45%, var(--primary-2)));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.rel-label { font-size: 13px; font-weight: 800; color: var(--text-2); text-transform: uppercase; letter-spacing: 1.5px; }
+.rel-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.rel-chip { font-size: 13px; font-weight: 700; padding: 8px 18px; }
+
+.rel-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px 18px;
+  max-width: 1040px;
+}
+.rel-card { cursor: pointer; transition: transform 0.25s cubic-bezier(0.2, 0, 0, 1); }
+.rel-card:hover { transform: translateY(-4px); }
+.rel-art {
+  position: relative; aspect-ratio: 1; border-radius: 16px; overflow: hidden;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-2));
+  box-shadow: var(--shadow-2); margin-bottom: 10px;
+}
+.rel-art img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s cubic-bezier(0.2, 0, 0, 1); }
+.rel-card:hover .rel-art img { transform: scale(1.05); }
+.rel-art-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--primary-2); }
+.rel-art-ph .msym { font-size: 48px; }
+.rel-play {
+  position: absolute; right: 10px; bottom: 10px; z-index: 3;
+  width: 42px; height: 42px; border-radius: 50%;
+  display: grid; place-items: center; padding: 0;
+  border: none; cursor: pointer;
+  background: var(--primary); color: #fff;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--primary) 45%, transparent);
+  opacity: 0; transform: translateY(8px) scale(0.9);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0, 0, 1);
+}
+.rel-card:hover .rel-play, .rel-play:focus-visible { opacity: 1; transform: none; }
+.rel-play:hover { transform: scale(1.08); }
+.rel-play .msym { font-size: 22px; }
+.rel-e {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  min-width: 22px; height: 22px; padding: 0 5px; border-radius: 999px;
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 800;
+  background: color-mix(in srgb, var(--primary) 88%, #fff); color: #fff;
+}
+.rel-title { font-size: 14.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rel-sub { font-size: 12.5px; color: var(--text-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rel-sec-count { font-size: 13px; font-weight: 700; color: var(--text-3); padding: 2px 10px; border-radius: 999px; background: var(--surface-2); }
+
+@media (max-width: 700px) {
+  .rel-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 18px 14px; }
+  .rel-bar { flex-direction: column; align-items: flex-start; }
+}
+
