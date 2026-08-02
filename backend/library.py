@@ -13,7 +13,14 @@ def base_dir():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-DATA_DIR = os.path.join(base_dir(), "data")
+def data_dir():
+    if os.name == "posix":
+        base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
+        return os.path.join(base, "ArchiveTune")
+    return os.path.join(base_dir(), "data")
+
+
+DATA_DIR = data_dir()
 os.makedirs(DATA_DIR, exist_ok=True)
 
 _lock = threading.Lock()

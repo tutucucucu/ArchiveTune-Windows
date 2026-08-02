@@ -1,0 +1,17 @@
+Package: archivetune
+Version: @VERSION@
+Section: sound
+Priority: optional
+Architecture: amd64
+Maintainer: ArchiveTune <tutucucucu@users.noreply.github.com>
+Depends: python3.@PYVER@, python3-venv, python3-gi, python3-gi-cairo,
+ gir1.2-gtk-3.0, @WEBKIT_DEB@, @WEBKIT_GIR@, libgirepository-1.0-1,
+ gstreamer1.0-plugins-base, gstreamer1.0-plugins-good,
+ gstreamer1.0-plugins-bad, gstreamer1.0-libav
+Homepage: https://github.com/tutucucucu/ArchiveTune-Windows
+Description: ArchiveTune music player
+ YouTube Music client (search, charts, albums, artists, playlists),
+ local file player, lyrics, play statistics, last.fm scrobbling and
+ a fully localized UI (Indonesian / English / Japanese).
+ Installed to /opt/archivetune; user data is stored under
+ ~/.local/share/ArchiveTune.

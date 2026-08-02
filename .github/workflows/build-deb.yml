@@ -1,0 +1,46 @@
+name: Build .deb (Ubuntu)
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build .deb
+        run: bash linux/build_deb.sh
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: archivetune-deb
+          path: dist/*.deb
+          if-no-files-found: error
+
+      - name: Install .deb
+        run: sudo apt install -y ./dist/*.deb
+
+      - name: Smoke test (headless server)
+        run: |
+          timeout 25 bash -c '
+            archivetune --port 8397 --no-browser &
+            APP=$!
+            ok=0
+            for i in $(seq 1 20); do
+              if curl -sf http://127.0.0.1:8397/api/health >/dev/null; then ok=1; break; fi
+              sleep 1
+            done
+            if [ "$ok" = 0 ]; then
+              echo "SMOKE FAIL: server never became healthy"
+              kill $APP 2>/dev/null
+              exit 1
+            fi
+            echo "HEALTH OK"
+            curl -sf "http://127.0.0.1:8397/api/ytm/charts?country=US" | head -c 200 && echo ""
+            kill $APP 2>/dev/null || true
+          '

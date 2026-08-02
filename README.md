@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🌸 ArchiveTune for Windows
+# 🌸 ArchiveTune
 
 **The cutest music player — now on your desktop.**
 
-Unofficial Windows port of [ArchiveTune](https://github.com/rukamori/ArchiveTune) with a Python (FastAPI) backend and an HTML/CSS/JS frontend, packaged as a single `.exe`.
+Unofficial port of [ArchiveTune](https://github.com/rukamori/ArchiveTune) with a Python (FastAPI) backend and an HTML/CSS/JS frontend. Ships as a Windows `.exe` **and** a Linux `.deb` for Ubuntu.
 
-![python](https://img.shields.io/badge/python-3.10+-blue) ![platform](https://img.shields.io/badge/platform-Windows-blue) ![license](https://img.shields.io/badge/license-GPL--3.0-brightgreen) ![framework](https://img.shields.io/badge/backend-FastAPI-009688)
+![python](https://img.shields.io/badge/python-3.10+-blue) ![platform](https://img.shields.io/badge/platform-Windows_·_Linux-blue) ![license](https://img.shields.io/badge/license-GPL--3.0-brightgreen) ![framework](https://img.shields.io/badge/backend-FastAPI-009688)
 
 </div>
 
@@ -98,6 +98,28 @@ Output: `dist\ArchiveTune.exe` — a single file (~30 MB), **no ffmpeg or extra 
 
 ---
 
+## 🐧 Ubuntu / Debian (.deb)
+
+Build a `.deb` on any Ubuntu machine (tested on 24.04):
+
+```bash
+bash linux/build_deb.sh
+```
+
+Output: `dist/archivetune_<version>_amd64.deb`. Install it:
+
+```bash
+sudo apt install ./dist/archivetune_<version>_amd64.deb
+```
+
+- Launches from the app menu as **ArchiveTune** (or run `archivetune` in a terminal).
+- Installed to `/opt/archivetune`; user data goes to `~/.local/share/ArchiveTune`.
+- The script auto-installs system deps (Python venv, `python3-gi`, `gir1.2-webkit2-4.1`/`4.0`, GStreamer codecs). Build the deb on the **same Ubuntu release** the target machine uses — the venv is tied to the local Python version.
+- Prefer to build yourself, or push a `v*` tag → GitHub Actions builds and uploads the `.deb` automatically (`workflow_dispatch` works too).
+- Run from source instead: `pip install -r backend/requirements.txt && python3 backend/main.py`.
+
+---
+
 ## ⚙️ First-time setup (optional)
 
 1. **Local files** — Library → Local Files → choose a folder.
@@ -110,7 +132,7 @@ Output: `dist\ArchiveTune.exe` — a single file (~30 MB), **no ffmpeg or extra 
 
 ## 🔒 Privacy
 
-- Everything (settings, playlists, likes, statistics) is stored **locally** in the `data` folder.
+- Everything (settings, playlists, likes, statistics) is stored **locally** — in the `data` folder (Windows) or `~/.local/share/ArchiveTune` (Linux).
 - YouTube Music is used **anonymously** by default (guest mode).
 - **No telemetry, no ads, no accounts required.**
 
@@ -131,8 +153,10 @@ frontend/
   index.html      app shell (player, now-playing, settings UI)
   css/style.css   Material-3 "cute" theme (dark/light + dynamic accent)
   js/app.js       player, crossfade, search, library, lyrics, EQ, stats
-ArchiveTune.spec  PyInstaller build config
-build.bat         one-click build script
+ArchiveTune.spec  PyInstaller build config (Windows)
+build.bat         one-click Windows build script
+linux/            .deb packaging: build_deb.sh, control, .desktop, launcher
+.github/workflows/build-deb.yml  CI that builds the .deb on push of a v* tag
 assets/           original ArchiveTune icon (png + ico)
 data/             user data (auto-created at runtime)
 ```
@@ -146,7 +170,7 @@ data/             user data (auto-created at runtime)
 | Backend | Python · FastAPI · Uvicorn |
 | Music sources | `ytmusicapi` · `yt-dlp` · `mutagen` |
 | Frontend | Vanilla HTML/CSS/JS · Web Audio API |
-| Packaging | PyInstaller (one-file) |
+| Packaging | PyInstaller (Windows `.exe`) · dpkg/deb (Linux `.deb`) |
 | Desktop window | `pywebview` (falls back to browser) |
 
 ---

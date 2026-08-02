@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ArchiveTune
+GenericName=Music Player
+Comment=YouTube Music client, charts, local files, lyrics & Last.fm scrobbling
+Exec=/usr/bin/@PKG_NAME@
+Icon=@PKG_NAME@
+Terminal=false
+Categories=AudioVideo;Audio;Music;Player;
+StartupWMClass=ArchiveTune

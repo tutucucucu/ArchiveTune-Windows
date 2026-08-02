@@ -1,0 +1,3 @@
+#!/bin/sh
+# ArchiveTune launcher — runs the app from the installed location
+exec /opt/archivetune/venv/bin/python /opt/archivetune/app/backend/main.py "$@"
