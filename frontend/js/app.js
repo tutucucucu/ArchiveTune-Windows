@@ -140,6 +140,10 @@ const T = {
   "set.playback": { id: "Pemutaran", en: "Playback", jp: "再生" },
   "set.speed": { id: "Kecepatan putar", en: "Playback speed", jp: "再生速度" },
   "set.speedDesc": { id: "Tempo pemutaran", en: "Tempo of playback", jp: "再生テンポ" },
+  "set.crossfade": { id: "Crossfade", en: "Crossfade", jp: "クロスフェード" },
+  "set.crossfadeDesc": { id: "Lagu berikutnya fade-in lembut sebelum lagu selesai", en: "Next song fades in softly before the current one ends", jp: "曲が終わる前に次の曲をフェードイン" },
+  "set.crossfadeDur": { id: "Durasi crossfade", en: "Crossfade duration", jp: "クロスフェード時間" },
+  "set.crossfadeDurDesc": { id: "Detik sebelum lagu selesai lagu baru mulai muncul", en: "How many seconds before the end the next song starts", jp: "曲が終わる何秒前に次を開始するか" },
 };
 
 function t(key) {
@@ -287,6 +291,7 @@ const state = {
 
 /* ---------------- audio & webaudio ---------------- */
 const audio = $("#audio");
+const audioXfade = $("#audioXfade");
 let actx = null, analyser = null, eqFilters = [], eqEnabled = false;
 
 function ensureAudio() {
@@ -311,6 +316,10 @@ function ensureAudio() {
   eqFilters.forEach((f) => { node.connect(f); node = f; });
   node.connect(analyser);
   analyser.connect(actx.destination);
+  try {
+    const xsrc = actx.createMediaElementSource(audioXfade);
+    xsrc.connect(eqFilters[0]);
+  } catch {}
 }
 
 function applyEQ() {
@@ -372,11 +381,11 @@ function setupMediaSession() {
   if (!("mediaSession" in navigator)) return;
   const ms = navigator.mediaSession;
   try {
-    ms.setActionHandler("play", () => audio.play());
-    ms.setActionHandler("pause", () => audio.pause());
+    ms.setActionHandler("play", () => { if (state.xfadeActive) cancelXfade(); audio.play(); });
+    ms.setActionHandler("pause", () => { if (state.xfadeActive) cancelXfade(); audio.pause(); });
     ms.setActionHandler("previoustrack", () => prev());
     ms.setActionHandler("nexttrack", () => next(false));
-    ms.setActionHandler("seekto", (d) => { if (d.seekTime != null) audio.currentTime = d.seekTime; });
+    ms.setActionHandler("seekto", (d) => { if (state.xfadeActive) cancelXfade(); if (d.seekTime != null) audio.currentTime = d.seekTime; });
   } catch {}
 }
 
@@ -386,6 +395,7 @@ function artUrl(song) {
 }
 
 function playQueue(songs, index) {
+  cancelXfade();
   state.queue = songs.map((s) => ({ ...s }));
   state.qIndex = index;
   state.scrobbled = false;
@@ -396,6 +406,7 @@ function playQueue(songs, index) {
 function playCurrent() {
   const song = state.queue[state.qIndex];
   if (!song) return;
+  resetXfade();
   state.current = song;
   const src = song.source === "local" ? `/api/local/file/${song.id.split(":")[1]}` : `/api/stream/${song.videoId}`;
   audio.src = src;
@@ -451,6 +462,7 @@ function syncLikeButtons() {
 function togglePlay() {
   if (!state.current) return;
   ensureAudio();
+  if (state.xfadeActive) cancelXfade();
   if (audio.paused) audio.play(); else audio.pause();
 }
 function playPauseIcon() {
@@ -471,6 +483,7 @@ function playPauseIcon() {
 function next(manual = true) {
   if (!state.queue.length) return;
   if (state.repeat === "one" && manual) return;
+  cancelXfade();
   let i = state.qIndex + 1;
   if (state.shuffle && state.queue.length > 1) {
     do { i = Math.floor(Math.random() * state.queue.length); } while (i === state.qIndex);
@@ -507,6 +520,7 @@ async function advanceIntoRecs() {
 }
 function prev() {
   if (!state.queue.length) return;
+  cancelXfade();
   if (audio.currentTime > 3) { audio.currentTime = 0; return; }
   let i = state.qIndex - 1;
   if (i < 0) i = state.queue.length - 1;
@@ -514,6 +528,110 @@ function prev() {
   state.scrobbled = false;
   state.statRecorded = false;
   playCurrent();
+}
+
+/* ---------------- crossfade (ala Apple Music) ---------------- */
+let xfadeTimer = null;
+state.xfadeActive = false;
+state.xfadeLoaded = false;
+state.xfadeNextIndex = null;
+
+function getXfade() {
+  const v = parseFloat(state.settings.crossfade);
+  return Number.isFinite(v) && v > 0 ? Math.min(10, v) : 0;
+}
+
+function computeNextIndex() {
+  if (!state.queue.length) return null;
+  let i = state.qIndex + 1;
+  if (state.shuffle && state.queue.length > 1) {
+    do { i = Math.floor(Math.random() * state.queue.length); } while (i === state.qIndex);
+  }
+  if (i >= state.queue.length) {
+    if (state.repeat === "all") i = 0;
+    else if (state.nextUpSug && state.nextUpSug.length) {
+      state.queue = state.queue.concat(state.nextUpSug.map((s) => ({ ...s })));
+      state.nextUpSug = [];
+      i = state.qIndex + 1;
+    } else i = null;
+  }
+  return i;
+}
+
+function resetXfade() {
+  clearInterval(xfadeTimer);
+  xfadeTimer = null;
+  state.xfadeActive = false;
+  state.xfadeLoaded = false;
+  state.xfadeNextIndex = null;
+  audioXfade.pause();
+  audioXfade.removeAttribute("src");
+  try { audioXfade.load(); } catch {}
+  audioXfade.volume = 0;
+}
+
+function cancelXfade() {
+  const wasActive = state.xfadeActive;
+  resetXfade();
+  if (wasActive) audio.volume = state.settings.volume ?? 1;
+}
+
+function preloadXfade() {
+  if (state.xfadeLoaded || state.xfadeActive) return;
+  const idx = computeNextIndex();
+  if (idx == null) return;
+  const song = state.queue[idx];
+  if (!song) return;
+  state.xfadeNextIndex = idx;
+  state.xfadeLoaded = true;
+  audioXfade.src = song.source === "local" ? `/api/local/file/${song.id.split(":")[1]}` : `/api/stream/${song.videoId}`;
+  audioXfade.playbackRate = parseFloat(state.settings.speed || 1);
+  audioXfade.volume = 0;
+}
+
+function startXfadePlayback() {
+  if (!state.xfadeLoaded || state.xfadeActive) return;
+  if (audio.paused || !audio.duration) return;
+  state.xfadeActive = true;
+  const baseVol = state.settings.volume ?? 1;
+  audioXfade.play().catch(() => cancelXfade());
+  const xf = getXfade();
+  const dt = 0.05;
+  let elapsed = 0;
+  clearInterval(xfadeTimer);
+  xfadeTimer = setInterval(() => {
+    elapsed += dt;
+    const k = Math.min(1, elapsed / xf);
+    audioXfade.volume = baseVol * k;
+    audio.volume = baseVol * (1 - k);
+    if (k >= 1) { clearInterval(xfadeTimer); xfadeTimer = null; }
+  }, dt * 1000);
+}
+
+function handoffXfade() {
+  const pos = audioXfade.readyState >= 2 ? (audioXfade.currentTime || 0) : 0;
+  const idx = state.xfadeNextIndex;
+  resetXfade();
+  if (idx == null || idx >= state.queue.length) { next(false); return; }
+  state.qIndex = idx;
+  state.scrobbled = false;
+  state.statRecorded = false;
+  const song = state.queue[idx];
+  if (!song) { next(false); return; }
+  state.current = song;
+  const src = song.source === "local" ? `/api/local/file/${song.id.split(":")[1]}` : `/api/stream/${song.videoId}`;
+  audio.src = src;
+  audio.playbackRate = parseFloat(state.settings.speed || 1);
+  audio.volume = state.settings.volume ?? 1;
+  audio.currentTime = pos;
+  audio.play().catch(() => {});
+  updateNowPlayingUI();
+  loadLyrics(song);
+  recordPlay();
+  updateMediaSession();
+  if (state.settings.dynamic_color) sampleArtColor(song);
+  scheduleNextUp();
+  if (npOpen) renderQueuePanel();
 }
 
 function recordPlay() {
@@ -1614,6 +1732,10 @@ async function renderSettings() {
   <div class="set-group"><h3>${ICONS.eq} ${t("set.playback")}</h3>
     <div class="set-row"><div><div class="set-label">${t("set.speed")}</div><div class="set-desc">${t("set.speedDesc")}</div></div>
       <select id="setSpeed">${[0.5, 0.75, 1, 1.25, 1.5, 2].map((v) => `<option value="${v}" ${(+s.speed || 1) === v ? "selected" : ""}>${v}×</option>`).join("")}</select></div>
+    <div class="set-row"><div><div class="set-label">${t("set.crossfade")}</div><div class="set-desc">${t("set.crossfadeDesc")}</div></div>
+      <label class="switch"><input type="checkbox" id="setCrossfade" ${s.crossfade > 0 ? "checked" : ""}><span></span></label></div>
+    <div class="set-row" id="xfadeDurRow" ${s.crossfade > 0 ? "" : 'style="display:none"'}><div><div class="set-label">${t("set.crossfadeDur")}</div><div class="set-desc">${t("set.crossfadeDurDesc")}</div></div>
+      <select id="setXfadeDur">${[2, 4, 6, 8].map((v) => `<option value="${v}" ${(+s.crossfade || 2) === v ? "selected" : ""}>${v}s</option>`).join("")}</select></div>
     <div class="set-row"><div><div class="set-label">Equalizer</div><div class="set-desc">10-band EQ & visualizer</div></div>
       <button class="btn ghost" id="setOpenEq">Open EQ</button></div>
   </div>
@@ -1660,6 +1782,12 @@ async function renderSettings() {
   $("#setCountry").value = s.charts_country || "US";
   $("#setCountry").addEventListener("change", (e) => setSetting("charts_country", e.target.value));
   $("#setSpeed").addEventListener("change", (e) => { setSetting("speed", +e.target.value); audio.playbackRate = +e.target.value; });
+  $("#setCrossfade").addEventListener("change", (e) => {
+    const dur = $("#setXfadeDur").value || 2;
+    setSetting("crossfade", e.target.checked ? +dur : 0);
+    $("#xfadeDurRow").style.display = e.target.checked ? "" : "none";
+  });
+  $("#setXfadeDur").addEventListener("change", (e) => setSetting("crossfade", +e.target.value));
   $("#setOpenEq").addEventListener("click", () => openEq());
   $("#setSaveCookie").addEventListener("click", async () => {
     const cookie = $("#setCookie").value.trim();
@@ -1703,7 +1831,8 @@ function applySettingsToUi() {
   if (themeBtn) themeBtn.dataset.ic = s.theme === "light" ? "moon" : "sun";
   injectIcons($("#topbar"));
   if (!state.dynamicApplied) setAccent(s.accent || "#ff4f8b");
-  audio.volume = s.volume ?? 1;
+  if (!state.xfadeActive) audio.volume = s.volume ?? 1;
+  audioXfade.volume = 0;
   applyEQ();
   syncShuffle();
   syncRepeat();
@@ -2193,18 +2322,27 @@ function wireEvents() {
     $("#npBarFill").style.width = pct + "%";
     highlightLyric();
     if (!state.scrobbled && dur && cur > dur * 0.5) scrobbleNow();
+    const xf = getXfade();
+    if (xf && state.current && dur && !audio.paused) {
+      const remaining = dur - cur;
+      if (remaining > 0 && remaining <= xf + 8 && !state.xfadeLoaded && !state.xfadeActive) preloadXfade();
+      if (remaining > 0 && state.xfadeLoaded && !state.xfadeActive && remaining <= xf + 0.25) startXfadePlayback();
+    }
   });
-  audio.addEventListener("ended", () => next(false));
+  audio.addEventListener("ended", () => {
+    if (state.xfadeActive) handoffXfade();
+    else next(false);
+  });
   audio.addEventListener("error", () => { if (audio.src) toast("Could not play this track."); });
 
   // keyboard
   document.addEventListener("keydown", (e) => {
     if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
     if (e.code === "Space") { e.preventDefault(); togglePlay(); }
-    else if (e.key === "ArrowRight") audio.currentTime += 5;
-    else if (e.key === "ArrowLeft") audio.currentTime -= 5;
-    else if (e.key === "ArrowUp") { e.preventDefault(); audio.volume = Math.min(1, audio.volume + 0.05); setSetting("volume", audio.volume); }
-    else if (e.key === "ArrowDown") { e.preventDefault(); audio.volume = Math.max(0, audio.volume - 0.05); setSetting("volume", audio.volume); }
+    else if (e.key === "ArrowRight") { if (state.xfadeActive) cancelXfade(); audio.currentTime += 5; }
+    else if (e.key === "ArrowLeft") { if (state.xfadeActive) cancelXfade(); audio.currentTime -= 5; }
+    else if (e.key === "ArrowUp") { e.preventDefault(); if (state.xfadeActive) cancelXfade(); audio.volume = Math.min(1, audio.volume + 0.05); setSetting("volume", audio.volume); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); if (state.xfadeActive) cancelXfade(); audio.volume = Math.max(0, audio.volume - 0.05); setSetting("volume", audio.volume); }
     else if (e.key.toLowerCase() === "n") next(true);
     else if (e.key.toLowerCase() === "p") prev();
     else if (e.key === "Escape") { closeNowPlaying(); $("#eqModal").classList.add("hidden"); $("#playlistModal").classList.add("hidden"); }
