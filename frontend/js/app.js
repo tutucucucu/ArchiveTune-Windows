@@ -1726,16 +1726,20 @@ async function renderStats() {
   try {
     const s = await api("/api/library/stats");
     const cards = [
-      [t("stats.total"), s.total_plays],
-      [t("stats.topArtist"), s.top_artists[0] ? s.top_artists[0][0] : "-"],
-      [t("stats.topSongPlays"), s.top_songs[0] ? s.top_songs[0].plays : "-"],
-      [t("stats.daysTracked"), Object.keys(s.plays_per_day || {}).length],
+      [t("stats.total"), s.total_plays, "history"],
+      [t("stats.topArtist"), s.top_artists[0] ? s.top_artists[0][0] : "-", "mic"],
+      [t("stats.topSongPlays"), s.top_songs[0] ? s.top_songs[0].plays : "-", "trending_up"],
+      [t("stats.daysTracked"), Object.keys(s.plays_per_day || {}).length, "calendar_month"],
     ];
-    $("#statCards").innerHTML = cards.map(([l, n]) => `<div class="stat-card"><div class="stat-num">${esc(n)}</div><div class="stat-label">${esc(l)}</div></div>`).join("");
+    $("#statCards").innerHTML = cards.map(([l, n, ic]) =>
+      `<div class="stat-card"><div class="stat-ic">${ICONS[ic]}</div><div class="stat-num">${esc(n)}</div><div class="stat-label">${esc(l)}</div></div>`
+    ).join("");
+    const artistArt = {};
+    (s.top_songs || []).forEach((sng) => { if (sng.artist && !artistArt[sng.artist] && sng.art) artistArt[sng.artist] = sng.art; });
     const maxA = Math.max(1, ...(s.top_artists || []).map((a) => a[1]));
-    $("#statArtists").innerHTML = (s.top_artists || []).slice(0, 15).map((a) => barRow(a[0], a[1], maxA)).join("");
+    $("#statArtists").innerHTML = (s.top_artists || []).slice(0, 15).map((a) => barRow(a[0], a[1], maxA, artistArt[a[0]] || "", true)).join("");
     const maxS = Math.max(1, ...(s.top_songs || []).map((a) => a.plays));
-    $("#statSongs").innerHTML = (s.top_songs || []).slice(0, 15).map((a) => barRow(`${a.title} — ${a.artist}`, a.plays, maxS)).join("");
+    $("#statSongs").innerHTML = (s.top_songs || []).slice(0, 15).map((a) => barRow(`${a.title} — ${a.artist}`, a.plays, maxS, a.art || "")).join("");
     const days = Object.entries(s.plays_per_day || {}).sort((a, b) => (a[0] < b[0] ? -1 : 1)).slice(-30);
     const maxD = Math.max(1, ...days.map((d) => d[1]));
     $("#statDays").innerHTML = days.length ? days.map((d) => barRow(d[0], d[1], maxD)).join("") : `<div class="lyrics-empty">${t("stats.noPlays")}</div>`;
@@ -1743,9 +1747,12 @@ async function renderStats() {
     viewEl.innerHTML = emptyState("Error", e.message);
   }
 }
-function barRow(name, val, max) {
-  const pct = Math.max(2, Math.round((val / max) * 100));
-  return `<div class="bar-row"><span class="b-name" title="${esc(name)}">${esc(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="b-val">${val}</span></div>`;
+function barRow(name, val, max, art = "", round = false) {
+  const pct = Math.max(3, Math.round((val / max) * 100));
+  const artHtml = art
+    ? `<span class="b-art${round ? " round" : ""}"><img src="${esc(art)}" loading="lazy" alt="" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></span>`
+    : "";
+  return `<div class="bar-row">${artHtml}<span class="b-row-txt"><span class="b-name" title="${esc(name)}">${esc(name)}</span></span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="b-val">${esc(val)}</span></div>`;
 }
 
 /* ---------------- calendar (not available) ---------------- */
