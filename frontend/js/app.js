@@ -193,7 +193,7 @@ const T = {
   "toast.plAdded": { id: "Ditambahkan ke playlist", en: "Added to playlist", jp: "プレイリストに追加しました" },
   "home.sub": { id: "Selamat datang kembali — ayo putar sesuatu yang bagus hari ini.", en: "Welcome back — let's play something great today.", jp: "おかえりなさい — 今日もいい音楽をかけよう。" },
   "home.quick": { id: "Pilihan Cepat", en: "Quick picks", jp: "クイックピック" },
-  "home.continue": { id: "Teruslah Mendengarkan", en: "Continue listening", jp: "再生の続き" },
+  "home.continue": { id: "Lanjutkan Memutar", en: "Continue listening", jp: "再生の続き" },
   "home.artists": { id: "Artis Teratas", en: "Top Artists", jp: "トップアーティスト" },
   "home.topAlbum": { id: "Top Album", en: "Top Albums", jp: "トップアルバム" },
   "home.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
@@ -2127,7 +2127,10 @@ function sampleArtColor(song) {
       // clamp lightness so white glyphs stay readable
       const mx = Math.max(r, g, b);
       if (mx > 200) { const k = 200 / mx; r = Math.round(r * k); g = Math.round(g * k); b = Math.round(b * k); }
-      const hex = "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+      let hex = "#" + [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+      // keep dynamic accents from turning washed-out / muddy
+      const [h0, s0, l0] = hexToHsl(hex);
+      if (s0 < 40) hex = hslToHex(h0, 40, l0);
       state.dynamicApplied = true;
       setAccent(hex);
     } catch {}
