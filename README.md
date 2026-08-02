@@ -1,12 +1,23 @@
 <div align="center">
 
+<img src="assets/banner.png" alt="ArchiveTune — The cutest music player" width="100%"/>
+
+<br/>
+
 # 🌸 ArchiveTune
 
 **The cutest music player — now on your desktop.**
 
 Unofficial port of [ArchiveTune](https://github.com/rukamori/ArchiveTune) with a Python (FastAPI) backend and an HTML/CSS/JS frontend. Ships as a Windows `.exe` **and** a Linux `.deb` for Ubuntu.
 
-![python](https://img.shields.io/badge/python-3.10+-blue) ![platform](https://img.shields.io/badge/platform-Windows_·_Linux-blue) ![license](https://img.shields.io/badge/license-GPL--3.0-brightgreen) ![framework](https://img.shields.io/badge/backend-FastAPI-009688)
+<br/>
+
+[![python](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/)
+[![platform](https://img.shields.io/badge/platform-Windows_·_Linux-blue)](https://github.com/tutucucucu/ArchiveTune-Windows)
+[![license](https://img.shields.io/badge/license-GPL--3.0-brightgreen)](LICENSE)
+[![backend](https://img.shields.io/badge/backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
+[![yt](https://img.shields.io/badge/music-YouTube_Music-red)](https://music.youtube.com)
+[![made-with-love](https://img.shields.io/badge/made%20with-%E2%9D%A4-red)](https://github.com/tutucucucu/ArchiveTune-Windows)
 
 </div>
 
