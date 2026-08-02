@@ -59,6 +59,10 @@ const ICONS = {
   radio: '<span class="msym">radio</span>',
   chev_left: '<span class="msym">chevron_left</span>',
   chev_right: '<span class="msym">chevron_right</span>',
+  library: '<span class="msym">library_music</span>',
+  download: '<span class="msym">download</span>',
+  up: '<span class="msym">expand_less</span>',
+  edit: '<span class="msym">edit</span>',
 };
 
 /* ---------------- i18n (id / en / jp) ---------------- */
@@ -70,6 +74,19 @@ const T = {
   "nav.bliked": { id: "Pustaka", en: "Liked", jp: "高評価" },
   "nav.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
   "nav.local": { id: "File Lokal", en: "Local Files", jp: "ローカルファイル" },
+  "nav.offline": { id: "Offline / Download", en: "Offline / Download", jp: "オフライン/ダウンロード" },
+  "lib.mostPlayed": { id: "Paling sering diputar", en: "Most played", jp: "最も再生された" },
+  "lib.shortcuts": { id: "Pintasan", en: "Shortcuts", jp: "ショートカット" },
+  "lib.recentTitle": { id: "Baru-baru ini diputar", en: "Recently played", jp: "最近再生" },
+  "lib.top50": { id: "Top 50 Saya", en: "My Top 50", jp: "マイトップ50" },
+  "lib.offlineCard": { id: "Offline", en: "Offline", jp: "オフライン" },
+  "lib.cacheCard": { id: "Tersimpan di Cache", en: "Saved in cache", jp: "キャッシュに保存" },
+  "lib.noPlays": { id: "Belum ada riwayat putar", en: "No play history yet", jp: "再生履歴はまだありません" },
+  "lib.noPlaysSub": { id: "Putar beberapa lagu dan paling sering diputar akan muncul di sini.", en: "Play some songs and your most played will appear here.", jp: "曲を再生すると、最も再生された曲がここに表示されます。" },
+  "lib.emptyCache": { id: "Belum ada lagu offline", en: "No offline songs", jp: "オフライン曲はありません" },
+  "lib.emptyCacheSub": { id: "Dukungan offline akan segera hadir. Untuk sekarang nikmati streaming online.", en: "Offline support is coming soon. For now enjoy online streaming.", jp: "オフライン対応は近日中に追加されます。今はオンラインストリーミングをお楽しみください。" },
+  "lib.playsCount": { id: "{n} putaran", en: "{n} plays", jp: "{n}回再生" },
+  "lib.artistsFromPlays": { id: "Artis dari riwayat putar", en: "Artists from your play history", jp: "再生履歴のアーティスト" },
   "nav.more": { id: "Lainnya", en: "More", jp: "その他" },
   "nav.releases": { id: "Rilisan Baru", en: "New Releases", jp: "新着リリース" },
   "nav.stats": { id: "Statistik", en: "Statistics", jp: "統計" },
@@ -271,11 +288,13 @@ const T = {
   "set.crossfadeDurDesc": { id: "Detik sebelum lagu selesai lagu baru mulai muncul", en: "How many seconds before the end the next song starts", jp: "曲が終わる何秒前に次を開始するか" },
 };
 
-function t(key) {
+function t(key, vars) {
   const lang = (state.settings && state.settings.lang) || "id";
   const e = T[key];
   if (!e) return key;
-  return e[lang] || e.id || key;
+  let s = e[lang] || e.id || key;
+  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? vars[k] : m));
+  return s;
 }
 
 function applyLang(rerender = true) {
@@ -412,6 +431,8 @@ const state = {
   pendingSong: null,
   scrobbled: false,
   statRecorded: false,
+  lib: null,
+  libFilter: "all",
 };
 
 /* ---------------- audio & webaudio ---------------- */
@@ -993,7 +1014,23 @@ const viewEl = $("#view");
 function setActiveNav(name) {
   $$("#nav .nav-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === name));
   $$("#bnav .bnav-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === name));
+  const group = $("#libGroup");
+  if (group) {
+    const inLib = LIB_SUBPAGES.includes(name);
+    setLibOpen(inLib ? true : group.classList.contains("open"));
+    $("#libToggle").classList.toggle("lib-active", inLib);
+  }
 }
+
+function setLibOpen(open) {
+  const group = $("#libGroup");
+  if (!group) return;
+  group.classList.toggle("open", open);
+  const caret = $("#libCaret");
+  if (caret) { caret.dataset.ic = open ? "up" : "down"; injectIcons($("#libToggle")); }
+}
+
+const LIB_SUBPAGES = ["library", "liked", "playlists", "local", "offline", "top-songs"];
 
 function navigate(name, params = {}) {
   state.view = name;
@@ -1002,9 +1039,12 @@ function navigate(name, params = {}) {
   viewEl.scrollTop = 0;
   if (name === "search") return renderSearch();
   if (name === "home") return renderHome();
+  if (name === "library") return renderLibrary();
   if (name === "liked") return renderLiked();
   if (name === "playlists") return renderPlaylists();
   if (name === "local") return renderLocal();
+  if (name === "offline") return renderOffline();
+  if (name === "top-songs") return renderTopSongs();
   if (name === "stats") return renderStats();
   if (name === "releases") return renderReleases();
   if (name === "settings") return renderSettings();
@@ -1450,10 +1490,195 @@ function songTableHtml(songs, showAlbum = true, actions = true, list = false, ar
   return `<div class="song-table">${head}${rows}</div>`;
 }
 
+async function loadLib() {
+  if (!state.lib) {
+    const [sum, recent, liked, pls] = await Promise.all([
+      api("/api/library/summary"),
+      api("/api/library/recent?limit=12").catch(() => ({ plays: [] })),
+      api("/api/library/liked").catch(() => ({ songs: [] })),
+      api("/api/library/playlists").catch(() => ({ playlists: [] })),
+    ]);
+    state.lib = { sum, recent: recent.plays || [], liked: liked.songs || [], playlists: pls.playlists || [] };
+  }
+  return state.lib;
+}
+
+function libHighlightHtml(sum) {
+  const top = sum.top_song;
+  if (!top) {
+    return `<section class="lib-highlight"><div class="lh-art ph">${ICONS.trending_up}</div>
+      <div class="lh-meta"><div class="lh-label">${t("lib.mostPlayed")}</div>
+      <div class="lh-title">${t("lib.noPlays")}</div><div class="lh-sub">${t("lib.noPlaysSub")}</div></div></section>`;
+  }
+  const art = hdArt(top.art);
+  return `<section class="lib-highlight">
+    <div class="lh-art${art ? "" : " ph"}">${ICONS.music}${art ? `<img src="${esc(art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')">` : ""}</div>
+    <div class="lh-meta">
+      <div class="lh-label">${t("lib.mostPlayed")}</div>
+      <div class="lh-title">${esc(top.title || "Untitled")}${top.artist ? " • " + esc(top.artist) : ""}</div>
+      <div class="lh-sub">${t("lib.playsCount", { n: top.plays })}</div>
+    </div>
+    <div class="hero-actions" style="margin:0"><button class="btn-stadium" id="libHLPlay">${ICONS.play} ${t("common.play")}</button></div>
+  </section>`;
+}
+
+function libShortcutsHtml(sum) {
+  const items = [
+    { nav: "liked", icon: "heart", name: t("nav.liked"), sub: `${sum.liked_count} ${t("lib.songs")}` },
+    { nav: "offline", icon: "download", name: t("lib.offlineCard"), sub: `0 ${t("lib.songs")}`, muted: true },
+    { nav: "local", icon: "folder", name: t("nav.local"), sub: `${sum.local_songs} ${t("lib.songs")}` },
+    { nav: "offline", icon: "download", name: t("lib.cacheCard"), sub: `0 ${t("lib.songs")}`, muted: true },
+    { nav: "top-songs", icon: "trending_up", name: t("lib.top50"), sub: `${sum.top_songs.length} ${t("lib.songs")}` },
+  ];
+  return `<section class="section">
+    <div class="section-title">${ICONS.apps} ${t("lib.shortcuts")}</div>
+    <div class="lib-shortcuts">${items.map((it) => `
+      <button class="ls-card${it.muted ? " disabled" : ""}" data-ls-nav="${it.nav}">
+        <span class="ls-ic">${ICONS[it.icon]}</span>
+        <span><div class="ls-name">${esc(it.name)}</div><div class="ls-sub">${esc(it.sub)}</div></span>
+      </button>`).join("")}</div>
+  </section>`;
+}
+
+function libRecentHtml(recent) {
+  if (!recent.length) return "";
+  return `<section class="section">
+    <div class="section-title">${ICONS.history} ${t("lib.recentTitle")}</div>
+    <div class="hscroll" id="libRecent">${recent.map((p) => {
+      const art = hdArt(p.art);
+      return `<div class="cl-item" data-lib-play="${esc(p.id)}" title="${esc(p.title || "")}">
+        <div class="cl-art${art ? "" : " ph"}">${ICONS.music}${art ? `<img src="${esc(art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')">` : ""}</div>
+        <div class="cl-title">${esc(p.title || "Untitled")}</div>
+        <div class="cl-sub">${esc(p.artist || "")}</div>
+      </div>`;
+    }).join("")}</div>
+  </section>`;
+}
+
+function libPlaylistsSection() {
+  const pls = state.lib.playlists || [];
+  return `<section class="section">
+    <div class="section-title">${ICONS.list} ${t("nav.playlists")}</div>
+    ${pls.length ? `<div class="card-grid">${pls.map((p) => `
+      <div class="card" data-local-pl="${p.id}">
+        <div class="card-art placeholder" style="background:var(--accent-grad)">${ICONS.list}</div>
+        <div class="card-title">${esc(p.name)}</div>
+        <div class="card-sub">${p.songs.length} ${t("lib.songs")}</div>
+      </div>`).join("")}</div>` : emptyState(t("playlists.none"), t("playlists.noneSub"))}
+  </section>`;
+}
+
+function libArtistsSection(sum, full = false) {
+  const rows = sum.top_artists || [];
+  if (!rows.length) return "";
+  const list = full ? rows : rows.slice(0, 6);
+  return `<section class="section">
+    <div class="section-title">${ICONS.mic} ${t("search.tabArtists")}</div>
+    <div style="display:flex;flex-direction:column;gap:10px">${list.map((r) => `
+      <div class="lib-artist-row">
+        <span class="la-av">${ICONS.mic}</span>
+        <span><div class="la-name">${esc(r[0])}</div><div class="la-plays">${t("lib.playsCount", { n: r[1] })}</div></span>
+      </div>`).join("")}</div>
+  </section>`;
+}
+
+function bindLibEvents() {
+  const body = $("#libBody");
+  if (!body) return;
+  const play = $("#libHLPlay");
+  if (play) play.addEventListener("click", () => {
+    const songs = (state.lib.sum.top_songs || []).map(songFromPlay);
+    if (songs.length) playQueue(songs, 0);
+  });
+  $$(".ls-card").forEach((c) => c.addEventListener("click", () => navigate(c.dataset.lsNav)));
+  $$(".card[data-local-pl]").forEach((c) => c.addEventListener("click", () => renderLocalPlaylist(c.dataset.localPl)));
+  $$(".cl-item[data-lib-play]").forEach((c) => c.addEventListener("click", async () => {
+    const p = state.lib.recent.find((x) => (x.id || "") === c.dataset.libPlay);
+    if (!p) return;
+    const song = songFromPlay(p);
+    await api("/api/library/play", { method: "POST", body: JSON.stringify(song) }).catch(() => {});
+    playQueue([song], 0);
+  }));
+  const tbl = body.querySelector(".song-table");
+  if (tbl) {
+    state.renderList = state.lib.liked;
+    bindSongRows(tbl, state.lib.liked);
+    markPlaying();
+  }
+}
+
+async function renderLibrary() {
+  const LIB_FILTERS = [["all", "releases.all"], ["playlists", "nav.playlists"], ["songs", "search.tabSongs"], ["artists", "search.tabArtists"]];
+  const f = state.libFilter || "all";
+  viewEl.innerHTML = `<div class="lib-chips">${LIB_FILTERS.map(([id, k]) => `<button class="chip mood ${f === id ? "active" : ""}" data-lib-filter="${id}">${t(k)}</button>`).join("")}</div>
+    <div id="libBody">${loadingHtml()}</div>`;
+  injectIcons(viewEl);
+  $$(".lib-chips .chip").forEach((c) => c.addEventListener("click", () => { state.libFilter = c.dataset.libFilter; renderLibrary(); }));
+  try {
+    await loadLib();
+  } catch (e) { $("#libBody").innerHTML = emptyState("Error", e.message); injectIcons(viewEl); return; }
+  const { sum, recent, liked } = state.lib;
+  const parts = [];
+  if (f === "all") {
+    parts.push(libHighlightHtml(sum), libShortcutsHtml(sum), libRecentHtml(recent));
+    if (sum.playlists_count) parts.push(libPlaylistsSection());
+    if (sum.top_songs.length) parts.push(libArtistsSection(sum));
+  }
+  if (f === "playlists") parts.push(libPlaylistsSection());
+  if (f === "songs") parts.push(`<section class="section"><div class="section-title">${ICONS.heart} ${t("nav.liked")}</div>${liked.length ? songTableHtml(liked) : emptyState(t("liked.none"), t("liked.noneSub"))}</section>`);
+  if (f === "artists") parts.push(libArtistsSection(sum, true));
+  $("#libBody").innerHTML = parts.join("") || emptyState(t("playlists.none"), t("playlists.noneSub"));
+  injectIcons(viewEl);
+  bindLibEvents();
+}
+
+async function renderOffline() {
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("nav.offline")}</div><div class="page-sub">${t("lib.emptyCacheSub")}</div></div><div id="offlineBody"></div>`;
+  $("#offlineBody").innerHTML = emptyState(t("lib.emptyCache"), t("lib.emptyCacheSub"));
+  injectIcons(viewEl);
+}
+
+async function renderTopSongs() {
+  viewEl.innerHTML = `<div class="hero">
+    <div class="hero-art ph">${ICONS.trending_up}</div>
+    <div class="hero-meta">
+      <div class="hero-type">${t("common.topSongs")}</div>
+      <div class="hero-title">${t("lib.top50")}</div>
+      <div class="hero-sub" id="topCount"></div>
+      <div class="hero-actions">
+        <button class="btn-stadium" id="topPlay">${ICONS.play} ${t("common.playTop")}</button>
+        <button class="circ" id="topShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
+      </div>
+    </div></div><div id="topBody">${loadingHtml()}</div>`;
+  injectIcons(viewEl);
+  try {
+    const data = await api("/api/library/stats");
+    const songs = (data.top_songs || []).map(songFromPlay);
+    state.renderList = songs;
+    $("#topCount").textContent = `${songs.length} ${t("lib.songs")}`;
+    const body = $("#topBody");
+    if (!songs.length) { body.innerHTML = emptyState(t("stats.noPlays"), t("lib.noPlaysSub")); injectIcons(viewEl); return; }
+    body.innerHTML = songTableHtml(songs);
+    bindSongRows(body, songs);
+    $("#topPlay").addEventListener("click", () => playQueue(songs, 0));
+    $("#topShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(songs, Math.floor(Math.random() * songs.length)); syncShuffle(); });
+    markPlaying();
+  } catch (e) { $("#topBody").innerHTML = emptyState("Error", e.message); }
+  injectIcons(viewEl);
+}
+
 async function renderLiked() {
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.liked")}</div><div class="page-sub" id="likedCount"></div>
-    <div style="margin-top:14px"><button class="btn" id="likedPlayAll">${ICONS.play} ${t("liked.playAll")}</button></div></div>
-    <div id="likedBody">${loadingHtml()}</div>`;
+  viewEl.innerHTML = `<div class="hero">
+    <div class="hero-art ph">${ICONS.heart}</div>
+    <div class="hero-meta">
+      <div class="hero-type">${t("nav.bliked")}</div>
+      <div class="hero-title">${t("page.liked")}</div>
+      <div class="hero-sub" id="likedCount"></div>
+      <div class="hero-actions">
+        <button class="btn-stadium" id="likedPlayAll">${ICONS.play} ${t("common.play")}</button>
+        <button class="circ" id="likedShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
+      </div>
+    </div></div><div id="likedBody">${loadingHtml()}</div>`;
   injectIcons(viewEl);
   try {
     const data = await api("/api/library/liked");
@@ -1468,6 +1693,7 @@ async function renderLiked() {
     body.innerHTML = songTableHtml(songs);
     bindSongRows(body, songs);
     $("#likedPlayAll").addEventListener("click", () => playQueue(songs, 0));
+    $("#likedShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(songs, Math.floor(Math.random() * songs.length)); syncShuffle(); });
     markPlaying();
   } catch (e) {
     $("#likedBody").innerHTML = emptyState("Error", e.message);
@@ -1511,16 +1737,16 @@ async function renderLocalPlaylist(pid) {
   if (!p) { renderPlaylists(); return; }
   const songs = p.songs || [];
   viewEl.innerHTML = `<div class="hero">
-    <div class="hero-art"><div class="card-art placeholder" style="width:100%;height:100%;background:var(--accent-grad)">${ICONS.list}</div></div>
+    <div class="hero-art ph">${ICONS.list}</div>
     <div class="hero-meta">
       <div class="hero-type">${t("page.playlist")}</div>
       <div class="hero-title">${esc(p.name)}</div>
       <div class="hero-sub">${p.description ? esc(p.description) : ""} ${songs.length} ${t("lib.songs")}</div>
       <div class="hero-actions">
-        <button class="btn" id="lpPlay">${ICONS.play} ${t("common.play")}</button>
-        <button class="btn ghost" id="lpShuffle">${ICONS.shuffle} ${t("common.shuffle")}</button>
-        <button class="btn ghost" id="lpRename">${t("playlists.rename")}</button>
-        <button class="btn danger" id="lpDelete">${t("playlists.delete")}</button>
+        <button class="btn-stadium" id="lpPlay">${ICONS.play} ${t("common.play")}</button>
+        <button class="circ" id="lpShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
+        <button class="circ" id="lpRename" data-ic="edit" title="${t("playlists.rename")}"></button>
+        <button class="circ danger" id="lpDelete" data-ic="trash" title="${t("playlists.delete")}"></button>
       </div>
     </div></div><div id="lpBody"></div>`;
   injectIcons(viewEl);
@@ -2516,6 +2742,10 @@ function wireEvents() {
   // nav
   $$("#nav .nav-item").forEach((b) => b.addEventListener("click", () => navigate(b.dataset.nav)));
   $$("#bnav .bnav-item").forEach((b) => b.addEventListener("click", () => navigate(b.dataset.nav)));
+  bind("#libToggle", () => {
+    const group = $("#libGroup");
+    setLibOpen(!group.classList.contains("open"));
+  });
 
   // search
   const searchInput = $("#searchInput");

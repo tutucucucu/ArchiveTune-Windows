@@ -16,10 +16,16 @@
     <nav id="nav">
       <button class="nav-item active" data-nav="home"><span class="ni-ic" data-ic="home"></span><span data-i18n="nav.home">Home</span></button>
       <button class="nav-item" data-nav="search"><span class="ni-ic" data-ic="search"></span><span data-i18n="nav.search">Search</span></button>
-      <div class="nav-label" data-i18n="nav.library">Library</div>
-      <button class="nav-item" data-nav="liked"><span class="ni-ic" data-ic="heart"></span><span data-i18n="nav.liked">Liked Songs</span></button>
-      <button class="nav-item" data-nav="playlists"><span class="ni-ic" data-ic="list"></span><span data-i18n="nav.playlists">Playlists</span></button>
-      <button class="nav-item" data-nav="local"><span class="ni-ic" data-ic="folder"></span><span data-i18n="nav.local">Local Files</span></button>
+      <div class="nav-group" id="libGroup">
+        <button class="nav-label lib-toggle" id="libToggle" type="button"><span data-i18n="nav.library">Library</span><span class="lib-caret" id="libCaret" data-ic="down"></span></button>
+        <div class="nav-sub" id="libSub">
+          <button class="nav-item" data-nav="library"><span class="ni-ic" data-ic="library"></span><span data-i18n="nav.library">Library</span></button>
+          <button class="nav-item" data-nav="liked"><span class="ni-ic" data-ic="heart"></span><span data-i18n="nav.liked">Liked Songs</span></button>
+          <button class="nav-item" data-nav="playlists"><span class="ni-ic" data-ic="list"></span><span data-i18n="nav.playlists">Playlists</span></button>
+          <button class="nav-item" data-nav="local"><span class="ni-ic" data-ic="folder"></span><span data-i18n="nav.local">Local Files</span></button>
+          <button class="nav-item" data-nav="offline"><span class="ni-ic" data-ic="download"></span><span data-i18n="nav.offline">Offline / Download</span></button>
+        </div>
+      </div>
       <div class="nav-label" data-i18n="nav.more">More</div>
       <button class="nav-item" data-nav="releases"><span class="ni-ic" data-ic="new_releases"></span><span data-i18n="nav.releases">New Releases</span></button>
       <button class="nav-item" data-nav="stats"><span class="ni-ic" data-ic="stats"></span><span data-i18n="nav.stats">Statistics</span></button>
@@ -88,7 +94,7 @@
   <nav id="bnav">
     <button class="bnav-item active" data-nav="home"><span class="bnav-ic" data-ic="home"></span><span class="bnav-label" data-i18n="nav.home">Beranda</span></button>
     <button class="bnav-item" data-nav="search"><span class="bnav-ic" data-ic="search"></span><span class="bnav-label" data-i18n="nav.search">Cari</span></button>
-    <button class="bnav-item" data-nav="liked"><span class="bnav-ic" data-ic="heart"></span><span class="bnav-label" data-i18n="nav.bliked">Pustaka</span></button>
+    <button class="bnav-item" data-nav="library"><span class="bnav-ic" data-ic="library"></span><span class="bnav-label" data-i18n="nav.bliked">Pustaka</span></button>
   </nav>
 
   <!-- Visualizer canvas -->

@@ -284,6 +284,11 @@ def lib_stats():
     return library.aggregated_stats()
 
 
+@app.get("/api/library/summary")
+def lib_summary():
+    return library.library_summary()
+
+
 @app.get("/api/library/calendar")
 def lib_calendar():
     return library.calendar_data()

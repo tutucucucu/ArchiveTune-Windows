@@ -246,6 +246,23 @@ def aggregated_stats():
     }
 
 
+def library_summary():
+    liked = get_liked()
+    pls = get_playlists()
+    agg = aggregated_stats()
+    cache = get_scan_cache()
+    return {
+        "liked_count": len(liked),
+        "playlists_count": len(pls),
+        "playlist_songs": sum(len(p.get("songs", [])) for p in pls),
+        "local_songs": len(cache.get("songs", [])),
+        "total_plays": agg["total_plays"],
+        "top_song": agg["top_songs"][0] if agg["top_songs"] else None,
+        "top_songs": agg["top_songs"],
+        "top_artists": agg["top_artists"],
+    }
+
+
 def get_scan_cache():
     return _load("scan_cache.json", {"root": "", "songs": []})
 
