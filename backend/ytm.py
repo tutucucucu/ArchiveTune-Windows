@@ -4,6 +4,8 @@ import time
 
 import yt_dlp
 from ytmusicapi import YTMusic
+from ytmusicapi.helpers import nav
+from ytmusicapi.mixins.charts import SECTION_LIST, SINGLE_COLUMN_TAB
 
 from library import get_settings, save_settings
 
@@ -299,13 +301,16 @@ def get_charts(country="US"):
     try:
         data = get_client().get_charts(country=country)
     except Exception as e:
-        return {"error": str(e)}
+        try:
+            data = _get_charts_fallback(country)
+        except Exception as e2:
+            return {"error": f"{e}; fallback: {e2}"}
     result = {"videos": [], "artists": [], "genres": []}
     for t in data.get("videos", []):
         result["videos"].append(
             {
                 "type": "chart",
-                "browseId": t.get("playlistId"),
+                "browseId": t.get("playlistId") or t.get("browseId"),
                 "title": t.get("title"),
                 "art": _thumb(t.get("thumbnails")),
             }
@@ -324,12 +329,234 @@ def get_charts(country="US"):
         result["genres"].append(
             {
                 "type": "chart",
-                "browseId": g.get("playlistId"),
+                "browseId": g.get("playlistId") or g.get("browseId"),
                 "title": g.get("title"),
                 "art": _thumb(g.get("thumbnails")),
             }
         )
     return result
+
+
+def _text_of(node):
+    """Extract plain text from a title/subtitle node (runs or simpleText)."""
+    if isinstance(node, str):
+        return node
+    if isinstance(node, dict):
+        if "runs" in node:
+            return "".join(r.get("text", "") for r in node["runs"])
+        if "simpleText" in node:
+            return node["simpleText"]
+        for k in ("title", "text"):
+            if k in node:
+                return _text_of(node[k])
+    return ""
+
+
+def _thumb_urls(node):
+    urls = []
+    try:
+        for t in node.get("thumbnailRenderer", {}).get("musicThumbnailRenderer", {}).get(
+            "thumbnail", {}
+        ).get("thumbnails", []) or node.get("thumbnail", {}).get("musicThumbnailRenderer", {}).get(
+            "thumbnail", {}
+        ).get("thumbnails", []) or node.get("thumbnail", {}).get("thumbnails", []):
+            u = t.get("url")
+            if u:
+                urls.append(u)
+    except Exception:
+        pass
+    if not urls:
+        try:
+            for t in node.get("thumbnail", {}).get("image", {}).get("sources", []):
+                u = t.get("url")
+                if u:
+                    urls.append(u)
+        except Exception:
+            pass
+    return urls
+
+
+def _mrlir_text(node, col=0):
+    """Extract text from a musicResponsiveListItem flex column."""
+    try:
+        cols = node.get("flexColumns", [])
+        if col >= len(cols):
+            return ""
+        col_node = (
+            cols[col]
+            .get("musicResponsiveListItemFlexColumnRenderer", {})
+            .get("text", {})
+        )
+        return _text_of(col_node)
+    except Exception:
+        return ""
+
+
+def _chart_item(norm, bucket):
+    """Normalize one chart item into {'title', 'browseId', 'subtitle', 'thumbnails'}.
+    Thumbnails is a list of dicts ({url, width, height}) to match the shape the
+    upstream ytmusicapi parsers produce, so the shared formatting code keeps working."""
+    browse_id = norm.get("browseId", "")
+    title = _text_of(norm.get("title"))
+    if not title:
+        try:
+            title = _text_of(norm["musicTwoRowItemRenderer"]["title"])
+        except Exception:
+            pass
+    if not browse_id:
+        # newer elementRenderer items put the target under onTap.innertubeCommand
+        try:
+            browse_id = (
+                norm.get("onTap", {})
+                .get("innertubeCommand", {})
+                .get("browseEndpoint", {})
+                .get("browseId", "")
+            )
+        except Exception:
+            pass
+    if not browse_id:
+        # old renderers keep the browse endpoint deeper in the item
+        try:
+            it = (
+                norm.get("musicTwoRowItemRenderer")
+                or norm.get("musicResponsiveListItemRenderer")
+                or norm
+            )
+            browse_id = (
+                it.get("navigationEndpoint", {})
+                .get("browseEndpoint", {})
+                .get("browseId", "")
+            )
+        except Exception:
+            pass
+    if not browse_id:
+        try:
+            overlay = (
+                norm.get("musicTwoRowItemRenderer", {})
+                .get("overlay", {})
+                .get("musicItemThumbnailOverlayRenderer", {})
+                .get("content", {})
+            )
+            for key in ("musicPlayButtonRenderer", "musicThumbnailOverlayRenderer"):
+                if key in overlay:
+                    browse_id = (
+                        overlay.get(key, {})
+                        .get("playNavigationEndpoint", {})
+                        .get("browseEndpoint", {})
+                        .get("browseId", "")
+                    )
+                    break
+        except Exception:
+            pass
+    subtitle = _text_of(norm.get("subtitle"))
+    if not subtitle:
+        try:
+            subtitle = _text_of(
+                norm.get("musicResponsiveListItemRenderer", {}).get("subtitle")
+            )
+        except Exception:
+            pass
+    if not subtitle:
+        try:
+            subtitle = _text_of(
+                norm.get("musicTwoRowItemRenderer", {}).get("subtitle", {})
+                .get("content", {})
+            )
+        except Exception:
+            pass
+    mrlir = norm.get("musicResponsiveListItemRenderer")
+    if mrlir:
+        title = _mrlir_text(mrlir, 0) or title
+        if not subtitle:
+            subtitle = _mrlir_text(mrlir, 1)
+    thumbs = _thumb_urls(norm)
+    if not thumbs:
+        raw = norm.get("musicTwoRowItemRenderer") or norm.get(
+            "musicResponsiveListItemRenderer"
+        )
+        if raw and raw is not norm:
+            thumbs = _thumb_urls(raw)
+    out = {
+        "title": title,
+        "browseId": browse_id,
+        "subtitle": subtitle,
+        "thumbnails": [{"url": u} for u in thumbs],
+    }
+    # old renderer wrappers already extracted above; fall back to raw node
+    if not out["title"] and not out["browseId"]:
+        return None
+    bucket.append(out)
+    return out
+
+
+def _chart_section_items(section):
+    """Extract a list of chart items from one section (old or new YouTube format)."""
+    items = []
+    car = section.get("musicCarouselShelfRenderer")
+    if car:
+        for c in car.get("contents", []):
+            if not isinstance(c, dict):
+                continue
+            _chart_item(c, items)
+        return items
+    iss = section.get("itemSectionRenderer")
+    if iss:
+        for c in iss.get("contents", []):
+            er = (c or {}).get("elementRenderer")
+            if not er:
+                continue
+            try:
+                model = er["newElement"]["type"]["componentType"]["templateConfig"][
+                    "model"
+                ]
+            except Exception:
+                continue
+            grid = model.get("musicGridItemCarouselModel") or {}
+            for it in grid.get("shelf", {}).get("items", []):
+                if not isinstance(it, dict):
+                    continue
+                _chart_item(it, items)
+        return items
+    return None
+
+
+def _get_charts_fallback(country="US"):
+    """Robust chart parser that understands both the classic musicCarouselShelfRenderer
+    layout and the newer elementRenderer/musicGridItemCarouselModel layout."""
+    client = get_client()
+    body = {"browseId": "FEmusic_charts"}
+    if country:
+        body["formData"] = {"selectedValues": [country]}
+    resp = client._send_request("browse", body)
+    results = nav(resp, SINGLE_COLUMN_TAB + SECTION_LIST)
+    playlist_buckets = []
+    artist_items = []
+    for sec in results[1:]:
+        if not isinstance(sec, dict):
+            continue
+        items = _chart_section_items(sec)
+        if not items:
+            continue
+        pls = [it for it in items if it["browseId"].startswith("VL")]
+        arts = [it for it in items if it["browseId"].startswith("UC")]
+        for it in arts:
+            it["subscribers"] = it.get("subtitle") or ""
+        artist_items.extend(arts)
+        if pls:
+            playlist_buckets.append(pls)
+    charts = {"videos": [], "artists": [], "genres": []}
+    if playlist_buckets:
+        charts["videos"] = playlist_buckets[0]
+        rest = playlist_buckets[1:]
+        if country == "US" and rest:
+            charts["genres"] = rest[0]
+            for extra in rest[1:]:
+                charts["videos"].extend(extra)
+        else:
+            for extra in rest:
+                charts["videos"].extend(extra)
+    charts["artists"] = artist_items[:20]
+    return charts
 
 
 def get_mood_categories():
@@ -343,7 +570,9 @@ def get_mood_categories():
 def get_home():
     try:
         c = get_client()
-        if not c.is_authenticated():
+        try:
+            c._check_auth()
+        except Exception:
             return {"error": "Not signed in"}
         home = c.get_home(limit=12)
     except Exception as e:
