@@ -935,8 +935,8 @@ body {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;
 }
 .exp-card {
-  position: relative; display: flex; align-items: flex-end; justify-content: flex-start;
-  height: 156px; padding: 22px; border: 0; border-radius: var(--radius-xl);
+  position: relative; display: flex; align-items: flex-start; justify-content: flex-start;
+  height: 156px; padding: 22px 22px 22px 24px; border: 0; border-radius: var(--radius-xl);
   color: var(--text); text-align: left; cursor: pointer; overflow: hidden;
   transition: transform var(--t), box-shadow var(--t); font-family: inherit;
 }
@@ -974,7 +974,7 @@ body {
 .sugg-row {
   display: grid; grid-template-columns: 34px 52px 1fr 40px; align-items: center; gap: 12px;
   padding: 10px 14px; border-radius: var(--radius-md); cursor: pointer; position: relative;
-  background: var(--surface-1);
+  background: color-mix(in srgb, var(--surface-2) 32%, var(--surface));
   transition: background var(--t), transform var(--t), box-shadow var(--t);
 }
 .sugg-row::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; opacity: 0; pointer-events: none; transition: opacity var(--t); }
