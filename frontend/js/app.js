@@ -1930,7 +1930,10 @@ function bindSongRows(container, songs) {
   container.querySelectorAll(".song-row[data-i]").forEach((row) => {
     row.addEventListener("click", (e) => {
       if (e.target.closest("button")) return;
-      playQueue(songs, +row.dataset.i);
+      const song = songs[+row.dataset.i];
+      if (!song) return;
+      if (song.source === "local") playQueue(songs, +row.dataset.i);
+      else playQueue([song], 0);
     });
   });
 }
