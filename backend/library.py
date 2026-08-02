@@ -167,17 +167,9 @@ def get_stats():
 
 def add_play(song):
     st = get_stats()
-    st["plays"].append(
-        {
-            "id": song.get("id", ""),
-            "title": song.get("title", ""),
-            "artist": song.get("artist", ""),
-            "album": song.get("album", ""),
-            "art": song.get("art"),
-            "source": song.get("source", ""),
-            "ts": time.time(),
-        }
-    )
+    entry = dict(song)
+    entry["ts"] = time.time()
+    st["plays"].append(entry)
     st["plays"] = st["plays"][-20000:]
     _save("stats.json", st)
 

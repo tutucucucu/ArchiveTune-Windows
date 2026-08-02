@@ -83,6 +83,114 @@ const T = {
   "page.artist": { id: "Artis", en: "Artist", jp: "アーティスト" },
   "page.playlist": { id: "Playlist", en: "Playlist", jp: "プレイリスト" },
   "cal.sub": { id: "Rekap kapan kamu dengerin musik.", en: "A recap of when you listened to music.", jp: "いつ音楽を聴いたかの記録。" },
+  "cal.na": { id: "Tidak tersedia", en: "Not available", jp: "利用できません" },
+  "cal.naSub": { id: "Fitur kalender tidak tersedia untuk saat ini.", en: "The calendar feature is not available right now.", jp: "カレンダー機能は現在利用できません。" },
+  "search.tabAll": { id: "Semua", en: "All", jp: "すべて" },
+  "search.tabSongs": { id: "Lagu", en: "Songs", jp: "曲" },
+  "search.tabVideos": { id: "Video", en: "Videos", jp: "動画" },
+  "search.tabAlbums": { id: "Album", en: "Albums", jp: "アルバム" },
+  "search.tabArtists": { id: "Artis", en: "Artists", jp: "アーティスト" },
+  "search.albums": { id: "Album", en: "Albums", jp: "アルバム" },
+  "search.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
+  "explore.artists": { id: "Artis", en: "Artists", jp: "アーティスト" },
+  "mood.relax": { id: "Tenang & fokus", en: "Calm & focus", jp: "リラックス＆集中" },
+  "mood.energize": { id: "Semangat pagi", en: "Morning energy", jp: "朝の活力" },
+  "mood.commute": { id: "Temani perjalanan", en: "For the commute", jp: "通勤のお供" },
+  "mood.feelgood": { id: "Bikin hari ceria", en: "Make your day", jp: "気分を明るく" },
+  "mood.sad": { id: "Lagu melankolis", en: "Melancholy songs", jp: "メランコリック" },
+  "mood.romantic": { id: "Romansa & kasih", en: "Romance & love", jp: "ロマンス＆愛" },
+  "recent.played": { id: "Terakhir diputar", en: "Last played", jp: "最後に再生" },
+  "share.noLink": { id: "Tidak ada link untuk lagu ini", en: "No link for this song", jp: "この曲のリンクはありません" },
+  "common.play": { id: "Putar", en: "Play", jp: "再生" },
+  "common.shuffle": { id: "Acak", en: "Shuffle", jp: "シャッフル" },
+  "song.title": { id: "Judul", en: "Title", jp: "タイトル" },
+  "song.artist": { id: "Artis", en: "Artist", jp: "アーティスト" },
+  "song.album": { id: "Album", en: "Album", jp: "アルバム" },
+  "song.duration": { id: "Durasi", en: "Duration", jp: "時間" },
+  "stats.topArtists": { id: "Artis Teratas", en: "Top Artists", jp: "トップアーティスト" },
+  "stats.topSongs": { id: "Lagu Teratas", en: "Top Songs", jp: "トップ曲" },
+  "stats.perDay": { id: "Putaran per Hari", en: "Plays per Day", jp: "1日の再生数" },
+  "stats.total": { id: "Total putaran", en: "Total plays", jp: "総再生数" },
+  "stats.topArtist": { id: "Artis teratas", en: "Top artist", jp: "トップアーティスト" },
+  "stats.topSongPlays": { id: "Putaran lagu teratas", en: "Top song plays", jp: "トップ曲の再生数" },
+  "stats.daysTracked": { id: "Hari terpantau", en: "Days tracked", jp: "記録日数" },
+  "stats.noPlays": { id: "Belum ada putaran", en: "No plays recorded yet", jp: "再生記録はまだありません" },
+  "lib.songs": { id: "lagu", en: "songs", jp: "曲" },
+  "lib.tracks": { id: "lagu", en: "tracks", jp: "曲" },
+  "common.playTop": { id: "Putar lagu teratas", en: "Play top songs", jp: "トップ曲を再生" },
+  "common.topSongs": { id: "Lagu teratas", en: "Top songs", jp: "トップ曲" },
+  "liked.none": { id: "Belum ada lagu disukai", en: "No liked songs yet", jp: "好きな曲はまだありません" },
+  "liked.noneSub": { id: "Ketuk hati pada lagu mana pun untuk menyimpannya di sini.", en: "Tap the heart on any song to save it here.", jp: "任意の曲のハートをタップしてここに保存してください。" },
+  "playlists.none": { id: "Belum ada playlist", en: "No playlists yet", jp: "プレイリストはまだありません" },
+  "playlists.noneSub": { id: "Buat satu untuk mulai mengumpulkan lagu.", en: "Create one to start collecting songs.", jp: "曲を集めるには作成してください。" },
+  "playlists.empty": { id: "Playlist kosong", en: "Empty playlist", jp: "空のプレイリスト" },
+  "playlists.emptySub": { id: "Tambahkan lagu dengan tombol +.", en: "Add songs with the + button.", jp: "+ボタンで曲を追加します。" },
+  "artist.noTop": { id: "Tidak ada lagu teratas", en: "No top songs", jp: "トップ曲はありません" },
+  "artist.noAlbums": { id: "Tidak ada album", en: "No albums", jp: "アルバムはありません" },
+  "artist.noSongs": { id: "Tidak ada lagu", en: "No songs", jp: "曲はありません" },
+  "playlists.rename": { id: "Ganti nama", en: "Rename", jp: "名前を変更" },
+  "playlists.delete": { id: "Hapus", en: "Delete", jp: "削除" },
+  "set.country": { id: "Negara chart", en: "Charts country", jp: "チャート国" },
+  "set.countryDesc": { id: "Wilayah untuk chart beranda", en: "Region for home charts", jp: "ホームチャートの地域" },
+  "set.eq": { id: "Equalizer", en: "Equalizer", jp: "イコライザー" },
+  "set.eqDesc": { id: "EQ 10-band & visualizer", en: "10-band EQ & visualizer", jp: "10バンドEQとビジュアライザー" },
+  "set.openEq": { id: "Buka EQ", en: "Open EQ", jp: "EQを開く" },
+  "set.ytm": { id: "YouTube Music", en: "YouTube Music", jp: "YouTube Music" },
+  "set.signin": { id: "Masuk (opsional)", en: "Sign in (optional)", jp: "ログイン（任意）" },
+  "set.cookieDesc": { id: "Tempel cookie YouTube Music (dari browser yang sudah login) untuk mengakses akun & lagu disukai. Kosongkan untuk mode tamu.", en: "Paste your YouTube Music cookie (from a logged-in browser) to access your account & liked songs. Leave empty for guest mode.", jp: "ログイン済みブラウザのYouTube Music cookieを貼り付けて、アカウントと好きな曲にアクセスします。ゲストモードの場合は空のままにします。" },
+  "set.cookiePh": { id: "tempel cookie...", en: "paste cookie...", jp: "cookieを貼り付け..." },
+  "set.status": { id: "Status", en: "Status", jp: "ステータス" },
+  "set.checking": { id: "memeriksa...", en: "checking...", jp: "確認中..." },
+  "set.saveCookie": { id: "Simpan cookie", en: "Save cookie", jp: "Cookieを保存" },
+  "set.lf": { id: "Scrobbling Last.fm", en: "Last.fm Scrobbling", jp: "Last.fm スクロブ" },
+  "set.apiKey": { id: "API key", en: "API key", jp: "APIキー" },
+  "set.sharedSecret": { id: "Shared secret", en: "Shared secret", jp: "共有シークレット" },
+  "set.username": { id: "Username", en: "Username", jp: "ユーザー名" },
+  "set.password": { id: "Kata sandi", en: "Password", jp: "パスワード" },
+  "set.apiSecretPh": { id: "API secret", en: "API secret", jp: "APIシークレット" },
+  "set.passPh": { id: "kata sandi", en: "password", jp: "パスワード" },
+  "set.connect": { id: "Hubungkan", en: "Connect", jp: "接続" },
+  "set.about": { id: "Tentang", en: "About", jp: "このアプリについて" },
+  "set.aboutDesc": { id: "Port tidak resmi — backend Python + frontend HTML/CSS/JS. Didukung oleh YouTube Music API & yt-dlp. Tidak berafiliasi dengan Google.", en: "Unofficial port — Python backend + HTML/CSS/JS frontend. Powered by YouTube Music API & yt-dlp. Not affiliated with Google.", jp: "非公式ポート — Pythonバックエンド+HTML/CSS/JSフロントエンド。YouTube Music APIとyt-dlpを使用。Googleとは無関係です。" },
+  "set.dark": { id: "Gelap", en: "Dark", jp: "ダーク" },
+  "set.light": { id: "Terang", en: "Light", jp: "ライト" },
+  "toast.cookieSaved": { id: "Cookie disimpan", en: "Cookie saved", jp: "Cookieを保存しました" },
+  "toast.lfConnected": { id: "Terhubung ke Last.fm", en: "Connected to Last.fm", jp: "Last.fmに接続しました" },
+  "lf.loginFailed": { id: "login gagal", en: "login failed", jp: "ログイン失敗" },
+  "lyrics.noLocal": { id: "Tidak ada lirik untuk file lokal (cari di YTM sebagai gantinya).", en: "No lyrics for local files (search YTM instead).", jp: "ローカルファイルの歌詞はありません（代わりにYTMで検索してください）。" },
+  "lyrics.fail": { id: "Tidak dapat memuat lirik.", en: "Could not load lyrics.", jp: "歌詞を読み込めませんでした。" },
+  "lyrics.none": { id: "Tidak ada lirik ditemukan", en: "No lyrics found", jp: "歌詞が見つかりません" },
+  "charts.none": { id: "Chart tidak tersedia", en: "No charts available", jp: "チャートがありません" },
+  "charts.noneSub": { id: "Coba ubah negara chart di Pengaturan.", en: "Try changing the charts country in Settings.", jp: "設定でチャート国を変更してみてください。" },
+  "local.none": { id: "Tidak ada musik ditemukan", en: "No music found", jp: "音楽が見つかりません" },
+  "local.noneSub": { id: "Pilih folder yang berisi file audio.", en: "Choose a folder containing audio files.", jp: "オーディオファイルを含むフォルダを選択してください。" },
+  "local.scanFail": { id: "Pemindaian gagal", en: "Scan failed", jp: "スキャンに失敗しました" },
+  "folder.choose": { id: "Pilih folder berisi musik", en: "Choose a folder with music", jp: "音楽のあるフォルダを選択" },
+  "folder.up": { id: ".. Naik", en: ".. Up", jp: ".. 上へ" },
+  "folder.use": { id: "Gunakan folder ini", en: "Use this folder", jp: "このフォルダを使用" },
+  "folder.none": { id: "Tidak ada folder di sini.", en: "No folders here.", jp: "フォルダはありません。" },
+  "common.close": { id: "Tutup", en: "Close", jp: "閉じる" },
+  "ytm.unavailable": { id: "YouTube Music tidak tersedia", en: "YouTube Music unavailable", jp: "YouTube Music を利用できません" },
+  "ytm.unavailableSub": { id: "Coba atur VPN ke wilayah yang didukung, atau gunakan File Lokal.", en: "set a VPN to a supported region, or use Local Files.", jp: "対応地域のVPNを設定するか、ローカルファイルを使用してください。" },
+  "search.noResults": { id: "Tidak ada hasil", en: "No results", jp: "結果がありません" },
+  "search.nothingFor": { id: 'Tidak ada hasil untuk "{q}".', en: 'Nothing found for "{q}".', jp: '「{q}」の結果は見つかりませんでした。' },
+  "search.failed": { id: "Pencarian gagal", en: "Search failed", jp: "検索に失敗しました" },
+  "song.like": { id: "Suka", en: "Like", jp: "いいね" },
+  "pl.addTo": { id: "Tambahkan ke playlist", en: "Add to playlist", jp: "プレイリストに追加" },
+  "liked.playAll": { id: "Putar semua", en: "Play all", jp: "すべて再生" },
+  "local.choose": { id: "Pilih folder", en: "Choose folder", jp: "フォルダを選択" },
+  "local.chooseFirst": { id: "Pilih folder dulu", en: "Choose a folder first", jp: "先にフォルダを選択してください" },
+  "local.chooseFirstSub": { id: "Klik 'Pilih folder' untuk memindai musik Anda.", en: "Click 'Choose folder' to scan your music.", jp: "「フォルダを選択」をクリックして音楽をスキャンします。" },
+  "toast.playbackFailed": { id: "Pemutaran gagal: ", en: "Playback failed: ", jp: "再生に失敗しました: " },
+  "toast.cantPlay": { id: "Tidak dapat memutar trek ini.", en: "Could not play this track.", jp: "この曲を再生できませんでした。" },
+  "common.loading": { id: "Memuat...", en: "Loading...", jp: "読み込み中..." },
+  "common.more": { id: "Lainnya", en: "More", jp: "もっと見る" },
+  "common.share": { id: "Bagikan tautan", en: "Share link", jp: "リンクを共有" },
+  "playlists.new": { id: "Playlist baru", en: "New playlist", jp: "新しいプレイリスト" },
+  "playlists.name": { id: "Nama playlist:", en: "Playlist name:", jp: "プレイリスト名:" },
+  "toast.plName": { id: "Masukkan nama playlist", en: "Enter a playlist name", jp: "プレイリスト名を入力してください" },
+  "toast.plCreated": { id: "Playlist dibuat dan lagu ditambahkan", en: "Playlist created and song added", jp: "プレイリストを作成し、曲を追加しました" },
+  "toast.plAdded": { id: "Ditambahkan ke playlist", en: "Added to playlist", jp: "プレイリストに追加しました" },
   "home.sub": { id: "Selamat datang kembali — ayo putar sesuatu yang bagus hari ini.", en: "Welcome back — let's play something great today.", jp: "おかえりなさい — 今日もいい音楽をかけよう。" },
   "home.quick": { id: "Pilihan Cepat", en: "Quick picks", jp: "クイックピック" },
   "home.continue": { id: "Teruslah Mendengarkan", en: "Continue listening", jp: "再生の続き" },
@@ -217,7 +325,7 @@ function toast(msg, ms = 2600) {
 }
 
 async function shareSong(song) {
-  if (!song || !song.videoId) { toast("Tidak ada link untuk lagu ini"); return; }
+  if (!song || !song.videoId) { toast(t("share.noLink")); return; }
   const url = `https://music.youtube.com/watch?v=${song.videoId}`;
   try {
     await navigator.clipboard.writeText(url);
@@ -377,15 +485,24 @@ function drawCanvas(cv, data) {
 }
 
 /* ---------------- media session ---------------- */
+function syncMsPlayback() {
+  if (!("mediaSession" in navigator)) return;
+  try {
+    navigator.mediaSession.playbackState = !audio.paused && !audio.ended ? "playing" : "paused";
+  } catch {}
+}
+
 function setupMediaSession() {
   if (!("mediaSession" in navigator)) return;
   const ms = navigator.mediaSession;
   try {
-    ms.setActionHandler("play", () => { if (state.xfadeActive) cancelXfade(); audio.play(); });
-    ms.setActionHandler("pause", () => { if (state.xfadeActive) cancelXfade(); audio.pause(); });
+    ms.setActionHandler("play", () => { if (state.xfadeActive) cancelXfade(); audio.play(); syncMsPlayback(); });
+    ms.setActionHandler("pause", () => { if (state.xfadeActive) cancelXfade(); audio.pause(); syncMsPlayback(); });
     ms.setActionHandler("previoustrack", () => prev());
     ms.setActionHandler("nexttrack", () => next(false));
     ms.setActionHandler("seekto", (d) => { if (state.xfadeActive) cancelXfade(); if (d.seekTime != null) audio.currentTime = d.seekTime; });
+    ms.setActionHandler("seekforward", () => { if (state.xfadeActive) cancelXfade(); audio.currentTime = Math.min(audio.currentTime + 10, audio.duration || audio.currentTime + 10); });
+    ms.setActionHandler("seekbackward", () => { if (state.xfadeActive) cancelXfade(); audio.currentTime = Math.max(0, audio.currentTime - 10); });
   } catch {}
 }
 
@@ -412,7 +529,7 @@ function playCurrent() {
   audio.src = src;
   audio.playbackRate = parseFloat(state.settings.speed || 1);
   audio.volume = state.settings.volume ?? 1;
-  audio.play().catch((e) => toast("Playback failed: " + e.message));
+  audio.play().catch((e) => toast(t("toast.playbackFailed") + e.message));
   updateNowPlayingUI();
   loadLyrics(song);
   recordPlay();
@@ -436,15 +553,25 @@ function updateNowPlayingUI() {
   if (npOpen) syncNpVizState();
 }
 
-function openArtistFromCurrent() {
+async function openArtistFromCurrent() {
   const s = state.current;
   const a = s && s.artists && s.artists[0];
   if (a && a.browseId) {
     closeNowPlaying();
     navigate("artist", { browseId: a.browseId });
-  } else if (s && s.artist) {
+    return;
+  }
+  if (s && s.artist) {
     closeNowPlaying();
-    navigate("search", { q: s.artist });
+    try {
+      const data = await api(`/api/ytm/search?q=${encodeURIComponent(s.artist)}&type=artists&limit=5`);
+      const first = (data.items || [])[0];
+      if (first && first.browseId) {
+        navigate("artist", { browseId: first.browseId });
+        return;
+      }
+    } catch {}
+    navigate("search", { q: s.artist, type: "artists" });
   }
 }
 
@@ -467,6 +594,7 @@ function togglePlay() {
 }
 function playPauseIcon() {
   const playing = !audio.paused && !audio.ended;
+  syncMsPlayback();
   ["#pPlay", "#npPlay"].forEach((sel) => {
     const b = $(sel);
     if (!b) return;
@@ -702,7 +830,7 @@ async function loadLyrics(song, provider) {
   state.lyrics = null;
   $("#lyrics").innerHTML = `<div class="lyrics-empty">${t("lyrics.loading")}</div>`;
   if (song.source === "local") {
-    $("#lyrics").innerHTML = '<div class="lyrics-empty">No lyrics for local files (search YTM instead).</div>';
+    $("#lyrics").innerHTML = `<div class="lyrics-empty">${t("lyrics.noLocal")}</div>`;
     setLyricsProviderUi(null);
     return;
   }
@@ -717,7 +845,7 @@ async function loadLyrics(song, provider) {
     setLyricsProviderUi(data.provider || "auto");
     renderLyrics();
   } catch {
-    $("#lyrics").innerHTML = '<div class="lyrics-empty">Could not load lyrics.</div>';
+    $("#lyrics").innerHTML = `<div class="lyrics-empty">${t("lyrics.fail")}</div>`;
   }
 }
 
@@ -757,7 +885,7 @@ function renderLyrics() {
     const text = state.romMode && L.romanized_plain ? L.romanized_plain : L.plain;
     wrap.innerHTML = `<div class="lyric-line">${esc(text).replace(/\n/g, "<br>")}</div>`;
   } else {
-    wrap.innerHTML = '<div class="lyrics-empty">No lyrics found</div>';
+    wrap.innerHTML = `<div class="lyrics-empty">${t("lyrics.none")}</div>`;
   }
   const w = $("#lyricsWrap");
   if (w) w.scrollTop = 0;
@@ -803,18 +931,18 @@ async function openPlaylistModal(song) {
   const modal = $("#playlistModal");
   const list = $("#plList");
   list.innerHTML = state.playlists.map((p) =>
-    `<div class="pl-row" data-pl-add="${p.id}"><div class="lib-art ph">${ICONS.list}</div><div><div class="lib-name">${esc(p.name)}</div><div class="lib-count">${p.songs.length} songs</div></div><span style="margin-left:auto;color:var(--primary)">${ICONS.plus}</span></div>`
-  ).join("") || '<div class="lyrics-empty">No playlists yet</div>';
-  $("#plModalTitle").textContent = `Save "${song.title}" to playlist`;
+    `<div class="pl-row" data-pl-add="${p.id}"><div class="lib-art ph">${ICONS.list}</div><div><div class="lib-name">${esc(p.name)}</div><div class="lib-count">${p.songs.length} ${t("lib.songs")}</div></div><span style="margin-left:auto;color:var(--primary)">${ICONS.plus}</span></div>`
+  ).join("") || `<div class="lyrics-empty">${t("playlists.none")}</div>`;
+  $("#plModalTitle").textContent = `${t("pl.save")}: "${song.title}"`;
   injectIcons(modal);
   modal.classList.remove("hidden");
   $("#plNewCreate").addEventListener("click", async () => {
     const name = $("#plNewName").value.trim();
-    if (!name) { toast("Enter a playlist name"); return; }
+    if (!name) { toast(t("toast.plName")); return; }
     try {
       const p = await api("/api/library/playlists", { method: "POST", body: JSON.stringify({ name }) });
       await api(`/api/library/playlists/${p.id}/songs`, { method: "POST", body: JSON.stringify(song) });
-      toast("Playlist created and song added");
+      toast(t("toast.plCreated"));
       $("#playlistModal").classList.add("hidden");
       await loadPlaylists();
     } catch (e) { toast(e.message); }
@@ -826,7 +954,7 @@ async function addSongToPlaylist(pid) {
   if (!song) return;
   try {
     await api(`/api/library/playlists/${pid}/songs`, { method: "POST", body: JSON.stringify(song) });
-    toast("Added to playlist");
+    toast(t("toast.plAdded"));
     $("#playlistModal").classList.add("hidden");
   } catch (e) { toast(e.message); }
 }
@@ -869,27 +997,27 @@ function navigate(name, params = {}) {
   renderHome();
 }
 
-const MOODS = [["relax", "Relax"], ["energize", "Energize"], ["commute", "Commute"], ["feel-good", "Feel good"], ["sad", "Sad"], ["romantic", "Romantic"]];
+const MOODS = [["relax", "mood.relax"], ["energize", "mood.energize"], ["commute", "mood.commute"], ["feel-good", "mood.feelgood"], ["sad", "mood.sad"], ["romantic", "mood.romantic"]];
 
 const SEARCH_TABS = [
-  { id: "all", label: "Semua", icon: "apps" },
-  { id: "songs", label: "Lagu", icon: "music" },
-  { id: "videos", label: "Video", icon: "smart" },
-  { id: "albums", label: "Album", icon: "disc" },
-  { id: "artists", label: "Artis", icon: "mic" },
+  { id: "all", i18n: "search.tabAll", icon: "apps" },
+  { id: "songs", i18n: "search.tabSongs", icon: "music" },
+  { id: "videos", i18n: "search.tabVideos", icon: "smart" },
+  { id: "albums", i18n: "search.tabAlbums", icon: "disc" },
+  { id: "artists", i18n: "search.tabArtists", icon: "mic" },
 ];
 
 const EXPLORE_CATEGORIES = [
-  { id: "relax", label: "Relax", sub: "Tenang & fokus", icon: "self_improvement" },
-  { id: "energize", label: "Energize", sub: "Semangat pagi", icon: "bolt" },
-  { id: "commute", label: "Commute", sub: "Temani perjalanan", icon: "directions_bus" },
-  { id: "feel-good", label: "Feel Good", sub: "Bikin hari ceria", icon: "sentiment_satisfied" },
-  { id: "sad", label: "Sad", sub: "Lagu melankolis", icon: "water_drop" },
-  { id: "romantic", label: "Romantic", sub: "Romansa & kasih", icon: "heart" },
+  { id: "relax", label: "Relax", subKey: "mood.relax", icon: "self_improvement" },
+  { id: "energize", label: "Energize", subKey: "mood.energize", icon: "bolt" },
+  { id: "commute", label: "Commute", subKey: "mood.commute", icon: "directions_bus" },
+  { id: "feel-good", label: "Feel Good", subKey: "mood.feelgood", icon: "sentiment_satisfied" },
+  { id: "sad", label: "Sad", subKey: "mood.sad", icon: "water_drop" },
+  { id: "romantic", label: "Romantic", subKey: "mood.romantic", icon: "heart" },
 ];
 
 async function renderHome() {
-  viewEl.innerHTML = `<div class="mood-row" id="moodRow">${MOODS.map(([k, l]) => `<button class="chip mood" data-mood="${k}">${l}</button>`).join("")}</div>
+  viewEl.innerHTML = `<div class="mood-row" id="moodRow">${MOODS.map(([k, sk]) => `<button class="chip mood" data-mood="${k}">${t(sk)}</button>`).join("")}</div>
   <div id="homeBody"></div>`;
   injectIcons(viewEl);
   const body = $("#homeBody");
@@ -934,10 +1062,10 @@ async function renderHome() {
       gens.length ? genresHtml(gens) : "",
     ].filter(Boolean).join("");
 
-    if (!html) body.innerHTML = emptyState("No charts available", "Try changing the charts country in Settings.");
+    if (!html) body.innerHTML = emptyState(t("charts.none"), t("charts.noneSub"));
     else body.innerHTML = html;
   } catch (e) {
-    body.innerHTML = emptyState("YouTube Music unavailable", e.message + " — set a VPN to a supported region, or use Local Files.");
+    body.innerHTML = emptyState(t("ytm.unavailable"), e.message + " — " + t("ytm.unavailableSub"));
   }
   injectIcons(body);
   return chartsSkeleton(body);
@@ -961,7 +1089,7 @@ function quickPicksHtml(hero, side) {
     <div class="qp-hero-grad"></div>
     <div class="qp-hero-meta">
       <div class="qp-hero-tag">${esc(t("home.quick"))}</div>
-      <div class="qp-hero-title">${esc(hero.title || "Pilihan Cepat")}</div>
+      <div class="qp-hero-title">${esc(hero.title || t("home.quick"))}</div>
       ${hero.artist ? `<div class="qp-hero-sub">${esc(hero.artist)}</div>` : hero.subtitle ? `<div class="qp-hero-sub">${esc(hero.subtitle)}</div>` : ""}
     </div>
     <div class="qp-hero-play">${ICONS.play}</div>`;
@@ -1091,13 +1219,14 @@ function recentRowHtml(p, i) {
     <span class="s-title">${esc(p.title || "Untitled")}</span>
     <span class="s-artist">${esc(p.artist || "")}</span>
     <span class="s-album">${esc(p.album || "")}</span>
-    <span class="s-dur" title="Terakhir diputar">${timeAgo(p.ts)}</span>
+    <span class="s-dur" title="${t("recent.played")}">${timeAgo(p.ts)}</span>
     <span class="rp-play">${ICONS.play}</span>
   </div>`;
 }
 
 async function renderSearch() {
   const q = state.viewParams.q || "";
+  if (state.viewParams.type && SEARCH_TABS.some((tb) => tb.id === state.viewParams.type)) state.searchType = state.viewParams.type;
   if (!q) {
     viewEl.innerHTML = '<div id="searchLanding"></div>';
     injectIcons(viewEl);
@@ -1105,9 +1234,9 @@ async function renderSearch() {
     return;
   }
   viewEl.innerHTML = `<div class="tabs" id="searchTabs">
-    ${SEARCH_TABS.map((t) =>
-      `<button class="tab ${state.searchType === t.id ? "active" : ""}" data-tab="${t.id}">
-        <span class="t-ic">${ICONS[t.icon]}</span><span class="t-label">${t.label}</span>
+    ${SEARCH_TABS.map((tab) =>
+      `<button class="tab ${state.searchType === tab.id ? "active" : ""}" data-tab="${tab.id}">
+        <span class="t-ic">${ICONS[tab.icon]}</span><span class="t-label">${t(tab.i18n)}</span>
       </button>`).join("")}
   </div><div id="searchResults">${loadingHtml()}</div>`;
   const results = $("#searchResults");
@@ -1119,7 +1248,7 @@ async function renderSearch() {
     const data = await api(`/api/ytm/search?q=${encodeURIComponent(q)}&type=${state.searchType}&limit=30`);
     if (data.error) throw new Error(data.error);
     if (!data.items.length) {
-      results.innerHTML = emptyState("No results", `Nothing found for "${q}".`);
+      results.innerHTML = emptyState(t("search.noResults"), t("search.nothingFor").replace("{q}", q));
       return;
     }
     if (state.searchType === "songs" || state.searchType === "videos") {
@@ -1132,7 +1261,7 @@ async function renderSearch() {
     const type = state.searchType;
     results.innerHTML = searchGridHtml(type, data.items);
   } catch (e) {
-    results.innerHTML = emptyState("Search failed", e.message);
+    results.innerHTML = emptyState(t("search.failed"), e.message);
   }
 }
 
@@ -1143,7 +1272,7 @@ function searchListHtml(items, { title = "Top results", idxMap = null } = {}) {
 }
 
 function searchGridHtml(type, items) {
-  const cfg = { albums: ["Album", "album"], artists: ["Artis", "artist"], playlists: ["Playlist", "playlist"] }[type] || [type, type];
+  const cfg = { albums: [t("search.tabAlbums"), "album"], artists: [t("explore.artists"), "artist"], playlists: [t("search.playlists"), "playlist"] }[type] || [type, type];
   const title = cfg[0], cardType = cfg[1];
   return `<div class="top-label"><span class="top-bar"></span><span class="tl-text">${esc(title)}</span></div>
     <div class="card-grid">${items.map((c) => cardHtml(c.title || c.name, c.art, cardType, c.browseId, (cardType === "artist" ? c.subscribers : c.artist) || "")).join("")}</div>`;
@@ -1166,7 +1295,7 @@ async function renderSearchAll(results, q) {
   const combined = [...sList, ...vList];
   state.renderList = combined;
   if (!combined.length && !aList.length && !rList.length && !pList.length) {
-    results.innerHTML = emptyState("No results", `Nothing found for "${q}".`);
+    results.innerHTML = emptyState(t("search.noResults"), t("search.nothingFor").replace("{q}", q));
     return;
   }
   const idxMap = new Map();
@@ -1177,8 +1306,8 @@ async function renderSearchAll(results, q) {
     html += `<section class="srch-section">${searchListHtml(combined.slice(0, 3), { idxMap })}</section>`;
     const restSongs = sList.filter((s) => !inTop.has(s.videoId));
     const restVids = vList.filter((s) => !inTop.has(s.videoId));
-    if (restSongs.length) html += `<section class="srch-section">${searchListHtml(restSongs, { title: "Lagu", idxMap })}</section>`;
-    if (restVids.length) html += `<section class="srch-section">${searchListHtml(restVids, { title: "Video", idxMap })}</section>`;
+    if (restSongs.length) html += `<section class="srch-section">${searchListHtml(restSongs, { title: t("search.tabSongs"), idxMap })}</section>`;
+    if (restVids.length) html += `<section class="srch-section">${searchListHtml(restVids, { title: t("search.tabVideos"), idxMap })}</section>`;
   }
   if (aList.length) html += `<section class="srch-section">${searchGridHtml("albums", aList)}</section>`;
   if (rList.length) html += `<section class="srch-section">${searchGridHtml("artists", rList)}</section>`;
@@ -1202,12 +1331,11 @@ async function renderExploreLanding(body) {
     const gens = charts.genres || [];
     let html = "";
 
-    html += `<section class="section"><div class="section-title">${ICONS.apps} Jelajahi</div>
+    html += `<section class="section"><div class="section-title">${ICONS.apps} ${t("explore.title")}</div>
       <div class="exp-grid">${EXPLORE_CATEGORIES.map((c, i) => `
         <button class="exp-card grad-${i % 6}" data-mood="${c.id}">
           <span class="exp-ic">${ICONS[c.icon]}</span>
-          <span class="exp-label">${c.label}</span>
-          <span class="exp-sub">${c.sub}</span>
+          <span class="exp-label">${t(c.subKey)}</span>
         </button>`).join("")}</div></section>`;
 
     if (vids.length) {
@@ -1225,7 +1353,7 @@ async function renderExploreLanding(body) {
     }
 
     if (arts.length) {
-      html += `<section class="section"><div class="section-title">${ICONS.mic} Artis</div>
+      html += `<section class="section"><div class="section-title">${ICONS.mic} ${t("explore.artists")}</div>
         <div class="hscroll">${arts.map((a) => `
           <div class="cl-item" data-card data-type="artist" data-browse="${esc(a.browseId)}">
             ${a.art ? `<div class="cl-art round"><img src="${esc(a.art)}" loading="lazy"></div>` : `<div class="cl-art round ph">${ICONS.music}</div>`}
@@ -1244,15 +1372,15 @@ async function renderExploreLanding(body) {
           </div>`).join("")}</div></section>`;
     }
 
-    content.innerHTML = html || emptyState("No charts available", "Try changing the charts country in Settings.");
+    content.innerHTML = html || emptyState(t("charts.none"), t("charts.noneSub"));
   } catch (e) {
-    content.innerHTML = emptyState("YouTube Music unavailable", e.message + " — set a VPN to a supported region, or use Local Files.");
+    content.innerHTML = emptyState(t("ytm.unavailable"), e.message + " — " + t("ytm.unavailableSub"));
   }
   injectIcons(content);
 }
 
 function loadingHtml() {
-  return '<div class="empty-state"><div class="es-ic" style="animation:discspin 1s linear infinite">' + ICONS.disc + "</div><p>Loading...</p></div>";
+  return '<div class="empty-state"><div class="es-ic" style="animation:discspin 1s linear infinite">' + ICONS.disc + '</div><p>' + t("common.loading") + '</p></div>';
 }
 
 function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
@@ -1261,13 +1389,13 @@ function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
     : `<div class="s-art ph">${ICONS.music}</div>`;
   const acts = actions
     ? `<div class="s-actions">
-        <button class="icon-btn s-hl" data-heart data-sid="${esc(s.id)}" title="Like">${ICONS["heart-out"]}</button>
-        <button class="icon-btn s-hl" data-pl-add-btn title="Save to playlist">${ICONS.plus}</button>
-        <button class="icon-btn s-more" data-more title="More">${ICONS.more}</button>
+        <button class="icon-btn s-hl" data-heart data-sid="${esc(s.id)}" title="${t("song.like")}">${ICONS["heart-out"]}</button>
+        <button class="icon-btn s-hl" data-pl-add-btn title="${t("pl.save")}">${ICONS.plus}</button>
+        <button class="icon-btn s-more" data-more title="${t("common.more")}">${ICONS.more}</button>
         <div class="s-more-menu" data-more-menu>
-          <button class="m-item" data-heart data-sid="${esc(s.id)}">${ICONS.heart}<span>Like</span></button>
-          <button class="m-item" data-pl-add-btn>${ICONS.plus}<span>Add to playlist</span></button>
-          <button class="m-item" data-share>${ICONS.share}<span>Share link</span></button>
+          <button class="m-item" data-heart data-sid="${esc(s.id)}">${ICONS.heart}<span>${t("song.like")}</span></button>
+          <button class="m-item" data-pl-add-btn>${ICONS.plus}<span>${t("pl.addTo")}</span></button>
+          <button class="m-item" data-share>${ICONS.share}<span>${t("common.share")}</span></button>
         </div>
       </div>`
     : "";
@@ -1284,7 +1412,7 @@ function songRowHtml(s, i, { showAlbum = true, actions = true } = {}) {
 
 function songTableHtml(songs, showAlbum = true, actions = true) {
   const head = `<div class="song-table-head">
-    <span></span><span></span><span>Title</span><span>Artist</span>${showAlbum ? "<span class='h-album'>Album</span>" : ""}<span style='text-align:right'>Duration</span><span></span>
+    <span></span><span></span><span>${t("song.title")}</span><span>${t("song.artist")}</span>${showAlbum ? `<span class='h-album'>${t("song.album")}</span>` : ""}<span style='text-align:right'>${t("song.duration")}</span><span></span>
   </div>`;
   const rows = songs.map((s, i) => songRowHtml(s, i, { showAlbum, actions })).join("");
   return `<div class="song-table">${head}${rows}</div>`;
@@ -1292,16 +1420,16 @@ function songTableHtml(songs, showAlbum = true, actions = true) {
 
 async function renderLiked() {
   viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.liked")}</div><div class="page-sub" id="likedCount"></div>
-    <div style="margin-top:14px"><button class="btn" id="likedPlayAll">${ICONS.play} Play all</button></div></div>
+    <div style="margin-top:14px"><button class="btn" id="likedPlayAll">${ICONS.play} ${t("liked.playAll")}</button></div></div>
     <div id="likedBody">${loadingHtml()}</div>`;
   injectIcons(viewEl);
   try {
     const data = await api("/api/library/liked");
     const songs = data.songs || [];
-    $("#likedCount").textContent = `${songs.length} songs`;
+    $("#likedCount").textContent = `${songs.length} ${t("lib.songs")}`;
     const body = $("#likedBody");
     if (!songs.length) {
-      body.innerHTML = emptyState("No liked songs yet", "Tap the heart on any song to save it here.");
+      body.innerHTML = emptyState(t("liked.none"), t("liked.noneSub"));
       return;
     }
     state.renderList = songs;
@@ -1317,12 +1445,12 @@ async function renderLiked() {
 
 async function renderPlaylists() {
   viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.playlists")}</div><div class="page-sub">${t("playlists.sub")}</div>
-    <div style="margin-top:14px"><button class="btn" id="plCreate">${ICONS.plus} New playlist</button></div></div>
+    <div style="margin-top:14px"><button class="btn" id="plCreate">${ICONS.plus} ${t("playlists.new")}</button></div></div>
     <div id="plGrid"></div>`;
   injectIcons(viewEl);
   const grid = $("#plGrid");
   $("#plCreate").addEventListener("click", async () => {
-    const name = prompt("Playlist name:");
+    const name = prompt(t("playlists.name"));
     if (!name) return;
     try {
       await api("/api/library/playlists", { method: "POST", body: JSON.stringify({ name }) });
@@ -1333,14 +1461,14 @@ async function renderPlaylists() {
     const data = await api("/api/library/playlists");
     state.playlists = data.playlists;
     if (!state.playlists.length) {
-      grid.innerHTML = emptyState("No playlists yet", "Create one to start collecting songs.");
+      grid.innerHTML = emptyState(t("playlists.none"), t("playlists.noneSub"));
       return;
     }
     grid.innerHTML = `<div class="card-grid">${state.playlists.map((p) => `
       <div class="card" data-local-pl="${p.id}">
         <div class="card-art placeholder" style="background:var(--accent-grad)">${ICONS.list}</div>
         <div class="card-title">${esc(p.name)}</div>
-        <div class="card-sub">${p.songs.length} songs</div>
+        <div class="card-sub">${p.songs.length} ${t("lib.songs")}</div>
       </div>`).join("")}</div>`;
   } catch (e) { grid.innerHTML = emptyState("Error", e.message); }
   injectIcons(grid);
@@ -1353,20 +1481,20 @@ async function renderLocalPlaylist(pid) {
   viewEl.innerHTML = `<div class="hero">
     <div class="hero-art"><div class="card-art placeholder" style="width:100%;height:100%;background:var(--accent-grad)">${ICONS.list}</div></div>
     <div class="hero-meta">
-      <div class="hero-type">Playlist</div>
+      <div class="hero-type">${t("page.playlist")}</div>
       <div class="hero-title">${esc(p.name)}</div>
-      <div class="hero-sub">${p.description ? esc(p.description) : ""} ${songs.length} songs</div>
+      <div class="hero-sub">${p.description ? esc(p.description) : ""} ${songs.length} ${t("lib.songs")}</div>
       <div class="hero-actions">
-        <button class="btn" id="lpPlay">${ICONS.play} Play</button>
-        <button class="btn ghost" id="lpShuffle">${ICONS.shuffle} Shuffle</button>
-        <button class="btn ghost" id="lpRename">Rename</button>
-        <button class="btn danger" id="lpDelete">Delete</button>
+        <button class="btn" id="lpPlay">${ICONS.play} ${t("common.play")}</button>
+        <button class="btn ghost" id="lpShuffle">${ICONS.shuffle} ${t("common.shuffle")}</button>
+        <button class="btn ghost" id="lpRename">${t("playlists.rename")}</button>
+        <button class="btn danger" id="lpDelete">${t("playlists.delete")}</button>
       </div>
     </div></div><div id="lpBody"></div>`;
   injectIcons(viewEl);
   const body = $("#lpBody");
   state.renderList = songs;
-  body.innerHTML = songs.length ? songTableHtml(songs) : emptyState("Empty playlist", "Add songs with the + button.");
+  body.innerHTML = songs.length ? songTableHtml(songs) : emptyState(t("playlists.empty"), t("playlists.emptySub"));
   bindSongRows(body, songs);
   $("#lpPlay").addEventListener("click", () => playQueue(songs, 0));
   $("#lpShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(songs, Math.floor(Math.random() * songs.length)); syncShuffle(); });
@@ -1389,7 +1517,7 @@ async function renderLocal() {
   viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.local")}</div>
     <div class="page-sub">${t("local.sub")}</div>
     <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
-      <button class="btn ghost" id="localBrowse">${ICONS.folder} Choose folder</button>
+      <button class="btn ghost" id="localBrowse">${ICONS.folder} ${t("local.choose")}</button>
       <button class="btn ghost" id="localRescan">Rescan</button>
       <span class="set-desc" style="align-self:center" id="localRootInfo"></span>
     </div></div>
@@ -1410,7 +1538,7 @@ async function scanLocal(force) {
     let data;
     if (force) {
       const root = state.settings.local_root;
-      if (!root) { body.innerHTML = emptyState("Choose a folder first", "Click 'Choose folder' to scan your music."); return; }
+      if (!root) { body.innerHTML = emptyState(t("local.chooseFirst"), t("local.chooseFirstSub")); return; }
       data = await api("/api/local/scan", { method: "POST", body: JSON.stringify({ root }) });
     } else {
       data = await api("/api/local/library");
@@ -1418,15 +1546,15 @@ async function scanLocal(force) {
     state.local = data;
     const songs = data.songs || [];
     if (!songs.length) {
-      body.innerHTML = emptyState("No music found", "Choose a folder containing audio files.");
+      body.innerHTML = emptyState(t("local.none"), t("local.noneSub"));
       return;
     }
     state.renderList = songs;
-    body.innerHTML = `<div class="section-title">${songs.length} tracks</div>` + songTableHtml(songs, true);
+    body.innerHTML = `<div class="section-title">${songs.length} ${t("lib.tracks")}</div>` + songTableHtml(songs, true);
     bindSongRows(body, songs);
     markPlaying();
   } catch (e) {
-    body.innerHTML = emptyState("Scan failed", e.message);
+    body.innerHTML = emptyState(t("local.scanFail"), e.message);
   }
   injectIcons(body);
 }
@@ -1437,17 +1565,17 @@ async function renderFolderBrowser(path) {
   box.innerHTML = loadingHtml();
   try {
     const data = await api("/api/local/dir?path=" + encodeURIComponent(path));
-    let html = `<div class="section-title">Choose a folder with music</div>
+    let html = `<div class="section-title">${t("folder.choose")}</div>
       <div style="margin-bottom:10px;display:flex;gap:8px">
-        <button class="btn ghost" id="fbUp" ${!data.path ? "disabled" : ""}>.. Up</button>
+        <button class="btn ghost" id="fbUp" ${!data.path ? "disabled" : ""}>${t("folder.up")}</button>
         <span class="set-desc" style="align-self:center">${esc(data.path || "Drives")}</span>
       </div>`;
     if (data.items && data.items.length) {
       html += data.items.filter((i) => i.isDir).map((i) =>
         `<div class="dir-row" data-fb-dir="${esc(i.path)}">${ICONS.folder}<span>${esc(i.name)}</span></div>`).join("");
-      html += `<div style="margin-top:14px"><button class="btn" id="fbUse">${ICONS.check} Use this folder</button></div>`;
+      html += `<div style="margin-top:14px"><button class="btn" id="fbUse">${ICONS.check} ${t("folder.use")}</button></div>`;
     } else {
-      html += `<div class="lyrics-empty">No folders here.</div>`;
+      html += `<div class="lyrics-empty">${t("folder.none")}</div>`;
     }
     box.innerHTML = html;
     injectIcons(box);
@@ -1477,12 +1605,12 @@ async function renderAlbum(browseId) {
     viewEl.innerHTML = `<div class="hero">
       <div class="hero-art">${a.art ? `<img src="${esc(a.art)}">` : `<div class="card-art placeholder">${ICONS.music}</div>`}</div>
       <div class="hero-meta">
-        <div class="hero-type">Album</div>
+        <div class="hero-type">${t("page.album")}</div>
         <div class="hero-title">${esc(a.title)}</div>
         <div class="hero-sub">${esc(a.artist)} • ${a.year || ""}</div>
         <div class="hero-actions">
-          <button class="btn" id="alPlay">${ICONS.play} Play</button>
-          <button class="btn ghost" id="alShuffle">${ICONS.shuffle} Shuffle</button>
+          <button class="btn" id="alPlay">${ICONS.play} ${t("common.play")}</button>
+          <button class="btn ghost" id="alShuffle">${ICONS.shuffle} ${t("common.shuffle")}</button>
         </div>
       </div></div><div id="alTracks"></div>`;
     const tracks = a.tracks || [];
@@ -1504,22 +1632,22 @@ async function renderArtist(browseId) {
     viewEl.innerHTML = `<div class="hero artist-hero">
       <div class="hero-art">${a.art ? `<img src="${esc(a.art)}">` : `<div class="card-art placeholder" style="border-radius:50%">${ICONS.music}</div>`}</div>
       <div class="hero-meta">
-        <div class="hero-type">Artist</div>
+        <div class="hero-type">${t("page.artist")}</div>
         <div class="hero-title">${esc(a.name)}</div>
         <div class="hero-sub">${a.subscribers ? esc(a.subscribers) : ""}</div>
-        <div class="hero-actions"><button class="btn" id="arPlayTop">${ICONS.play} Play top songs</button></div>
+        <div class="hero-actions"><button class="btn" id="arPlayTop">${ICONS.play} ${t("common.playTop")}</button></div>
       </div></div>
-      <div class="section"><div class="section-title">Albums</div><div id="arAlbums" class="card-grid"></div></div>
-      <div class="section"><div class="section-title">Top songs</div><div id="arSongs"></div></div>`;
+      <div class="section"><div class="section-title">${t("search.albums")}</div><div id="arAlbums" class="card-grid"></div></div>
+      <div class="section"><div class="section-title">${t("common.topSongs")}</div><div id="arSongs"></div></div>`;
     injectIcons(viewEl);
-    $("#arAlbums").innerHTML = (a.albums || []).map((al) => cardHtml(al.title, al.art, "album", al.browseId, al.year || "")).join("") || emptyState("No albums", "");
+    $("#arAlbums").innerHTML = (a.albums || []).map((al) => cardHtml(al.title, al.art, "album", al.browseId, al.year || "")).join("") || emptyState(t("artist.noAlbums"), "");
     if (a.songs_browse_id) {
       $("#arPlayTop").addEventListener("click", async () => {
         const res = await api("/api/ytm/artist/" + browseId + "/songs");
         if (res.tracks) playQueue(res.tracks, 0);
       });
       const res = await api("/api/ytm/artist/" + browseId + "/songs");
-      if (res.error) $("#arSongs").innerHTML = emptyState("No songs", res.error);
+      if (res.error) $("#arSongs").innerHTML = emptyState(t("artist.noSongs"), res.error);
       else {
         const tracks = res.tracks || [];
         state.renderList = tracks;
@@ -1528,7 +1656,7 @@ async function renderArtist(browseId) {
         markPlaying();
       }
     } else {
-      $("#arSongs").innerHTML = emptyState("No top songs", "");
+      $("#arSongs").innerHTML = emptyState(t("artist.noTop"), "");
     }
   } catch (e) { viewEl.innerHTML = emptyState("Error", e.message); }
   injectIcons(viewEl);
@@ -1543,12 +1671,12 @@ async function renderPlaylist(browseId) {
     viewEl.innerHTML = `<div class="hero">
       <div class="hero-art">${p.art ? `<img src="${esc(p.art)}">` : `<div class="card-art placeholder">${ICONS.list}</div>`}</div>
       <div class="hero-meta">
-        <div class="hero-type">Playlist</div>
+        <div class="hero-type">${t("page.playlist")}</div>
         <div class="hero-title">${esc(p.title)}</div>
-        <div class="hero-sub">${p.trackCount || tracks.length} songs${p.description ? " • " + esc(p.description) : ""}</div>
+        <div class="hero-sub">${p.trackCount || tracks.length} ${t("lib.songs")}${p.description ? " • " + esc(p.description) : ""}</div>
         <div class="hero-actions">
-          <button class="btn" id="plPlay">${ICONS.play} Play</button>
-          <button class="btn ghost" id="plShuffle">${ICONS.shuffle} Shuffle</button>
+          <button class="btn" id="plPlay">${ICONS.play} ${t("common.play")}</button>
+          <button class="btn ghost" id="plShuffle">${ICONS.shuffle} ${t("common.shuffle")}</button>
         </div>
       </div></div><div id="plTracks"></div>`;
     state.renderList = tracks;
@@ -1564,17 +1692,17 @@ async function renderPlaylist(browseId) {
 async function renderStats() {
   viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.stats")}</div><div class="page-sub">${t("stats.sub")}</div></div>
   <div class="stat-cards" id="statCards"></div>
-  <div class="set-group"><h3>${ICONS.stats} Top Artists</h3><div class="bar-chart" id="statArtists"></div></div>
-  <div class="set-group"><h3>${ICONS.music} Top Songs</h3><div class="bar-chart" id="statSongs"></div></div>
-  <div class="set-group"><h3>${ICONS.clock} Plays per Day</h3><div class="bar-chart" id="statDays"></div></div>`;
+  <div class="set-group"><h3>${ICONS.stats} ${t("stats.topArtists")}</h3><div class="bar-chart" id="statArtists"></div></div>
+  <div class="set-group"><h3>${ICONS.music} ${t("stats.topSongs")}</h3><div class="bar-chart" id="statSongs"></div></div>
+  <div class="set-group"><h3>${ICONS.clock} ${t("stats.perDay")}</h3><div class="bar-chart" id="statDays"></div></div>`;
   injectIcons(viewEl);
   try {
     const s = await api("/api/library/stats");
     const cards = [
-      ["Total plays", s.total_plays],
-      ["Top artist", s.top_artists[0] ? s.top_artists[0][0] : "-"],
-      ["Top song plays", s.top_songs[0] ? s.top_songs[0].plays : "-"],
-      ["Days tracked", Object.keys(s.plays_per_day || {}).length],
+      [t("stats.total"), s.total_plays],
+      [t("stats.topArtist"), s.top_artists[0] ? s.top_artists[0][0] : "-"],
+      [t("stats.topSongPlays"), s.top_songs[0] ? s.top_songs[0].plays : "-"],
+      [t("stats.daysTracked"), Object.keys(s.plays_per_day || {}).length],
     ];
     $("#statCards").innerHTML = cards.map(([l, n]) => `<div class="stat-card"><div class="stat-num">${esc(n)}</div><div class="stat-label">${esc(l)}</div></div>`).join("");
     const maxA = Math.max(1, ...(s.top_artists || []).map((a) => a[1]));
@@ -1583,7 +1711,7 @@ async function renderStats() {
     $("#statSongs").innerHTML = (s.top_songs || []).slice(0, 15).map((a) => barRow(`${a.title} — ${a.artist}`, a.plays, maxS)).join("");
     const days = Object.entries(s.plays_per_day || {}).sort((a, b) => (a[0] < b[0] ? -1 : 1)).slice(-30);
     const maxD = Math.max(1, ...days.map((d) => d[1]));
-    $("#statDays").innerHTML = days.length ? days.map((d) => barRow(d[0], d[1], maxD)).join("") : '<div class="lyrics-empty">No plays recorded yet</div>';
+    $("#statDays").innerHTML = days.length ? days.map((d) => barRow(d[0], d[1], maxD)).join("") : `<div class="lyrics-empty">${t("stats.noPlays")}</div>`;
   } catch (e) {
     viewEl.innerHTML = emptyState("Error", e.message);
   }
@@ -1593,151 +1721,18 @@ function barRow(name, val, max) {
   return `<div class="bar-row"><span class="b-name" title="${esc(name)}">${esc(name)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="b-val">${val}</span></div>`;
 }
 
-/* ---------------- calendar ---------------- */
-const CAL_MONTHS = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-const CAL_DOWS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
-const CAL_STATE = { y: 0, m: 0, sel: "" };
-
-function calLevel(n) {
-  if (!n) return 0;
-  if (n >= 12) return 4;
-  if (n >= 6) return 3;
-  if (n >= 3) return 2;
-  return 1;
-}
-function calKey(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
-
+/* ---------------- calendar (not available) ---------------- */
 async function renderCalendar() {
-  const now = new Date();
-  CAL_STATE.y = now.getFullYear();
-  CAL_STATE.m = now.getMonth();
-  CAL_STATE.sel = "";
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("page.calendar")}</div><div class="page-sub">${t("cal.sub")}</div></div>
-  <div class="cal-card">
-    <h3>${ICONS.calendar_month} Tahun ini</h3>
-    <div class="cal-heat-grid" id="calHeat"></div>
-    <div class="cal-legend"><span>Kurang</span><i class="lvl-0"></i><i class="lvl-1"></i><i class="lvl-2"></i><i class="lvl-3"></i><i class="lvl-4"></i><span>Lebih</span></div>
+  viewEl.innerHTML = `<div class="page-head">
+    <div class="page-title">${t("page.calendar")}</div>
+    <div class="page-sub">${t("cal.sub")}</div>
   </div>
-  <div class="cal-card">
-    <div class="cal-nav">
-      <button class="icon-btn" id="calPrev" data-ic="prev"></button>
-      <span class="cal-label" id="calLabel"></span>
-      <button class="icon-btn" id="calNext" data-ic="next"></button>
-    </div>
-    <div class="cal-grid" id="calGrid"></div>
-    <div class="cal-day-detail" id="calDayDetail"></div>
+  <div class="cal-na">
+    <div class="cal-na-ic">${ICONS.calendar_month}</div>
+    <div class="cal-na-text">${t("cal.na")}</div>
+    <div class="cal-na-sub">${t("cal.naSub")}</div>
   </div>`;
   injectIcons(viewEl);
-  const b = (id, fn) => { const el = $(id); if (el) el.addEventListener("click", fn); };
-  b("#calPrev", () => { CAL_STATE.m--; if (CAL_STATE.m < 0) { CAL_STATE.m = 11; CAL_STATE.y--; } CAL_STATE.sel = ""; drawCalMonth(); });
-  b("#calNext", () => { CAL_STATE.m++; if (CAL_STATE.m > 11) { CAL_STATE.m = 0; CAL_STATE.y++; } CAL_STATE.sel = ""; drawCalMonth(); });
-  try {
-    state.calData = await api("/api/library/calendar");
-  } catch {
-    state.calData = { days: {}, detail: {}, total_plays: 0 };
-  }
-  drawCalMonth();
-  drawCalHeat();
-}
-
-function drawCalMonth() {
-  const days = (state.calData && state.calData.days) || {};
-  const detail = (state.calData && state.calData.detail) || {};
-  const y = CAL_STATE.y, m = CAL_STATE.m;
-  const label = $("#calLabel");
-  if (label) label.textContent = `${CAL_MONTHS[m]} ${y}`;
-  const today = new Date();
-  const startDow = new Date(y, m, 1).getDay();
-  const dim = new Date(y, m + 1, 0).getDate();
-  let html = `<div class="cal-dow">${CAL_DOWS.map((d) => `<span>${d}</span>`).join("")}</div>`;
-  for (let i = 0; i < startDow; i++) html += `<div class="cal-cell empty"></div>`;
-  for (let d = 1; d <= dim; d++) {
-    const key = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const count = days[key] || 0;
-    const isToday = y === today.getFullYear() && m === today.getMonth() && d === today.getDate();
-    const isSel = CAL_STATE.sel === key;
-    html += `<div class="cal-cell${count ? " played" : ""}${isToday ? " today" : ""}${isSel ? " sel" : ""}" data-day="${key}" data-count="${count}" style="--frac:${(calLevel(count) / 4).toFixed(2)}">
-      <span class="cal-num">${d}</span>${count ? `<span class="cal-cnt">${count}</span>` : ""}</div>`;
-  }
-  const grid = $("#calGrid");
-  grid.innerHTML = html;
-  grid.querySelectorAll(".cal-cell[data-day]").forEach((c) => {
-    c.addEventListener("click", () => { CAL_STATE.sel = c.dataset.day; drawCalMonth(); });
-  });
-  const sel = CAL_STATE.sel;
-  const detEl = $("#calDayDetail");
-  if (!sel) {
-    detEl.innerHTML = '<div class="lyrics-empty">Klik tanggal buat lihat lagu yang kamu putar.</div>';
-    return;
-  }
-  const items = detail[sel] || [];
-  if (!items.length) {
-    detEl.innerHTML = `<div class="cal-day-head">${sel} — nggak ada putaran</div>`;
-    return;
-  }
-  const seen = new Map();
-  items.forEach((p) => {
-    const k = p.id || (p.title + p.artist);
-    seen.set(k, (seen.get(k) || 0) + 1);
-  });
-  const uniq = [...seen.keys()];
-  state.calDetail = uniq.map((k) => {
-    const p = items.find((it) => (it.id || (it.title + it.artist)) === k);
-    const plays = seen.get(k);
-    return { ...songFromPlay(p), plays };
-  });
-  detEl.innerHTML = `<div class="cal-day-head">${sel} — ${days[sel] || 0} plays</div>` +
-    state.calDetail.map((p, i) => {
-      const playsBadge = p.plays > 1 ? `<span class="cal-cnt-sm">${p.plays}×</span>` : "";
-      return `<div class="queue-item sug${p.source !== "ytm" ? " dead" : ""}" ${p.source === "ytm" ? `data-cal-play="${i}"` : ""}>
-        <div class="s-art">${p.art ? `<img src="${esc(hdArt(p.art))}">` : ICONS.music}</div>
-        <div><div class="q-title">${esc(p.title)}</div><div class="q-sub">${esc(p.artist || "")}</div></div>
-        ${playsBadge}
-      </div>`;
-    }).join("");
-  injectIcons(detEl);
-}
-
-function drawCalHeat() {
-  const heat = $("#calHeat");
-  if (!heat) return;
-  const days = (state.calData && state.calData.days) || {};
-  const today = new Date();
-  const cur = new Date(today);
-  cur.setDate(cur.getDate() - cur.getDay());
-  cur.setDate(cur.getDate() - 52 * 7);
-  const weeks = [];
-  for (let w = 0; w < 53; w++) {
-    const col = [];
-    for (let r = 0; r < 7; r++) {
-      const dt = new Date(cur);
-      dt.setDate(cur.getDate() + r);
-      const key = calKey(dt);
-      col.push({ key, count: dt > today ? 0 : days[key] || 0 });
-    }
-    weeks.push(col);
-    cur.setDate(cur.getDate() + 7);
-  }
-  let html = "";
-  for (let r = 0; r < 7; r++) {
-    html += `<div class="ch-row">`;
-    weeks.forEach((col) => {
-      const c = col[r];
-      const lvl = calLevel(c.count);
-      html += `<div class="ch-cell${c.count ? " on" : ""}" data-day="${c.key}" data-count="${c.count}" style="--frac:${(lvl / 4).toFixed(2)}" title="${c.key}: ${c.count} plays"></div>`;
-    });
-    html += `</div>`;
-  }
-  heat.innerHTML = html;
-  heat.querySelectorAll(".ch-cell[data-day]").forEach((c) => {
-    c.addEventListener("click", () => {
-      const [yy, mm, dd] = c.dataset.day.split("-").map(Number);
-      CAL_STATE.y = yy; CAL_STATE.m = mm - 1; CAL_STATE.sel = c.dataset.day;
-      drawCalMonth();
-      const card = document.querySelectorAll(".cal-card")[1];
-      if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  });
 }
 
 async function renderSettings() {
@@ -1758,15 +1753,15 @@ async function renderSettings() {
   <div class="set-group"><h3>${ICONS.sun} ${t("set.appearance")}</h3>
     <div class="set-row"><div><div class="set-label">${t("set.theme")}</div><div class="set-desc">${t("set.themeDesc")}</div></div>
       <div style="display:flex;gap:8px">
-        <button class="chip ${s.theme !== "light" ? "active" : ""}" data-theme-set="dark">Dark</button>
-        <button class="chip ${s.theme === "light" ? "active" : ""}" data-theme-set="light">Light</button>
+        <button class="chip ${s.theme !== "light" ? "active" : ""}" data-theme-set="dark">${t("set.dark")}</button>
+        <button class="chip ${s.theme === "light" ? "active" : ""}" data-theme-set="light">${t("set.light")}</button>
       </div></div>
     <div class="set-row"><div><div class="set-label">${t("set.accent")}</div><div class="set-desc">${t("set.accentDesc")}</div></div>
       <div class="swatches">${accents.map((a) => `<div class="swatch ${(s.accent || "#ff4f8b").toLowerCase() === a ? "active" : ""}" data-accent="${a}" style="background:${a}"></div>`).join("")}
       <input type="color" id="accentCustom" value="${s.accent || "#ff4f8b"}"></div></div>
     <div class="set-row"><div><div class="set-label">${t("set.dynamic")}</div><div class="set-desc">${t("set.dynamicDesc")}</div></div>
       <label class="switch"><input type="checkbox" id="setDynamic" ${s.dynamic_color ? "checked" : ""}><span></span></label></div>
-    <div class="set-row"><div><div class="set-label">Charts country</div><div class="set-desc">Region for home charts</div></div>
+    <div class="set-row"><div><div class="set-label">${t("set.country")}</div><div class="set-desc">${t("set.countryDesc")}</div></div>
       <select id="setCountry"><option>US</option><option>ID</option><option>JP</option><option>GB</option><option>IN</option><option>KR</option><option>BR</option><option>DE</option><option>FR</option><option>PH</option><option>SG</option><option>MY</option></select></div>
   </div>
 
@@ -1777,29 +1772,29 @@ async function renderSettings() {
       <label class="switch"><input type="checkbox" id="setCrossfade" ${s.crossfade > 0 ? "checked" : ""}><span></span></label></div>
     <div class="set-row" id="xfadeDurRow" ${s.crossfade > 0 ? "" : 'style="display:none"'}><div><div class="set-label">${t("set.crossfadeDur")}</div><div class="set-desc">${t("set.crossfadeDurDesc")}</div></div>
       <select id="setXfadeDur">${[2, 4, 6, 8].map((v) => `<option value="${v}" ${(+s.crossfade || 2) === v ? "selected" : ""}>${v}s</option>`).join("")}</select></div>
-    <div class="set-row"><div><div class="set-label">Equalizer</div><div class="set-desc">10-band EQ & visualizer</div></div>
-      <button class="btn ghost" id="setOpenEq">Open EQ</button></div>
+    <div class="set-row"><div><div class="set-label">${t("set.eq")}</div><div class="set-desc">${t("set.eqDesc")}</div></div>
+      <button class="btn ghost" id="setOpenEq">${t("set.openEq")}</button></div>
   </div>
 
-  <div class="set-group"><h3>${ICONS.disc} YouTube Music</h3>
-    <div class="set-row"><div><div class="set-label">Sign in (optional)</div>
-      <div class="set-desc">Paste your YouTube Music cookie (from a logged-in browser) to access your account & liked songs. Leave empty for guest mode.</div></div>
-      <input type="text" id="setCookie" placeholder="paste cookie..." value="${esc(s.ytm_cookie || "")}"></div>
-    <div class="set-row"><div><div class="set-label">Status</div><div class="set-desc" id="ytmStatusText">checking...</div></div>
-      <button class="btn ghost" id="setSaveCookie">Save cookie</button></div>
+  <div class="set-group"><h3>${ICONS.disc} ${t("set.ytm")}</h3>
+    <div class="set-row"><div><div class="set-label">${t("set.signin")}</div>
+      <div class="set-desc">${t("set.cookieDesc")}</div></div>
+      <input type="text" id="setCookie" placeholder="${t("set.cookiePh")}" value="${esc(s.ytm_cookie || "")}"></div>
+    <div class="set-row"><div><div class="set-label">${t("set.status")}</div><div class="set-desc" id="ytmStatusText">${t("set.checking")}</div></div>
+      <button class="btn ghost" id="setSaveCookie">${t("set.saveCookie")}</button></div>
   </div>
 
-  <div class="set-group"><h3>${ICONS.stats} Last.fm Scrobbling</h3>
-    <div class="set-row"><div><div class="set-label">API key</div></div><input type="text" id="lfKey" value="${esc(s.lastfm_api_key || "")}" placeholder="API key"></div>
-    <div class="set-row"><div><div class="set-label">Shared secret</div></div><input type="password" id="lfSecret" value="${esc(s.lastfm_api_secret || "")}" placeholder="API secret"></div>
-    <div class="set-row"><div><div class="set-label">Username</div></div><input type="text" id="lfUser" value="${esc(s.lastfm_username || "")}"></div>
-    <div class="set-row"><div><div class="set-label">Password</div></div><input type="password" id="lfPass" placeholder="password"></div>
-    <div class="set-row"><div><div class="set-label">Status</div><div class="set-desc" id="lfStatus">...</div></div>
-      <button class="btn ghost" id="lfConnect">Connect</button></div>
+  <div class="set-group"><h3>${ICONS.stats} ${t("set.lf")}</h3>
+    <div class="set-row"><div><div class="set-label">${t("set.apiKey")}</div></div><input type="text" id="lfKey" value="${esc(s.lastfm_api_key || "")}" placeholder="${t("set.apiKey")}"></div>
+    <div class="set-row"><div><div class="set-label">${t("set.sharedSecret")}</div></div><input type="password" id="lfSecret" value="${esc(s.lastfm_api_secret || "")}" placeholder="${t("set.apiSecretPh")}"></div>
+    <div class="set-row"><div><div class="set-label">${t("set.username")}</div></div><input type="text" id="lfUser" value="${esc(s.lastfm_username || "")}"></div>
+    <div class="set-row"><div><div class="set-label">${t("set.password")}</div></div><input type="password" id="lfPass" placeholder="${t("set.passPh")}"></div>
+    <div class="set-row"><div><div class="set-label">${t("set.status")}</div><div class="set-desc" id="lfStatus">...</div></div>
+      <button class="btn ghost" id="lfConnect">${t("set.connect")}</button></div>
   </div>
 
-  <div class="set-group"><h3>${ICONS.info || ICONS.home} About</h3>
-    <div class="set-row"><div><div class="set-label">ArchiveTune for Windows</div><div class="set-desc">Unofficial port — Python backend + HTML/CSS/JS frontend. Powered by YouTube Music API & yt-dlp. Not affiliated with Google.</div></div></div>
+  <div class="set-group"><h3>${ICONS.info || ICONS.home} ${t("set.about")}</h3>
+    <div class="set-row"><div><div class="set-label">ArchiveTune for Windows</div><div class="set-desc">${t("set.aboutDesc")}</div></div></div>
   </div>`;
   injectIcons(viewEl);
 
@@ -1835,7 +1830,7 @@ async function renderSettings() {
     try {
       await api("/api/ytm/cookie", { method: "POST", body: JSON.stringify({ cookie }) });
       state.settings.ytm_cookie = cookie;
-      toast("Cookie saved");
+      toast(t("toast.cookieSaved"));
       updateYtmStatus();
     } catch (e) { toast(e.message); }
   });
@@ -1848,8 +1843,8 @@ async function renderSettings() {
     });
     try {
       const res = await api("/api/lastfm/login", { method: "POST", body });
-      if (res.ok) { toast("Connected to Last.fm"); state.settings.lastfm_username = $("#lfUser").value.trim(); updateLfStatus(); }
-      else toast("Last.fm: " + (res.error || "login failed"));
+      if (res.ok) { toast(t("toast.lfConnected")); state.settings.lastfm_username = $("#lfUser").value.trim(); updateLfStatus(); }
+      else toast("Last.fm: " + (res.error || t("lf.loginFailed")));
     } catch (e) { toast(e.message); }
   });
   updateYtmStatus();
@@ -1944,7 +1939,7 @@ function renderQueuePanel() {
     : loadingHtml();
   qp.innerHTML = `<div class="q-head">
     <div class="q-head-title">${state.queue.length ? `${t("queue.upnext")} (${state.queue.length})` : t("queue.upnext")}</div>
-    <button class="icon-btn" data-close="queue" data-ic="x" title="Close"></button>
+    <button class="icon-btn" data-close="queue" data-ic="x" title="${t("common.close")}"></button>
   </div>${queueRows}
   <div class="q-sec-title">${t("queue.recs")}</div>
   <div id="nextUpList" class="queue-sug">${recHtml}</div>`;
@@ -2374,7 +2369,7 @@ function wireEvents() {
     if (state.xfadeActive) handoffXfade();
     else next(false);
   });
-  audio.addEventListener("error", () => { if (audio.src) toast("Could not play this track."); });
+  audio.addEventListener("error", () => { if (audio.src) toast(t("toast.cantPlay")); });
 
   // keyboard
   document.addEventListener("keydown", (e) => {
@@ -2407,13 +2402,17 @@ function updateMediaSession() {
   const s = state.current;
   if (!s) return;
   try {
+    const artwork = [];
+    if (s.art) {
+      try { artwork.push({ src: new URL(s.art, location.origin).href, sizes: "512x512" }); } catch {}
+    }
     navigator.mediaSession.metadata = new MediaMetadata({
       title: s.title,
       artist: s.artist || "",
       album: s.album || "",
-      artwork: s.art ? [{ src: s.art, sizes: "512x512" }] : [],
+      artwork,
     });
-    navigator.mediaSession.playbackState = "playing";
+    syncMsPlayback();
   } catch {}
 }
 
