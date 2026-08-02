@@ -426,10 +426,14 @@ function updateNowPlayingUI() {
 }
 
 function openArtistFromCurrent() {
-  const a = state.current && state.current.artists && state.current.artists[0];
+  const s = state.current;
+  const a = s && s.artists && s.artists[0];
   if (a && a.browseId) {
     closeNowPlaying();
     navigate("artist", { browseId: a.browseId });
+  } else if (s && s.artist) {
+    closeNowPlaying();
+    navigate("search", { q: s.artist });
   }
 }
 
@@ -912,9 +916,9 @@ function hdArt(url) {
 function songFromPlay(p) {
   if (p.source === "ytm") {
     const vid = p.id.startsWith("ytm:") ? p.id.slice(4) : p.id;
-    return { id: p.id || "ytm:" + vid, videoId: vid, title: p.title, artist: p.artist, album: p.album, duration: p.duration || 0, art: hdArt(p.art), source: "ytm" };
+    return { id: p.id || "ytm:" + vid, videoId: vid, title: p.title, artist: p.artist, album: p.album, duration: p.duration || 0, art: hdArt(p.art), source: "ytm", artists: p.artists || [], browseId: p.browseId };
   }
-  return { id: p.id, videoId: "", title: p.title, artist: p.artist, album: p.album, duration: p.duration || 0, art: hdArt(p.art), source: "local", filepath: p.filepath || "" };
+  return { id: p.id, videoId: "", title: p.title, artist: p.artist, album: p.album, duration: p.duration || 0, art: hdArt(p.art), source: "local", filepath: p.filepath || "", artists: p.artists || [] };
 }
 
 function recentRowHtml(p, i) {
@@ -1688,6 +1692,7 @@ async function setSetting(key, value) {
   try {
     await api("/api/settings", { method: "POST", body: JSON.stringify({ key, value }) });
   } catch {}
+  if (key === "accent" || (key === "dynamic_color" && !value)) state.dynamicApplied = false;
   applySettingsToUi();
 }
 
