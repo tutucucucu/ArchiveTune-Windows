@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ArchiveTune</title>
+<title>Donut Music</title>
 <link rel="icon" href="/static/img/icon.png">
 <link rel="stylesheet" href="/static/fonts/fonts.css">
 <link rel="stylesheet" href="/static/css/style.css">
@@ -40,8 +40,8 @@
   <div id="main-col">
     <header id="topbar">
       <div class="hdr-brand">
-        <img class="hdr-logo" src="/static/img/icon.png" alt="ArchiveTune">
-        <span class="hdr-name">ArchiveTune</span>
+        <img class="hdr-logo" src="/static/img/icon.png" alt="Donut Music">
+        <span class="hdr-name">Donut Music</span>
       </div>
       <div class="search-wrap">
         <button id="searchBack" class="s-btn" data-ic="back" title="Back"></button>
@@ -68,7 +68,7 @@
       </div>
       <div class="player-info">
         <div class="player-title" id="playerTitle" data-i18n="player.nothing">Nothing playing</div>
-        <div class="player-artist" id="playerArtist">ArchiveTune</div>
+        <div class="player-artist" id="playerArtist">Donut Music</div>
       </div>
     </div>
     <div class="mp-controls">
@@ -121,7 +121,7 @@
         <div class="np-right">
           <div class="np-song">
             <div class="np-title" id="npTitle" data-i18n="player.nothing">Nothing playing</div>
-            <div class="np-artist" id="npArtist">ArchiveTune</div>
+            <div class="np-artist" id="npArtist">Donut Music</div>
           </div>
           <div class="np-rom-row"><button id="npRom" class="rom-btn hidden" type="button">ROM</button></div>
           <div id="lyrProviders" class="lyr-providers hidden">
@@ -178,6 +178,19 @@
       <div class="pl-new">
         <input id="plNewName" type="text" placeholder="New playlist name..." data-i18n="pl.namePh">
         <button id="plNewCreate" class="btn" data-i18n="pl.create">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Download picker modal -->
+  <div id="pickModal" class="overlay hidden">
+    <div class="eq-card pick-card">
+      <div class="eq-head"><h3 id="pickTitle"></h3><button class="icon-btn" data-close="pick" data-ic="x"></button></div>
+      <div class="pick-sub" id="pickCount"></div>
+      <div id="pickBody" class="pick-list"></div>
+      <div class="pick-foot">
+        <button class="btn ghost" data-close="pick">Batal</button>
+        <button class="btn" id="pickConfirm">Tambahkan</button>
       </div>
     </div>
   </div>

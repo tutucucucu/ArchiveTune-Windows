@@ -1,5 +1,5 @@
 /* =========================================================
-   ArchiveTune for Windows — frontend app
+   Donut Music for Windows — frontend app
    ========================================================= */
 "use strict";
 
@@ -85,6 +85,27 @@ const T = {
   "lib.noPlaysSub": { id: "Putar beberapa lagu dan paling sering diputar akan muncul di sini.", en: "Play some songs and your most played will appear here.", jp: "曲を再生すると、最も再生された曲がここに表示されます。" },
   "lib.emptyCache": { id: "Belum ada lagu offline", en: "No offline songs", jp: "オフライン曲はありません" },
   "lib.emptyCacheSub": { id: "Dukungan offline akan segera hadir. Untuk sekarang nikmati streaming online.", en: "Offline support is coming soon. For now enjoy online streaming.", jp: "オフライン対応は近日中に追加されます。今はオンラインストリーミングをお楽しみください。" },
+  "dl.sub": { id: "Lagu tersimpan yang bisa diputar tanpa internet.", en: "Saved songs you can play without internet.", jp: "オフラインで再生できる保存曲。" },
+  "dl.none": { id: "Belum ada lagu offline", en: "No offline songs", jp: "オフライン曲はありません" },
+  "dl.noneSub": { id: "Tambahkan lagu dari hasil pencarian, file lokal, atau lagu yang sudah kamu dengar sampai habis.", en: "Add songs from search, local files, or songs you played to the end.", jp: "検索・ローカルファイル・最後まで再生した曲から追加できます。" },
+  "dl.addLocal": { id: "Tambah dari Lokal", en: "Add from Local", jp: "ローカルから追加" },
+  "dl.addFinished": { id: "Tambah dari Didengar Selesai", en: "Add Played to End", jp: "最後まで再生した曲から追加" },
+  "dl.select": { id: "Pilih", en: "Select", jp: "選択" },
+  "dl.done": { id: "Selesai", en: "Done", jp: "完了" },
+  "dl.delAll": { id: "Hapus Semua", en: "Delete All", jp: "すべて削除" },
+  "dl.delSel": { id: "Hapus Terpilih", en: "Delete Selected", jp: "選択を削除" },
+  "dl.download": { id: "Simpan offline", en: "Save offline", jp: "オフライン保存" },
+  "dl.downloading": { id: "Menyimpan ke offline...", en: "Saving offline...", jp: "オフライン保存中..." },
+  "dl.adding": { id: "Menambahkan {n} lagu...", en: "Adding {n} songs...", jp: "{n}曲を追加中..." },
+  "dl.added": { id: "Berhasil disimpan", en: "Saved", jp: "保存しました" },
+  "dl.dup": { id: "Sudah ada di offline", en: "Already offline", jp: "すでにオフライン" },
+  "dl.fail": { id: "Gagal menyimpan", en: "Failed to save", jp: "保存に失敗" },
+  "dl.pickLocal": { id: "Pilih lagu lokal", en: "Pick local songs", jp: "ローカル曲を選択" },
+  "dl.pickFinished": { id: "Lagu yang didengar selesai", en: "Songs played to the end", jp: "最後まで再生した曲" },
+  "dl.noLocal": { id: "Belum ada file lokal. Scan folder di halaman File Lokal dulu.", en: "No local files yet. Scan a folder on the Local Files page first.", jp: "ローカルファイルがありません。先にローカルファイルページでスキャンしてください。" },
+  "dl.noFinished": { id: "Belum ada lagu yang didengar sampai habis.", en: "No songs played to the end yet.", jp: "最後まで再生した曲はまだありません。" },
+  "dl.confirmClear": { id: "Hapus SEMUA lagu offline?", en: "Delete ALL offline songs?", jp: "オフライン曲をすべて削除しますか？" },
+  "dl.confirmSel": { id: "Hapus lagu terpilih?", en: "Delete selected songs?", jp: "選択した曲を削除しますか？" },
   "lib.playsCount": { id: "{n} putaran", en: "{n} plays", jp: "{n}回再生" },
   "lib.artistsFromPlays": { id: "Artis dari riwayat putar", en: "Artists from your play history", jp: "再生履歴のアーティスト" },
   "nav.more": { id: "Lainnya", en: "More", jp: "その他" },
@@ -220,6 +241,7 @@ const T = {
   "home.sub": { id: "Selamat datang kembali — ayo putar sesuatu yang bagus hari ini.", en: "Welcome back — let's play something great today.", jp: "おかえりなさい — 今日もいい音楽をかけよう。" },
   "home.quick": { id: "Pilihan Cepat", en: "Quick picks", jp: "クイックピック" },
   "home.continue": { id: "Lanjutkan Memutar", en: "Continue listening", jp: "再生の続き" },
+  "home.recs": { id: "Rekomendasi untukmu", en: "Made for you", jp: "あなたへのおすすめ" },
   "home.artists": { id: "Artis Teratas", en: "Top Artists", jp: "トップアーティスト" },
   "home.topAlbum": { id: "Top Album", en: "Top Albums", jp: "トップアルバム" },
   "home.playlists": { id: "Playlist", en: "Playlists", jp: "プレイリスト" },
@@ -433,6 +455,10 @@ const state = {
   statRecorded: false,
   lib: null,
   libFilter: "all",
+  downloads: [],
+  pickSongs: [],
+  pickSel: new Set(),
+  finishedIds: null,
 };
 
 /* ---------------- audio & webaudio ---------------- */
@@ -549,6 +575,13 @@ function artUrl(song) {
   return song.art || "";
 }
 
+function fileUrl(song) {
+  if (!song) return "";
+  if (song.offline) return `/api/downloads/file/${encodeURIComponent(song.id)}`;
+  if (song.source === "local") return `/api/local/file/${song.id.split(":")[1]}`;
+  return `/api/stream/${song.videoId}`;
+}
+
 function playQueue(songs, index) {
   cancelXfade();
   state.queue = songs.map((s) => ({ ...s }));
@@ -563,7 +596,7 @@ function playCurrent() {
   if (!song) return;
   resetXfade();
   state.current = song;
-  const src = song.source === "local" ? `/api/local/file/${song.id.split(":")[1]}` : `/api/stream/${song.videoId}`;
+  const src = fileUrl(song);
   audio.src = src;
   audio.playbackRate = parseFloat(state.settings.speed || 1);
   audio.volume = state.settings.volume ?? 1;
@@ -789,7 +822,7 @@ function preloadXfade() {
   if (!song) return;
   state.xfadeNextIndex = idx;
   state.xfadeLoaded = true;
-  audioXfade.src = song.source === "local" ? `/api/local/file/${song.id.split(":")[1]}` : `/api/stream/${song.videoId}`;
+  audioXfade.src = fileUrl(song);
   audioXfade.playbackRate = parseFloat(state.settings.speed || 1);
   audioXfade.volume = 0;
 }
@@ -826,7 +859,7 @@ function handoffXfade() {
   const song = state.queue[idx];
   if (!song) { next(false); return; }
   state.current = song;
-  const src = song.source === "local" ? `/api/local/file/${song.id.split(":")[1]}` : `/api/stream/${song.videoId}`;
+  const src = fileUrl(song);
   audio.src = src;
   audio.playbackRate = parseFloat(state.settings.speed || 1);
   audio.volume = state.settings.volume ?? 1;
@@ -844,15 +877,17 @@ function handoffXfade() {
 function recordPlay() {
   const s = state.current;
   if (!s || state.statRecorded) return;
-  const st = setTimeout(async () => {
-    if (state.current && state.current.id === s.id && audio.currentTime > 20) {
-      state.statRecorded = true;
-      try {
-        await api("/api/library/play", { method: "POST", body: JSON.stringify(s) });
-      } catch {}
+  const check = () => {
+    if (state.current && state.current.id === s.id && !state.statRecorded) {
+      if (audio.currentTime >= 30) {
+        state.statRecorded = true;
+        api("/api/library/play", { method: "POST", body: JSON.stringify(s) }).catch(() => {});
+      } else if (!audio.paused) {
+        audio._recordTimer = setTimeout(check, 2000);
+      }
     }
-  }, 12000);
-  audio._recordTimer = st;
+  };
+  audio._recordTimer = setTimeout(check, 12000);
 }
 
 async function scrobbleNow() {
@@ -1111,9 +1146,18 @@ async function renderHome() {
     state.homeHero = hero;
     state.homeAlbums = albums;
 
+    let recs = [];
+    const seed = plays.length ? songFromPlay(plays[0]) : null;
+    if (seed && seed.videoId) {
+      const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=8`).catch(() => null);
+      if (r && r.items && r.items.length) recs = r.items;
+    }
+    state.homeRecs = recs;
+
     const html = [
       vids.length ? quickPicksHtml(hero, side) : "",
       plays.length ? continueHtml(plays) : "",
+      recs.length ? recommendationsHtml(recs) : "",
       arts.length ? artistsHtml(arts) : "",
       albums.length ? albumsHtml(albums) : "",
       vids.length ? playlistsHtml(vids) : "",
@@ -1122,6 +1166,7 @@ async function renderHome() {
 
     if (!html) body.innerHTML = emptyState(t("charts.none"), t("charts.noneSub"));
     else body.innerHTML = html;
+    bindRecRows(body);
   } catch (e) {
     body.innerHTML = emptyState(t("ytm.unavailable"), e.message + " — " + t("ytm.unavailableSub"));
   }
@@ -1179,6 +1224,21 @@ function continueHtml(plays) {
     </div>`;
   }).join("");
   return `<section class="home-sec">${secHeadHtml("history", t("home.continue"))}<div class="hscroll">${items}</div></section>`;
+}
+
+function recommendationsHtml(items) {
+  const rows = items.map((s, i) => songRowHtml(s, i, { showAlbum: true })).join("");
+  return `<section class="home-sec rec-sec">${secHeadHtml("smart", t("home.recs"))}<div class="song-table">${rows}</div></section>`;
+}
+
+function bindRecRows(container) {
+  container.querySelectorAll(".rec-sec .song-row[data-i]").forEach((row) => {
+    row.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      const s = (state.homeRecs || [])[+row.dataset.i];
+      if (s) playQueue([s], 0);
+    });
+  });
 }
 
 function artistsHtml(arts) {
@@ -1443,23 +1503,29 @@ function loadingHtml() {
   return '<div class="empty-state"><div class="es-ic" style="animation:discspin 1s linear infinite">' + ICONS.disc + '</div><p>' + t("common.loading") + '</p></div>';
 }
 
-function songRowHtml(s, i, { showAlbum = true, actions = true, list = false, artFallback = "" } = {}) {
+function songRowHtml(s, i, { showAlbum = true, actions = true, list = false, artFallback = "", dlMode = false } = {}) {
   const artSrc = s.art || artFallback;
   const artHtml = artSrc
     ? `<div class="s-art">${ICONS.music}<img src="${esc(artSrc)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>`
     : `<div class="s-art ph">${ICONS.music}</div>`;
-  const acts = actions
+  const acts = dlMode
     ? `<div class="s-actions">
+        <button class="icon-btn s-hl" data-dl-del title="${t("common.delete")}">${ICONS.trash}</button>
+      </div>`
+    : actions
+      ? `<div class="s-actions">
         <button class="icon-btn s-hl" data-heart data-sid="${esc(s.id)}" title="${t("song.like")}">${ICONS["heart-out"]}</button>
         <button class="icon-btn s-hl" data-pl-add-btn title="${t("pl.save")}">${ICONS.plus}</button>
+        <button class="icon-btn s-hl" data-dl-btn title="${t("dl.download")}">${ICONS.download}</button>
         <button class="icon-btn s-more" data-more title="${t("common.more")}">${ICONS.more}</button>
         <div class="s-more-menu" data-more-menu>
           <button class="m-item" data-heart data-sid="${esc(s.id)}">${ICONS.heart}<span>${t("song.like")}</span></button>
           <button class="m-item" data-pl-add-btn>${ICONS.plus}<span>${t("pl.addTo")}</span></button>
+          <button class="m-item" data-dl-btn>${ICONS.download}<span>${t("dl.download")}</span></button>
           <button class="m-item" data-share>${ICONS.share}<span>${t("common.share")}</span></button>
         </div>
       </div>`
-    : "";
+      : "";
   if (list) {
     const sub = [s.artist, s.duration ? fmtTime(s.duration) : ""].filter(Boolean).join(" • ");
     return `<div class="song-row srow-list" data-i="${i}" data-sid="${esc(s.id)}">
@@ -1492,13 +1558,14 @@ function songTableHtml(songs, showAlbum = true, actions = true, list = false, ar
 
 async function loadLib() {
   if (!state.lib) {
-    const [sum, recent, liked, pls] = await Promise.all([
+    const [sum, recent, liked, pls, dl] = await Promise.all([
       api("/api/library/summary"),
       api("/api/library/recent?limit=12").catch(() => ({ plays: [] })),
       api("/api/library/liked").catch(() => ({ songs: [] })),
       api("/api/library/playlists").catch(() => ({ playlists: [] })),
+      api("/api/downloads").catch(() => ({ downloads: [] })),
     ]);
-    state.lib = { sum, recent: recent.plays || [], liked: liked.songs || [], playlists: pls.playlists || [] };
+    state.lib = { sum, recent: recent.plays || [], liked: liked.songs || [], playlists: pls.playlists || [], downloads: dl.downloads || [] };
   }
   return state.lib;
 }
@@ -1523,11 +1590,11 @@ function libHighlightHtml(sum) {
 }
 
 function libShortcutsHtml(sum) {
+  const dlCount = (state.lib && state.lib.downloads ? state.lib.downloads.length : 0);
   const items = [
     { nav: "liked", icon: "heart", name: t("nav.liked"), sub: `${sum.liked_count} ${t("lib.songs")}` },
-    { nav: "offline", icon: "download", name: t("lib.offlineCard"), sub: `0 ${t("lib.songs")}`, muted: true },
+    { nav: "offline", icon: "download", name: t("lib.offlineCard"), sub: `${dlCount} ${t("lib.songs")}` },
     { nav: "local", icon: "folder", name: t("nav.local"), sub: `${sum.local_songs} ${t("lib.songs")}` },
-    { nav: "offline", icon: "download", name: t("lib.cacheCard"), sub: `0 ${t("lib.songs")}`, muted: true },
     { nav: "top-songs", icon: "trending_up", name: t("lib.top50"), sub: `${sum.top_songs.length} ${t("lib.songs")}` },
   ];
   return `<section class="section">
@@ -1633,9 +1700,123 @@ async function renderLibrary() {
 }
 
 async function renderOffline() {
-  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("nav.offline")}</div><div class="page-sub">${t("lib.emptyCacheSub")}</div></div><div id="offlineBody"></div>`;
-  $("#offlineBody").innerHTML = emptyState(t("lib.emptyCache"), t("lib.emptyCacheSub"));
+  viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("nav.offline")}</div>
+    <div class="page-sub">${t("dl.sub")}</div>
+    <div class="dl-actions" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center">
+      <button class="btn ghost" data-dl-add-local>${ICONS.folder} ${t("dl.addLocal")}</button>
+      <button class="btn ghost" data-dl-add-finished>${ICONS.history} ${t("dl.addFinished")}</button>
+      <span style="flex:1"></span>
+      <button class="btn ghost" data-dl-clear>${ICONS.trash} ${t("dl.delAll")}</button>
+    </div></div>
+    <div id="dlBody">${loadingHtml()}</div>`;
   injectIcons(viewEl);
+  await refreshDownloads();
+}
+
+async function refreshDownloads() {
+  const body = $("#dlBody");
+  if (!body) return;
+  body.innerHTML = loadingHtml();
+  injectIcons(body);
+  let dls = [];
+  try {
+    const data = await api("/api/downloads");
+    dls = (data.downloads || []).map((d) => ({ ...d, offline: true }));
+  } catch (e) {
+    body.innerHTML = emptyState("Error", e.message);
+    injectIcons(body);
+    return;
+  }
+  state.downloads = dls;
+  if (state.lib) state.lib.downloads = dls;
+  if (!dls.length) {
+    body.innerHTML = emptyState(t("dl.none"), t("dl.noneSub"));
+    injectIcons(body);
+    return;
+  }
+  const rows = dls.map((s, i) => songRowHtml(s, i, { showAlbum: true, list: true, dlMode: true })).join("");
+  body.innerHTML = `<div class="song-table"><div class="song-table-head srow-list-head"><span></span><span></span><span>${t("song.title")}</span><span></span></div>${rows}</div>`;
+  state.renderList = dls;
+  bindSongRows(body, dls);
+  markPlaying();
+  injectIcons(body);
+}
+
+async function downloadSong(song) {
+  toast(t("dl.downloading"));
+  try {
+    const res = await api("/api/downloads", { method: "POST", body: JSON.stringify(song) });
+    if (res.exists) toast(t("dl.dup"));
+    else {
+      toast(t("dl.added"));
+      if (state.view === "offline") refreshDownloads();
+    }
+  } catch (e) {
+    toast(t("dl.fail") + ": " + e.message);
+  }
+}
+
+async function addSongsToDownloads(songs) {
+  if (!songs.length) return;
+  toast(t("dl.adding", { n: songs.length }));
+  let ok = 0, dup = 0, fail = 0;
+  for (const s of songs) {
+    try {
+      const res = await api("/api/downloads", { method: "POST", body: JSON.stringify(s) });
+      if (res.exists) dup++; else ok++;
+    } catch { fail++; }
+  }
+  toast(`${t("dl.added")} ${ok}${dup ? ` · ${t("dl.dup")} ${dup}` : ""}${fail ? ` · ${t("dl.fail")} ${fail}` : ""}`);
+  if (state.view === "offline") refreshDownloads();
+}
+
+function openDownloadPicker(kind) {
+  const done = (songs, noneKey) => {
+    if (!songs.length) { toast(t(noneKey)); return; }
+    state.pickSongs = songs;
+    state.pickSel = new Set(songs.map((s) => s.id));
+    const rows = songs.map((s) => `
+      <div class="song-row srow-list pick-row" data-i="${esc(s.id)}">
+        <span class="num">${ICONS.check}</span>
+        ${s.art ? `<div class="s-art"><img src="${esc(s.art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>` : `<div class="s-art ph">${ICONS.music}</div>`}
+        <div class="s-main"><span class="s-title">${esc(s.title)}</span><span class="s-sub">${esc(s.artist || "")}</span></div>
+        <span class="s-dur">${fmtTime(s.duration)}</span>
+      </div>`).join("");
+    $("#pickBody").innerHTML = rows;
+    $("#pickCount").textContent = songs.length;
+    injectIcons($("#pickModal"));
+  };
+  const p = api("/api/library/finished").catch(() => ({ finished: [] }));
+  const l = api("/api/local/library").catch(() => ({ songs: [] }));
+  Promise.all([p, l]).then(([pf, lf]) => {
+    if (kind === "local") {
+      const songs = lf.songs || [];
+      if (!songs.length) { toast(t("dl.noLocal")); return; }
+      $("#pickTitle").textContent = t("dl.pickLocal");
+      done(songs, "dl.noLocal");
+    } else {
+      const songs = (pf.finished || []).map((f) => ({ ...f })).filter((s) => !(state.downloads || []).some((d) => d.id === s.id));
+      if (!songs.length) { toast(t("dl.noFinished")); return; }
+      $("#pickTitle").textContent = t("dl.pickFinished");
+      done(songs, "dl.noFinished");
+    }
+  }).then(() => $("#pickModal").classList.remove("hidden"));
+}
+
+function dlRemoveSelected() {
+  const ids = [...state.pickSel];
+  const targets = (state.downloads || []).filter((d) => ids.includes(d.id));
+  if (!targets.length) return;
+  if (!confirm(t("dl.confirmSel"))) return;
+  Promise.all(ids.map((id) => api("/api/downloads/" + encodeURIComponent(id), { method: "DELETE" }).catch(() => {}))).then(refreshDownloads);
+}
+
+async function dlRemoveAll() {
+  const dls = state.downloads || [];
+  if (!dls.length) return;
+  if (!confirm(t("dl.confirmClear"))) return;
+  await api("/api/downloads/clear", { method: "POST" }).catch(() => {});
+  refreshDownloads();
 }
 
 async function renderTopSongs() {
@@ -2137,7 +2318,7 @@ async function renderSettings() {
   </div>
 
   <div class="set-group"><h3>${ICONS.info || ICONS.home} ${t("set.about")}</h3>
-    <div class="set-row"><div><div class="set-label">ArchiveTune for Windows</div><div class="set-desc">${t("set.aboutDesc")}</div></div></div>
+    <div class="set-row"><div><div class="set-label">Donut Music for Windows</div><div class="set-desc">${t("set.aboutDesc")}</div></div></div>
   </div>`;
   injectIcons(viewEl);
 
@@ -2552,6 +2733,44 @@ function wireEvents() {
     const plAdd = e.target.closest("[data-pl-add]");
     if (plAdd) { addSongToPlaylist(plAdd.dataset.plAdd); return; }
 
+    const dlBtn = e.target.closest("[data-dl-btn]");
+    if (dlBtn) {
+      const row = dlBtn.closest(".song-row");
+      const song = row ? state.renderList[+row.dataset.i] : null;
+      if (song) downloadSong(song);
+      return;
+    }
+    const dlAddLocal = e.target.closest("[data-dl-add-local]");
+    if (dlAddLocal) { openDownloadPicker("local"); return; }
+    const dlAddFinished = e.target.closest("[data-dl-add-finished]");
+    if (dlAddFinished) { openDownloadPicker("finished"); return; }
+    const dlClear = e.target.closest("[data-dl-clear]");
+    if (dlClear) { dlRemoveAll(); return; }
+    const dlDel = e.target.closest("[data-dl-del]");
+    if (dlDel) {
+      const row = dlDel.closest(".song-row");
+      const s = row ? state.renderList[+row.dataset.i] : null;
+      if (s && confirm(t("dl.confirmSel"))) {
+        api("/api/downloads/" + encodeURIComponent(s.id), { method: "DELETE" }).then(refreshDownloads);
+      }
+      return;
+    }
+    const pickRow = e.target.closest(".pick-row");
+    if (pickRow) {
+      const id = pickRow.dataset.i;
+      if (state.pickSel.has(id)) state.pickSel.delete(id);
+      else state.pickSel.add(id);
+      pickRow.classList.toggle("sel");
+      return;
+    }
+    const pickConfirm = e.target.closest("#pickConfirm");
+    if (pickConfirm) {
+      const sel = (state.pickSongs || []).filter((s) => state.pickSel.has(s.id));
+      $("#pickModal").classList.add("hidden");
+      addSongsToDownloads(sel);
+      return;
+    }
+
     const heroPlay = e.target.closest("[data-hero-play]");
     if (heroPlay) {
       const hero = state.homeHero;
@@ -2669,6 +2888,7 @@ function wireEvents() {
       if (what === "np") closeNowPlaying();
       else if (what === "eq") $("#eqModal").classList.add("hidden");
       else if (what === "pl") $("#playlistModal").classList.add("hidden");
+      else if (what === "pick") $("#pickModal").classList.add("hidden");
       else if (what === "queue") { const qp = $("#queuePanel"); if (qp) qp.classList.add("hidden"); }
       return;
     }
@@ -2786,8 +3006,14 @@ function wireEvents() {
     }
   });
   audio.addEventListener("ended", () => {
+    const fin = state.current;
     if (state.xfadeActive) handoffXfade();
     else next(false);
+    if (!state.finishedIds) state.finishedIds = new Set();
+    if (fin && fin.id && !state.finishedIds.has(fin.id)) {
+      state.finishedIds.add(fin.id);
+      api("/api/library/finished", { method: "POST", body: JSON.stringify(fin) }).catch(() => {});
+    }
   });
   audio.addEventListener("error", () => { if (audio.src) toast(t("toast.cantPlay")); });
 
@@ -2801,7 +3027,7 @@ function wireEvents() {
     else if (e.key === "ArrowDown") { e.preventDefault(); if (state.xfadeActive) cancelXfade(); audio.volume = Math.max(0, audio.volume - 0.05); setSetting("volume", audio.volume); }
     else if (e.key.toLowerCase() === "n") next(true);
     else if (e.key.toLowerCase() === "p") prev();
-    else if (e.key === "Escape") { closeNowPlaying(); $("#eqModal").classList.add("hidden"); $("#playlistModal").classList.add("hidden"); }
+    else if (e.key === "Escape") { closeNowPlaying(); $("#eqModal").classList.add("hidden"); $("#playlistModal").classList.add("hidden"); $("#pickModal").classList.add("hidden"); }
   });
 }
 

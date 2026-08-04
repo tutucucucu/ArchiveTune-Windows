@@ -1,8 +1,8 @@
 @echo off
 chcp 65001 >nul
-title Building ArchiveTune for Windows
+title Building Donut Music
 echo ==========================================
-echo   Building ArchiveTune.exe  (onefile)
+echo   Building Donut Music.exe  (onefile)
 echo ==========================================
 echo.
 

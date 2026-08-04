@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import threading
 import time
@@ -23,7 +24,7 @@ def frontend_dir():
     return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend")
 
 
-app = FastAPI(title="ArchiveTune")
+app = FastAPI(title="Donut Music")
 
 
 @app.middleware("http")
@@ -305,6 +306,83 @@ def lib_play(song: SongPayload):
     return {"ok": True}
 
 
+# ---------------- downloads / offline ----------------
+
+
+@app.get("/api/downloads")
+def dl_list():
+    return {"downloads": library.get_downloads()}
+
+
+@app.get("/api/downloads/file/{dl_id}")
+def dl_file(dl_id: str):
+    d = next((x for x in library.get_downloads() if x.get("id") == dl_id), None)
+    if not d or not os.path.isfile(d.get("filepath", "")):
+        return JSONResponse({"error": "File not found"}, 404)
+    return FileResponse(d["filepath"])
+
+
+@app.post("/api/downloads")
+def dl_add(song: SongPayload):
+    s = song.model_dump()
+    for d in library.get_downloads():
+        if d.get("id") and s.get("id") and d["id"] == s["id"]:
+            return {"ok": True, "download": d, "exists": True}
+    try:
+        if s.get("source") == "local":
+            src = s.get("filepath") or ""
+            if not src or not os.path.isfile(src):
+                return JSONResponse({"error": "Local file not found"}, 400)
+            import shutil
+
+            ext = os.path.splitext(src)[1] or ".mp3"
+            safe = re.sub(r"[^A-Za-z0-9_.-]", "_", s.get("id") or "local")
+            dest = os.path.join(library.downloads_dir(), "local_" + safe + ext)
+            shutil.copy2(src, dest)
+            res = library.add_download(s, dest)
+        else:
+            video_id = s.get("videoId") or (s.get("id") or "").replace("ytm:", "")
+            if not video_id:
+                return JSONResponse({"error": "Missing videoId"}, 400)
+            dest = ytm.download_song(video_id, library.downloads_dir())
+            s["filepath"] = dest
+            res = library.add_download(s, dest)
+    except Exception as e:
+        return JSONResponse({"error": f"Download failed: {e}"}, 500)
+    return {"ok": True, **res}
+
+
+@app.delete("/api/downloads/{dl_id}")
+def dl_delete(dl_id: str):
+    removed = library.remove_download(dl_id)
+    return {"ok": bool(removed)}
+
+
+@app.post("/api/downloads/clear")
+def dl_clear(payload: dict = None):
+    ids = (payload or {}).get("ids")
+    if ids:
+        for i in ids:
+            library.remove_download(i)
+    else:
+        library.clear_downloads()
+    return {"ok": True}
+
+
+# ---------------- finished (played to the end) ----------------
+
+
+@app.get("/api/library/finished")
+def lib_finished():
+    return {"finished": library.get_finished()}
+
+
+@app.post("/api/library/finished")
+def lib_mark_finished(song: SongPayload):
+    added = library.mark_finished(song.model_dump())
+    return {"ok": True, "added": added, "count": len(library.get_finished())}
+
+
 # ---------------- lyrics ----------------
 
 
@@ -365,7 +443,7 @@ def update_settings(payload: SettingsPatch):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "name": "ArchiveTune", "time": time.time()}
+    return {"ok": True, "name": "Donut Music", "time": time.time()}
 
 
 # ---------------- frontend ----------------
@@ -393,7 +471,7 @@ def _open_desktop(host, port):
     import webview
 
     webview.create_window(
-        "ArchiveTune",
+        "Donut Music",
         f"http://{host}:{port}/",
         width=1280,
         height=820,

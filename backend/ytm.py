@@ -1,3 +1,4 @@
+import os
 import re
 import threading
 import time
@@ -99,7 +100,7 @@ def _song_from_ytm(y):
         "artist": _artist_name(y.get("artists")),
         "artists": _artists_list(y.get("artists")),
         "album": (y.get("album") or {}).get("name") if isinstance(y.get("album"), dict) else (y.get("album") or "Unknown"),
-        "duration": y.get("duration_seconds") or 0,
+        "duration": y.get("duration_seconds") or _parse_dur(y.get("length")) or 0,
         "art": _thumb(y.get("thumbnails") or y.get("thumbnail")),
         "browseId": (y.get("album") or {}).get("id") if isinstance(y.get("album"), dict) else None,
         "source": "ytm",
@@ -655,6 +656,25 @@ def get_stream(video_id):
     headers.setdefault("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36")
     STREAM_CACHE[video_id] = {"url": url, "headers": headers, "expires": now + STREAM_TTL}
     return url, headers
+
+
+def download_song(video_id, out_dir):
+    safe = re.sub(r"[^A-Za-z0-9_-]", "", video_id) or "song"
+    opts = {
+        "format": "bestaudio/best",
+        "outtmpl": os.path.join(out_dir, safe + ".%(ext)s"),
+        "quiet": True,
+        "no_warnings": True,
+        "noplaylist": True,
+        "socket_timeout": 60,
+        "nocheckcertificate": True,
+    }
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info("https://www.youtube.com/watch?v=" + video_id, download=True)
+        path = ydl.prepare_filename(info)
+    if not os.path.isfile(path):
+        raise RuntimeError("Download finished but file missing")
+    return path
 
 
 def auth_status():

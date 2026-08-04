@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ArchiveTune · Material You (Android 14) theme — full refactor
+   Donut Music · Material You (Android 14) theme — full refactor
    Changes: Material 3 dark palette (#1B1416), Google Sans/Inter, 20–28px
    radii, tonal buttons (lighter than bg), big light round play button, thin
    slider, Material text tiers (#F5E7EA/#CDBFC2/#8A7F82), 200ms transitions,
@@ -918,6 +918,19 @@ body {
 .pl-new input:focus { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 70%, transparent); }
 
 /* ==========================================================================
+   Download picker modal
+   ========================================================================== */
+.pick-card { width: min(560px, 94vw); }
+.pick-sub { font-size: 12.5px; color: var(--text-3); margin: -10px 0 12px; }
+.pick-list { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; margin-bottom: 18px; }
+.pick-row { cursor: pointer; border-radius: var(--radius-sm); transition: background var(--t); }
+.pick-row:hover { background: var(--surface-2); }
+.pick-row .num { opacity: 0.4; }
+.pick-row.sel { background: color-mix(in srgb, var(--primary) 14%, transparent); }
+.pick-row.sel .num { opacity: 1; color: var(--primary-2); }
+.pick-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+
+/* ==========================================================================
    Settings — surface groups, no borders
    ========================================================================== */
 .set-group { background: var(--surface-1); border: 0; border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow-1); }
@@ -1288,7 +1301,7 @@ body {
 }
 
 /* ==========================================================================
-   Home — Android-style sections (ArchiveTune for Windows)
+   Home — Android-style sections (Donut Music for Windows)
    Sections spaced 56px, Material You radii/shadows, carousels w/ arrows.
    ========================================================================== */
 #homeBody { display: flex; flex-direction: column; gap: 64px; padding-top: 6px; }

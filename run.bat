@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
-title ArchiveTune for Windows
-echo Starting ArchiveTune (browser mode)...
+title Donut Music
+echo Starting Donut Music (browser mode)...
 
 set "PY="
 py -3 -c "import sys" >nul 2>nul && set "PY=py -3"

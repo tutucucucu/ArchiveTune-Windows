@@ -16,7 +16,7 @@ def base_dir():
 def data_dir():
     if os.name == "posix":
         base = os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share")
-        return os.path.join(base, "ArchiveTune")
+        return os.path.join(base, "Donut Music")
     return os.path.join(base_dir(), "data")
 
 
@@ -269,3 +269,83 @@ def get_scan_cache():
 
 def save_scan_cache(root, songs):
     _save("scan_cache.json", {"root": root, "songs": songs, "scanned_at": time.time()})
+
+
+# ---------------- downloads / offline ----------------
+
+
+def downloads_dir():
+    d = os.path.join(DATA_DIR, "downloads")
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def get_downloads():
+    return _load("downloads.json", {"downloads": []})["downloads"]
+
+
+def save_downloads(dls):
+    _save("downloads.json", {"downloads": dls})
+
+
+def add_download(song, filepath):
+    dls = get_downloads()
+    for d in dls:
+        if d.get("id") and song.get("id") and d["id"] == song["id"]:
+            return {"download": d, "exists": True}
+    entry = dict(song)
+    entry["filepath"] = filepath
+    entry["added"] = time.time()
+    dls.insert(0, entry)
+    save_downloads(dls)
+    return {"download": entry, "exists": False}
+
+
+def remove_download(dl_id):
+    dls = get_downloads()
+    removed = None
+    out = []
+    for d in dls:
+        if d.get("id") == dl_id:
+            removed = d
+        else:
+            out.append(d)
+    if removed:
+        save_downloads(out)
+        try:
+            if removed.get("filepath") and os.path.isfile(removed["filepath"]):
+                os.remove(removed["filepath"])
+        except Exception:
+            pass
+    return removed
+
+
+def clear_downloads():
+    dls = get_downloads()
+    for d in dls:
+        try:
+            if d.get("filepath") and os.path.isfile(d["filepath"]):
+                os.remove(d["filepath"])
+        except Exception:
+            pass
+    save_downloads([])
+
+
+# ---------------- finished (played to the end) ----------------
+
+
+def get_finished():
+    return _load("finished.json", {"finished": []})["finished"]
+
+
+def mark_finished(song):
+    fin = get_finished()
+    key = song.get("id") or (song.get("title", "") + song.get("artist", ""))
+    for f in fin:
+        if (f.get("id") or (f.get("title", "") + f.get("artist", ""))) == key:
+            return False
+    entry = dict(song)
+    entry["finished_at"] = time.time()
+    fin.insert(0, entry)
+    _save("finished.json", {"finished": fin[:500]})
+    return True
