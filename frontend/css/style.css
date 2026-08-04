@@ -929,6 +929,10 @@ body {
 .pick-row.sel { background: color-mix(in srgb, var(--primary) 14%, transparent); }
 .pick-row.sel .num { opacity: 1; color: var(--primary-2); }
 .pick-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.song-table.sel-mode .song-row { cursor: pointer; }
+.song-table.sel-mode .song-row .num { opacity: 0.45; }
+.song-table.sel-mode .song-row.sel { background: color-mix(in srgb, var(--primary) 14%, transparent); }
+.song-table.sel-mode .song-row.sel .num { opacity: 1; color: var(--primary-2); }
 
 /* ==========================================================================
    Settings — surface groups, no borders

@@ -91,6 +91,7 @@ const T = {
   "dl.addLocal": { id: "Tambah dari Lokal", en: "Add from Local", jp: "ローカルから追加" },
   "dl.addFinished": { id: "Tambah dari Didengar Selesai", en: "Add Played to End", jp: "最後まで再生した曲から追加" },
   "dl.select": { id: "Pilih", en: "Select", jp: "選択" },
+  "dl.selAll": { id: "Pilih Semua", en: "Select All", jp: "すべて選択" },
   "dl.done": { id: "Selesai", en: "Done", jp: "完了" },
   "dl.delAll": { id: "Hapus Semua", en: "Delete All", jp: "すべて削除" },
   "dl.delSel": { id: "Hapus Terpilih", en: "Delete Selected", jp: "選択を削除" },
@@ -1503,13 +1504,16 @@ function loadingHtml() {
   return '<div class="empty-state"><div class="es-ic" style="animation:discspin 1s linear infinite">' + ICONS.disc + '</div><p>' + t("common.loading") + '</p></div>';
 }
 
-function songRowHtml(s, i, { showAlbum = true, actions = true, list = false, artFallback = "", dlMode = false } = {}) {
+function songRowHtml(s, i, { showAlbum = true, actions = true, list = false, artFallback = "", dlMode = false, selMode = false } = {}) {
   const artSrc = s.art || artFallback;
   const artHtml = artSrc
     ? `<div class="s-art">${ICONS.music}<img src="${esc(artSrc)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('ph')"></div>`
     : `<div class="s-art ph">${ICONS.music}</div>`;
+  const num = dlMode && selMode ? (state.dlSel && state.dlSel.has(s.id) ? ICONS.check : "") : i + 1;
   const acts = dlMode
-    ? `<div class="s-actions">
+    ? selMode
+      ? `<button class="icon-btn s-hl" data-dl-del title="${t("common.delete")}">${ICONS.trash}</button>`
+      : `<div class="s-actions">
         <button class="icon-btn s-hl" data-dl-del title="${t("common.delete")}">${ICONS.trash}</button>
       </div>`
     : actions
@@ -1529,14 +1533,14 @@ function songRowHtml(s, i, { showAlbum = true, actions = true, list = false, art
   if (list) {
     const sub = [s.artist, s.duration ? fmtTime(s.duration) : ""].filter(Boolean).join(" • ");
     return `<div class="song-row srow-list" data-i="${i}" data-sid="${esc(s.id)}">
-    <span class="num">${i + 1}</span>
+    <span class="num">${num}</span>
     ${artHtml}
     <div class="s-main"><span class="s-title">${esc(s.title)}</span>${sub ? `<span class="s-sub">${esc(sub)}</span>` : ""}</div>
     ${acts}
   </div>`;
   }
   return `<div class="song-row" data-i="${i}" data-sid="${esc(s.id)}">
-    <span class="num">${i + 1}</span>
+    <span class="num">${num}</span>
     ${artHtml}
     <span class="s-title">${esc(s.title)}</span>
     <span class="s-artist">${esc(s.artist || "")}</span>
@@ -1702,15 +1706,26 @@ async function renderLibrary() {
 async function renderOffline() {
   viewEl.innerHTML = `<div class="page-head"><div class="page-title">${t("nav.offline")}</div>
     <div class="page-sub">${t("dl.sub")}</div>
-    <div class="dl-actions" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center">
-      <button class="btn ghost" data-dl-add-local>${ICONS.folder} ${t("dl.addLocal")}</button>
-      <button class="btn ghost" data-dl-add-finished>${ICONS.history} ${t("dl.addFinished")}</button>
-      <span style="flex:1"></span>
-      <button class="btn ghost" data-dl-clear>${ICONS.trash} ${t("dl.delAll")}</button>
-    </div></div>
+    <div class="dl-actions" id="dlActions" style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center"></div></div>
     <div id="dlBody">${loadingHtml()}</div>`;
   injectIcons(viewEl);
   await refreshDownloads();
+}
+
+function dlActionsHtml() {
+  const selMode = state.dlSelMode;
+  const n = state.dlSel ? state.dlSel.size : 0;
+  if (selMode) {
+    return `<button class="btn ghost" data-dl-sel-all>${ICONS.check} ${t("dl.selAll")}</button>
+      <button class="btn ghost" data-dl-del-sel${n ? "" : " disabled"}>${ICONS.trash} ${t("dl.delSel")}${n ? ` (${n})` : ""}</button>
+      <span style="flex:1"></span>
+      <button class="btn ghost" data-dl-sel-done>${ICONS.x} ${t("dl.done")}</button>`;
+  }
+  return `<button class="btn ghost" data-dl-add-local>${ICONS.folder} ${t("dl.addLocal")}</button>
+    <button class="btn ghost" data-dl-add-finished>${ICONS.history} ${t("dl.addFinished")}</button>
+    <span style="flex:1"></span>
+    <button class="btn ghost" data-dl-select>${ICONS.check} ${t("dl.select")}</button>
+    <button class="btn ghost" data-dl-clear>${ICONS.trash} ${t("dl.delAll")}</button>`;
 }
 
 async function refreshDownloads() {
@@ -1729,15 +1744,38 @@ async function refreshDownloads() {
   }
   state.downloads = dls;
   if (state.lib) state.lib.downloads = dls;
+  if (state.dlSel) {
+    for (const id of state.dlSel) if (!dls.some((d) => d.id === id)) state.dlSel.delete(id);
+  }
+  const acts = $("#dlActions");
+  if (acts) { acts.innerHTML = dlActionsHtml(); injectIcons(acts); }
   if (!dls.length) {
+    state.dlSelMode = false;
     body.innerHTML = emptyState(t("dl.none"), t("dl.noneSub"));
     injectIcons(body);
     return;
   }
-  const rows = dls.map((s, i) => songRowHtml(s, i, { showAlbum: true, list: true, dlMode: true })).join("");
-  body.innerHTML = `<div class="song-table"><div class="song-table-head srow-list-head"><span></span><span></span><span>${t("song.title")}</span><span></span></div>${rows}</div>`;
+  const selMode = state.dlSelMode;
+  const rows = dls.map((s, i) => songRowHtml(s, i, { showAlbum: true, list: true, dlMode: true, selMode })).join("");
+  body.innerHTML = `<div class="song-table${selMode ? " sel-mode" : ""}"><div class="song-table-head srow-list-head"><span></span><span></span><span>${t("song.title")}</span><span></span></div>${rows}</div>`;
   state.renderList = dls;
-  bindSongRows(body, dls);
+  if (selMode) {
+    body.querySelectorAll(".song-row[data-i]").forEach((row) => {
+      const s = dls[+row.dataset.i];
+      if (s && state.dlSel.has(s.id)) row.classList.add("sel");
+      row.addEventListener("click", (e) => {
+        if (e.target.closest("button")) return;
+        if (!s) return;
+        if (state.dlSel.has(s.id)) state.dlSel.delete(s.id);
+        else state.dlSel.add(s.id);
+        row.classList.toggle("sel");
+        const a = $("#dlActions");
+        if (a) { a.innerHTML = dlActionsHtml(); injectIcons(a); }
+      });
+    });
+  } else {
+    bindSongRows(body, dls);
+  }
   markPlaying();
   injectIcons(body);
 }
@@ -2744,6 +2782,28 @@ function wireEvents() {
     if (dlAddLocal) { openDownloadPicker("local"); return; }
     const dlAddFinished = e.target.closest("[data-dl-add-finished]");
     if (dlAddFinished) { openDownloadPicker("finished"); return; }
+    const dlSelect = e.target.closest("[data-dl-select]");
+    if (dlSelect) { state.dlSelMode = true; state.dlSel = new Set(); refreshDownloads(); return; }
+    const dlSelDone = e.target.closest("[data-dl-sel-done]");
+    if (dlSelDone) { state.dlSelMode = false; state.dlSel = new Set(); refreshDownloads(); return; }
+    const dlSelAll = e.target.closest("[data-dl-sel-all]");
+    if (dlSelAll) {
+      state.dlSel = new Set((state.downloads || []).map((d) => d.id));
+      const a = $("#dlActions");
+      if (a) { a.innerHTML = dlActionsHtml(); injectIcons(a); }
+      $$(".song-table.sel-mode .song-row").forEach((r) => r.classList.add("sel"));
+      return;
+    }
+    const dlDelSel = e.target.closest("[data-dl-del-sel]");
+    if (dlDelSel) {
+      const ids = [...(state.dlSel || [])];
+      if (!ids.length) return;
+      if (!confirm(t("dl.confirmSel"))) return;
+      state.dlSelMode = false;
+      state.dlSel = new Set();
+      api("/api/downloads/clear", { method: "POST", body: JSON.stringify({ ids }) }).then(refreshDownloads);
+      return;
+    }
     const dlClear = e.target.closest("[data-dl-clear]");
     if (dlClear) { dlRemoveAll(); return; }
     const dlDel = e.target.closest("[data-dl-del]");
