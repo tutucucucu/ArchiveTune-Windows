@@ -247,7 +247,7 @@ def lib_create(payload: dict):
 
 @app.put("/api/library/playlists/{pid}")
 def lib_update(pid: str, payload: dict):
-    p = library.update_playlist(pid, payload.get("name"), payload.get("description"))
+    p = library.update_playlist(pid, payload.get("name"), payload.get("description"), payload.get("art"))
     return p or JSONResponse({"error": "not found"}, 404)
 
 

@@ -106,7 +106,7 @@ def get_playlist(pid):
     return None
 
 
-def update_playlist(pid, name=None, description=None):
+def update_playlist(pid, name=None, description=None, art=None):
     pls = get_playlists()
     for p in pls:
         if p["id"] == pid:
@@ -114,6 +114,8 @@ def update_playlist(pid, name=None, description=None):
                 p["name"] = name
             if description is not None:
                 p["description"] = description
+            if art is not None:
+                p["art"] = art
             save_playlists(pls)
             return p
     return None

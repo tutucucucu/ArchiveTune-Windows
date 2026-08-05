@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=ArchiveTune
+Name=Donut Music
 GenericName=Music Player
 Comment=YouTube Music client, charts, local files, lyrics & Last.fm scrobbling
 Exec=/usr/bin/@PKG_NAME@
 Icon=@PKG_NAME@
 Terminal=false
 Categories=AudioVideo;Audio;Music;Player;
-StartupWMClass=ArchiveTune
+StartupWMClass=Donut Music

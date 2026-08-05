@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="ArchiveTune — The cutest music player" width="100%"/>
+<img src="assets/banner.png" alt="Donut Music — The cutest music player" width="100%"/>
 
 <br/>
 
@@ -13,11 +13,11 @@ Rebranded continuation of [ArchiveTune](https://archive.tune.moe) with a Python 
 <br/>
 
 [![python](https://img.shields.io/badge/python-3.10+-blue)](https://www.python.org/)
-[![platform](https://img.shields.io/badge/platform-Windows_·_Linux-blue)](https://github.com/tutucucucu/ArchiveTune-Windows)
+[![platform](https://img.shields.io/badge/platform-Windows_·_Linux-blue)](https://github.com/tutucucucu/Donut-Music)
 [![license](https://img.shields.io/badge/license-GPL--3.0-brightgreen)](LICENSE)
 [![backend](https://img.shields.io/badge/backend-FastAPI-009688)](https://fastapi.tiangolo.com/)
 [![yt](https://img.shields.io/badge/music-YouTube_Music-red)](https://music.youtube.com)
-[![made-with-love](https://img.shields.io/badge/made%20with-%E2%9D%A4-red)](https://github.com/tutucucucu/ArchiveTune-Windows)
+[![made-with-love](https://img.shields.io/badge/made%20with-%E2%9D%A4-red)](https://github.com/tutucucucu/Donut-Music)
 
 </div>
 
@@ -124,14 +124,14 @@ Build a `.deb` on any Ubuntu machine (tested on 24.04):
 bash linux/build_deb.sh
 ```
 
-Output: `dist/archivetune_<version>_amd64.deb`. Install it:
+Output: `dist/donutmusic_<version>_amd64.deb`. Install it:
 
 ```bash
-sudo apt install ./dist/archivetune_<version>_amd64.deb
+sudo apt install ./dist/donutmusic_<version>_amd64.deb
 ```
 
-- Launches from the app menu as **Donut Music** (or run `archivetune` in a terminal).
-- Installed to `/opt/archivetune`; user data goes to `~/.local/share/Donut Music`.
+- Launches from the app menu as **Donut Music** (or run `donutmusic` in a terminal).
+- Installed to `/opt/donutmusic`; user data goes to `~/.local/share/Donut Music`.
 - The script auto-installs system deps (Python venv, `python3-gi`, `gir1.2-webkit2-4.1`/`4.0`, GStreamer codecs). Build the deb on the **same Ubuntu release** the target machine uses — the venv is tied to the local Python version.
 - Prefer to build yourself, or push a `v*` tag → GitHub Actions builds and uploads the `.deb` automatically (`workflow_dispatch` works too).
 - Run from source instead: `pip install -r backend/requirements.txt && python3 backend/main.py`.
@@ -173,9 +173,9 @@ frontend/
   js/app.js       player, crossfade, search, library, downloads, lyrics, EQ, stats
 Donut Music.spec  PyInstaller build config (Windows)
 build.bat         one-click Windows build script
-linux/            .deb packaging: build_deb.sh, control, .desktop, launcher
+linux/            .deb packaging: build_deb.sh, control, donutmusic.desktop, launcher
 .github/workflows/build-deb.yml  CI that builds the .deb on push of a v* tag
-assets/           original ArchiveTune icon (png + ico)
+assets/           Donut Music icon (png + ico)
 data/             user data (auto-created at runtime)
 ```
 

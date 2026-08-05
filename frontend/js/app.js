@@ -177,6 +177,7 @@ const T = {
   "artist.noAlbums": { id: "Tidak ada album", en: "No albums", jp: "アルバムはありません" },
   "artist.noSongs": { id: "Tidak ada lagu", en: "No songs", jp: "曲はありません" },
   "playlists.rename": { id: "Ganti nama", en: "Rename", jp: "名前を変更" },
+  "playlists.changeArt": { id: "Ganti sampul", en: "Change cover", jp: "カバーを変更" },
   "playlists.delete": { id: "Hapus", en: "Delete", jp: "削除" },
   "set.country": { id: "Negara chart", en: "Charts country", jp: "チャート国" },
   "set.countryDesc": { id: "Wilayah untuk chart beranda", en: "Region for home charts", jp: "ホームチャートの地域" },
@@ -1243,6 +1244,34 @@ function recommendForLocalPlaylist(songs, all) {
   return [...byArtist, ...others].slice(0, 9);
 }
 
+async function recommendForPlaylist(songs) {
+  const have = new Set((songs || []).map((s) => s.id));
+  const seed = (songs || []).find((s) => s.videoId && s.source === "ytm");
+  const out = [];
+  const seen = new Set(have);
+  if (seed) {
+    const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=12`).catch(() => null);
+    if (r && r.items) {
+      for (const s of r.items) {
+        if (!seen.has(s.id) && !seen.has("ytm:" + s.videoId)) {
+          seen.add(s.id);
+          out.push(s);
+        }
+        if (out.length >= 9) break;
+      }
+    }
+  }
+  if (out.length < 9) {
+    const local = await api("/api/local/library").catch(() => ({ songs: [] }));
+    const localRecs = recommendForLocalPlaylist(songs, local.songs || []);
+    for (const s of localRecs) {
+      if (!seen.has(s.id)) { seen.add(s.id); out.push(s); }
+      if (out.length >= 9) break;
+    }
+  }
+  return out.slice(0, 9);
+}
+
 function artistsHtml(arts) {
   const items = arts.map((a) => `
     <div class="artist-card" data-card data-type="artist" data-browse="${esc(a.browseId)}">
@@ -1944,7 +1973,7 @@ async function renderPlaylists() {
     }
     grid.innerHTML = `<div class="card-grid">${state.playlists.map((p) => `
       <div class="card" data-local-pl="${p.id}">
-        <div class="card-art placeholder" style="background:var(--accent-grad)">${ICONS.list}</div>
+        <div class="card-art${p.art ? "" : " placeholder"}"${p.art ? "" : ` style="background:var(--accent-grad)"`}>${p.art ? `<img src="${esc(p.art)}" alt="" loading="lazy">` : ICONS.list}</div>
         <div class="card-title">${esc(p.name)}</div>
         <div class="card-sub">${p.songs.length} ${t("lib.songs")}</div>
       </div>`).join("")}</div>`;
@@ -1957,7 +1986,7 @@ async function renderLocalPlaylist(pid) {
   if (!p) { renderPlaylists(); return; }
   const songs = p.songs || [];
   viewEl.innerHTML = `<div class="hero">
-    <div class="hero-art ph">${ICONS.list}</div>
+    <div class="hero-art${p.art ? "" : " ph"}" id="lpArt">${p.art ? `<img src="${esc(p.art)}" alt="">` : ICONS.list}</div>
     <div class="hero-meta">
       <div class="hero-type">${t("page.playlist")}</div>
       <div class="hero-title">${esc(p.name)}</div>
@@ -1966,6 +1995,7 @@ async function renderLocalPlaylist(pid) {
         <button class="btn-stadium" id="lpPlay">${ICONS.play} ${t("common.play")}</button>
         <button class="circ" id="lpShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
         <button class="circ" id="lpRename" data-ic="edit" title="${t("playlists.rename")}"></button>
+        <button class="circ" id="lpArtBtn" data-ic="image" title="${t("playlists.changeArt")}"></button>
         <button class="circ danger" id="lpDelete" data-ic="trash" title="${t("playlists.delete")}"></button>
       </div>
     </div></div><div id="lpBody"></div>`;
@@ -1974,8 +2004,7 @@ async function renderLocalPlaylist(pid) {
   state.renderList = songs;
   body.innerHTML = songs.length ? songTableHtml(songs) : emptyState(t("playlists.empty"), t("playlists.emptySub"));
   bindSongRows(body, songs);
-  const local = await api("/api/local/library").catch(() => ({ songs: [] }));
-  const recs = recommendForLocalPlaylist(songs, local.songs || []);
+  const recs = await recommendForPlaylist(songs);
   state.plRecs = recs;
   if (recs.length) {
     body.insertAdjacentHTML("beforeend", plRecsHtml(recs, p.id));
@@ -1986,8 +2015,26 @@ async function renderLocalPlaylist(pid) {
   $("#lpRename").addEventListener("click", async () => {
     const name = prompt("New name:", p.name);
     if (!name) return;
-    await api(`/api/library/playlists/${p.id}`, { method: "PUT", body: JSON.stringify({ name }) });
+    const up = await api(`/api/library/playlists/${p.id}`, { method: "PUT", body: JSON.stringify({ name }) });
+    if (up && up.id) { state.playlists = state.playlists.map((x) => (x.id === up.id ? up : x)); }
     renderLocalPlaylist(p.id);
+  });
+  $("#lpArtBtn").addEventListener("click", () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const up = await api(`/api/library/playlists/${p.id}`, { method: "PUT", body: JSON.stringify({ art: reader.result }) });
+        if (up && up.id) { state.playlists = state.playlists.map((x) => (x.id === up.id ? up : x)); }
+        renderLocalPlaylist(p.id);
+      };
+      reader.readAsDataURL(f);
+    };
+    input.click();
   });
   $("#lpDelete").addEventListener("click", async () => {
     if (!confirm(`Delete playlist "${p.name}"?`)) return;

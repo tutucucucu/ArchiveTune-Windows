@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
 # ============================================================
-#  Build ArchiveTune .deb for Ubuntu/Debian (amd64)
+#  Build Donut Music .deb for Ubuntu/Debian (amd64)
 #
 #  Usage:   bash linux/build_deb.sh [version]
-#  Result:  dist/archivetune_<version>_amd64.deb
+#  Result:  dist/donutmusic_<version>_amd64.deb
 #
 #  Notes:
 #  - Run it on the same Ubuntu release you want to target
 #    (Python venv is tied to the local python3 minor version).
-#  - The app is installed to /opt/archivetune; user data goes to
-#    ~/.local/share/ArchiveTune.
+#  - The app is installed to /opt/donutmusic; user data goes to
+#    ~/.local/share/Donut Music.
 # ============================================================
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PKG_NAME="archivetune"
+PKG_NAME="donutmusic"
 VERSION="${1:-$(git describe --tags --always --dirty 2>/dev/null || echo 1.0.0)}"
 VERSION="${VERSION#v}"
 ROOT="$(pwd)"
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT
 
-echo "==> ArchiveTune .deb builder  (version: $VERSION)"
+echo "==> Donut Music .deb builder  (version: $VERSION)"
 
 command -v python3 >/dev/null || { echo "[!] python3 required"; exit 1; }
 PYVER="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
@@ -77,9 +77,9 @@ im.save(sys.argv[2])
 PY
 
 echo "==> installing desktop entry + launcher..."
-sed "s/@PKG_NAME@/$PKG_NAME/g" "$ROOT/linux/ArchiveTune.desktop" \
+sed "s/@PKG_NAME@/$PKG_NAME/g" "$ROOT/linux/donutmusic.desktop" \
   > "$STAGE/usr/share/applications/$PKG_NAME.desktop"
-cp "$ROOT/linux/archivetune-launcher" "$STAGE/usr/bin/$PKG_NAME"
+cp "$ROOT/linux/donutmusic-launcher" "$STAGE/usr/bin/$PKG_NAME"
 chmod 755 "$STAGE/usr/bin/$PKG_NAME"
 
 echo "==> writing control file..."
