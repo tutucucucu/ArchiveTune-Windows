@@ -2873,8 +2873,7 @@ function wireEvents() {
       return;
     }
     const recPlay = e.target.closest("[data-rec-play]");
-    if (recPlay) {
-      if (e.target.closest("button")) return;
+    if (recPlay && !e.target.closest("button")) {
       const s = (state.homeRecs || [])[+recPlay.dataset.recPlay];
       if (s) playQueue([s], 0);
       return;
@@ -2888,8 +2887,7 @@ function wireEvents() {
     const recShare = e.target.closest("[data-rec-share]");
     if (recShare) { const s = (state.homeRecs || [])[+recShare.dataset.recShare]; if (s) shareSong(s); return; }
     const plRecPlay = e.target.closest("[data-plrec-play]");
-    if (plRecPlay) {
-      if (e.target.closest("button")) return;
+    if (plRecPlay && !e.target.closest("button")) {
       const s = (state.plRecs || [])[+plRecPlay.dataset.plrecPlay];
       if (s) playQueue([s], 0);
       return;
@@ -2900,7 +2898,23 @@ function wireEvents() {
       const pid = plRecAdd.dataset.pid;
       if (s && pid) {
         api(`/api/library/playlists/${encodeURIComponent(pid)}/songs`, { method: "POST", body: JSON.stringify(s) })
-          .then(() => { toast(t("toast.plAdded")); plRecAdd.classList.add("added"); plRecAdd.disabled = true; plRecAdd.dataset.ic = "check"; injectIcons(plRecAdd); })
+          .then(() => {
+            toast(t("toast.plAdded"));
+            const pl = (state.playlists || []).find((x) => x.id === pid);
+            if (pl && !(pl.songs || []).some((x) => x.id === s.id)) { (pl.songs = pl.songs || []).push(s); }
+            state.plRecs = (state.plRecs || []).filter((x) => x.id !== s.id);
+            const card = plRecAdd.closest(".plrec-card");
+            const sec = plRecAdd.closest(".plrec-sec");
+            if (card) card.classList.add("removing");
+            setTimeout(() => {
+              if (sec) {
+                if (state.plRecs.length) {
+                  const grid = sec.querySelector(".card-grid");
+                  if (grid) { grid.innerHTML = state.plRecs.map((s, i) => plRecCardHtml(s, i, pid)).join(""); injectIcons(grid); }
+                } else sec.remove();
+              }
+            }, 260);
+          })
           .catch((err) => toast(err.message));
       }
       return;
