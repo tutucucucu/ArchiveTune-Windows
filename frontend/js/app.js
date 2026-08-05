@@ -63,6 +63,7 @@ const ICONS = {
   download: '<span class="msym">download</span>',
   up: '<span class="msym">expand_less</span>',
   edit: '<span class="msym">edit</span>',
+  image: '<span class="msym">photo</span>',
 };
 
 /* ---------------- i18n (id / en / jp) ---------------- */
@@ -178,6 +179,8 @@ const T = {
   "artist.noSongs": { id: "Tidak ada lagu", en: "No songs", jp: "曲はありません" },
   "playlists.rename": { id: "Ganti nama", en: "Rename", jp: "名前を変更" },
   "playlists.changeArt": { id: "Ganti sampul", en: "Change cover", jp: "カバーを変更" },
+  "playlists.generateThumb": { id: "Generate thumbnail", en: "Generate thumbnail", jp: "サムネイル生成" },
+  "playlists.removeSong": { id: "Hapus dari playlist", en: "Remove from playlist", jp: "プレイリストから削除" },
   "playlists.delete": { id: "Hapus", en: "Delete", jp: "削除" },
   "set.country": { id: "Negara chart", en: "Charts country", jp: "チャート国" },
   "set.countryDesc": { id: "Wilayah untuk chart beranda", en: "Region for home charts", jp: "ホームチャートの地域" },
@@ -234,6 +237,7 @@ const T = {
   "toast.cantPlay": { id: "Tidak dapat memutar trek ini.", en: "Could not play this track.", jp: "この曲を再生できませんでした。" },
   "common.loading": { id: "Memuat...", en: "Loading...", jp: "読み込み中..." },
   "common.more": { id: "Lainnya", en: "More", jp: "もっと見る" },
+  "common.open": { id: "Buka", en: "Open", jp: "開く" },
   "common.share": { id: "Bagikan tautan", en: "Share link", jp: "リンクを共有" },
   "playlists.new": { id: "Playlist baru", en: "New playlist", jp: "新しいプレイリスト" },
   "playlists.name": { id: "Nama playlist:", en: "Playlist name:", jp: "プレイリスト名:" },
@@ -685,7 +689,12 @@ function playPauseIcon() {
 
 function next(manual = true) {
   if (!state.queue.length) return;
-  if (state.repeat === "one" && manual) return;
+  if (state.repeat === "one") {
+    if (manual) return;
+    audio.currentTime = 0;
+    audio.play();
+    return;
+  }
   cancelXfade();
   let i = state.qIndex + 1;
   if (state.shuffle && state.queue.length > 1) {
@@ -820,6 +829,7 @@ function cancelXfade() {
 
 function preloadXfade() {
   if (state.xfadeLoaded || state.xfadeActive) return;
+  if (state.repeat === "one") return;
   const idx = computeNextIndex();
   if (idx == null) return;
   const song = state.queue[idx];
@@ -1151,10 +1161,11 @@ async function renderHome() {
     let recs = [];
     const seed = plays.length ? songFromPlay(plays[0]) : null;
     if (seed && seed.videoId) {
-      const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=9`).catch(() => null);
+      const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=27`).catch(() => null);
       if (r && r.items && r.items.length) recs = r.items;
     }
     state.homeRecs = recs;
+    state.homeRecShown = 9;
 
     const html = [
       recs.length ? recommendationsHtml(recs) : "",
@@ -1213,8 +1224,12 @@ function recCardHtml(s, i) {
 }
 
 function recommendationsHtml(items) {
-  const cards = items.slice(0, 9).map((s, i) => recCardHtml(s, i)).join("");
-  return `<section class="home-sec rec-sec">${secHeadHtml("smart", t("home.recs"))}<div class="card-grid rec-grid">${cards}</div></section>`;
+  const shown = Math.max(9, state.homeRecShown || 9);
+  const cards = items.slice(0, shown).map((s, i) => recCardHtml(s, i)).join("");
+  const more = items.length > shown
+    ? `<div class="rec-more-row"><button class="btn ghost" id="homeRecMore" data-home-rec-more>${ICONS.smart} ${t("common.more")}</button></div>`
+    : "";
+  return `<section class="home-sec rec-sec">${secHeadHtml("smart", t("home.recs"))}<div class="card-grid rec-grid">${cards}</div>${more}</section>`;
 }
 
 function plRecCardHtml(s, i, pid) {
@@ -1231,8 +1246,13 @@ function plRecCardHtml(s, i, pid) {
 
 function plRecsHtml(list, pid) {
   if (!list.length) return "";
+  const shown = Math.max(9, state.plRecShown || 9);
+  const cards = list.slice(0, shown).map((s, i) => plRecCardHtml(s, i, pid)).join("");
+  const more = list.length > shown
+    ? `<div class="rec-more-row"><button class="btn ghost" id="plRecMore" data-plrec-more>${ICONS.smart} ${t("common.more")}</button></div>`
+    : "";
   return `<section class="home-sec plrec-sec"><div class="section-title">${ICONS.smart} ${t("pl.recs")}</div>
-    <div class="card-grid">${list.map((s, i) => plRecCardHtml(s, i, pid)).join("")}</div></section>`;
+    <div class="card-grid">${cards}</div>${more}</section>`;
 }
 
 function recommendForLocalPlaylist(songs, all) {
@@ -1241,7 +1261,7 @@ function recommendForLocalPlaylist(songs, all) {
   const artists = new Set((songs || []).map((s) => s.artist).filter(Boolean));
   const byArtist = pool.filter((s) => artists.has(s.artist));
   const others = pool.filter((s) => !artists.has(s.artist));
-  return [...byArtist, ...others].slice(0, 9);
+  return [...byArtist, ...others].slice(0, 27);
 }
 
 async function recommendForPlaylist(songs) {
@@ -1249,27 +1269,36 @@ async function recommendForPlaylist(songs) {
   const seed = (songs || []).find((s) => s.videoId && s.source === "ytm");
   const out = [];
   const seen = new Set(have);
-  if (seed) {
-    const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=12`).catch(() => null);
-    if (r && r.items) {
-      for (const s of r.items) {
-        if (!seen.has(s.id) && !seen.has("ytm:" + s.videoId)) {
-          seen.add(s.id);
-          out.push(s);
-        }
-        if (out.length >= 9) break;
-      }
+  const want = 27;
+  const push = (s) => {
+    if (!seen.has(s.id) && !seen.has("ytm:" + s.videoId)) {
+      seen.add(s.id);
+      out.push(s);
     }
+  };
+  if (seed) {
+    const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=${want}`).catch(() => null);
+    if (r && r.items) {
+      for (const s of r.items) { push(s); if (out.length >= want) break; }
+    }
+  } else {
+    try {
+      const c = await api("/api/ytm/charts?country=US");
+      const chart = c.videos && c.videos[0];
+      if (chart && chart.browseId) {
+        const pl = await api(`/api/ytm/playlist/${encodeURIComponent(chart.browseId)}`);
+        if (pl.tracks && pl.tracks.length) {
+          for (const s of pl.tracks) { push(s); if (out.length >= want) break; }
+        }
+      }
+    } catch {}
   }
-  if (out.length < 9) {
+  if (out.length < want) {
     const local = await api("/api/local/library").catch(() => ({ songs: [] }));
     const localRecs = recommendForLocalPlaylist(songs, local.songs || []);
-    for (const s of localRecs) {
-      if (!seen.has(s.id)) { seen.add(s.id); out.push(s); }
-      if (out.length >= 9) break;
-    }
+    for (const s of localRecs) { push(s); if (out.length >= want) break; }
   }
-  return out.slice(0, 9);
+  return out.slice(0, want);
 }
 
 function artistsHtml(arts) {
@@ -2006,9 +2035,21 @@ async function renderLocalPlaylist(pid) {
   bindSongRows(body, songs);
   const recs = await recommendForPlaylist(songs);
   state.plRecs = recs;
+  state.plRecShown = 9;
+  state.plRecPid = p.id;
   if (recs.length) {
     body.insertAdjacentHTML("beforeend", plRecsHtml(recs, p.id));
     injectIcons(body);
+    const moreBtn = $("#plRecMore");
+    if (moreBtn) moreBtn.addEventListener("click", () => {
+      state.plRecShown = (state.plRecShown || 9) + 9;
+      const sec = $(".plrec-sec");
+      if (sec) {
+        const grid = sec.querySelector(".card-grid");
+        if (grid) { grid.innerHTML = state.plRecs.slice(0, state.plRecShown).map((s, i) => plRecCardHtml(s, i, p.id)).join(""); injectIcons(grid); }
+        moreBtn.style.display = state.plRecShown >= state.plRecs.length ? "none" : "";
+      }
+    });
   }
   $("#lpPlay").addEventListener("click", () => playQueue(songs, 0));
   $("#lpShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(songs, Math.floor(Math.random() * songs.length)); syncShuffle(); });
@@ -2244,12 +2285,21 @@ async function renderPlaylist(browseId) {
     $("#plAdd").addEventListener("click", () => openPlaylistModal(tracks));
     markPlaying();
     try {
-      const rec = await api("/api/ytm/playlist_recs/" + browseId);
+      const rec = await api("/api/ytm/playlist_recs/" + browseId + "?limit=27");
       state.plRecs = rec.items || [];
+      state.plRecShown = 9;
+      state.plRecPid = null;
       if (state.plRecs.length) {
         const recEl = $("#plRecs");
         recEl.innerHTML = plRecsHtml(state.plRecs, null);
         injectIcons(recEl);
+        const moreBtn = recEl.querySelector("#plRecMore");
+        if (moreBtn) moreBtn.addEventListener("click", () => {
+          state.plRecShown = (state.plRecShown || 9) + 9;
+          const grid = recEl.querySelector(".card-grid");
+          if (grid) { grid.innerHTML = state.plRecs.slice(0, state.plRecShown).map((s, i) => plRecCardHtml(s, i, null)).join(""); injectIcons(grid); }
+          moreBtn.style.display = state.plRecShown >= state.plRecs.length ? "none" : "";
+        });
       }
     } catch {}
   } catch (e) { viewEl.innerHTML = emptyState("Error", e.message); }
@@ -2800,6 +2850,111 @@ function closeMoreMenus() {
   });
 }
 
+/* ---------------- floating right-click context menu ---------------- */
+function hideCtxMenu() {
+  const m = $("#ctxMenu");
+  if (!m) return;
+  m.classList.add("hidden");
+  m.innerHTML = "";
+  m._fns = null;
+}
+
+function showCtxMenu(x, y, items, head) {
+  const m = $("#ctxMenu");
+  hideCtxMenu();
+  const headHtml = head ? `<div class="ctx-head">${esc(head)}</div>` : "";
+  m.innerHTML = headHtml + items.map((it, i) =>
+    it.sep
+      ? `<div class="ctx-sep"></div>`
+      : `<button class="ctx-item${it.danger ? " danger" : ""}" data-ctx-idx="${i}">${it.icon}<span>${esc(it.label)}</span></button>`
+  ).join("");
+  injectIcons(m);
+  m._fns = items.map((it) => it.fn);
+  m.classList.remove("hidden");
+  const mw = m.offsetWidth || 220;
+  const mh = m.offsetHeight || 220;
+  m.style.left = Math.max(8, Math.min(x, window.innerWidth - mw - 10)) + "px";
+  m.style.top = Math.max(8, Math.min(y, window.innerHeight - mh - 10)) + "px";
+}
+
+function ctxSongOf(el) {
+  const recent = el.closest(".recent-row");
+  if (recent) { const p = (state.recentPlays || [])[+recent.dataset.i]; return p ? songFromPlay(p) : null; }
+  const row = el.closest(".song-row");
+  if (row) return (state.renderList || [])[+row.dataset.i];
+  const rec = el.closest(".rec-card");
+  if (rec) return (state.homeRecs || [])[+rec.dataset.recPlay];
+  const plrec = el.closest(".plrec-card");
+  if (plrec) return (state.plRecs || [])[+plrec.dataset.plrecPlay];
+  const cl = el.closest(".cl-item");
+  if (cl) { const p = (state.recentPlays || [])[+cl.dataset.clPlay]; return p ? songFromPlay(p) : null; }
+  const q = el.closest(".queue-item");
+  if (q) {
+    if (q.dataset.sugPlay != null) return (state.nextUpSug || [])[+q.dataset.sugPlay];
+    if (q.dataset.qGo != null) return (state.queue || [])[+q.dataset.qGo];
+  }
+  return null;
+}
+
+function ctxSongMenu(song) {
+  const items = [
+    { icon: ICONS.play, label: t("common.play"), fn: () => playQueue([song], 0) },
+    { sep: true },
+    { icon: ICONS["play-list"], label: t("pl.addTo"), fn: () => openPlaylistModal(song) },
+    { icon: ICONS.heart, label: t("song.like"), fn: () => toggleLike(song) },
+    { icon: ICONS.download, label: t("dl.download"), fn: () => downloadSong(song) },
+    { icon: ICONS.share, label: t("common.share"), fn: () => shareSong(song) },
+  ];
+  if (state.view === "local-playlist" && state.viewParams?.pid) {
+    items.push({ sep: true });
+    items.push({ icon: ICONS.trash, label: t("playlists.removeSong"), fn: async () => {
+      const pl = state.playlists.find((x) => x.id === state.viewParams.pid);
+      if (!pl) return;
+      await api(`/api/library/playlists/${pl.id}/songs/${encodeURIComponent(song.id)}`, { method: "DELETE" });
+      state.playlists = state.playlists.map((x) => (x.id === pl.id ? { ...x, songs: x.songs.filter((s) => s.id !== song.id) } : x));
+      renderLocalPlaylist(pl.id);
+    }, danger: true });
+  }
+  return items;
+}
+
+function ctxBrowseMenu(type, bid) {
+  return [
+    { icon: ICONS[type === "album" ? "disc" : type === "artist" ? "mic" : "play-list"], label: t("common.open"), fn: () => {
+      if (type === "album") navigate("album", { browseId: bid });
+      else if (type === "artist") navigate("artist", { browseId: bid });
+      else navigate("playlist", { browseId: bid });
+    } },
+  ];
+}
+
+function ctxLocalPlMenu(pl) {
+  const items = [];
+  if (pl) {
+    items.push({ icon: ICONS.play, label: t("common.play"), fn: () => playQueue(pl.songs || [], 0) });
+    items.push({ icon: ICONS["play-list"], label: t("common.open"), fn: () => navigate("local-playlist", { pid: pl.id }) });
+    items.push({ sep: true });
+    items.push({ icon: ICONS.edit, label: t("playlists.rename"), fn: async () => {
+      const name = prompt("New name:", pl.name);
+      if (!name) return;
+      const up = await api(`/api/library/playlists/${pl.id}`, { method: "PUT", body: JSON.stringify({ name }) });
+      if (up && up.id) { state.playlists = state.playlists.map((x) => (x.id === up.id ? up : x)); }
+      renderPlaylists();
+    } });
+    items.push({ icon: ICONS.image, label: t("playlists.generateThumb"), fn: async () => {
+      const res = await api(`/api/library/playlists/${pl.id}/thumb`, { method: "POST" });
+      if (res?.art) { pl.art = res.art; state.playlists = state.playlists.map((x) => (x.id === pl.id ? { ...pl } : x)); renderPlaylists(); }
+    } });
+items.push({ icon: ICONS.trash, label: t("playlists.delete"), fn: async () => {
+      if (!confirm(`Delete playlist "${pl.name}"?`)) return;
+      await api(`/api/library/playlists/${pl.id}`, { method: "DELETE" });
+      await loadPlaylists();
+      renderPlaylists();
+    }, danger: true });
+  }
+  return items;
+}
+
 function wireEvents() {
   document.addEventListener("click", async (e) => {
     const moreBtn = e.target.closest("[data-more]");
@@ -2933,6 +3088,23 @@ function wireEvents() {
     if (recDl) { const s = (state.homeRecs || [])[+recDl.dataset.recDl]; if (s) downloadSong(s); return; }
     const recShare = e.target.closest("[data-rec-share]");
     if (recShare) { const s = (state.homeRecs || [])[+recShare.dataset.recShare]; if (s) shareSong(s); return; }
+    const homeRecMore = e.target.closest("[data-home-rec-more]");
+    if (homeRecMore) {
+      state.homeRecShown = (state.homeRecShown || 9) + 9;
+      const grid = homeRecMore.closest(".rec-sec").querySelector(".rec-grid");
+      if (grid) { grid.innerHTML = (state.homeRecs || []).slice(0, state.homeRecShown).map((s, i) => recCardHtml(s, i)).join(""); injectIcons(grid); }
+      homeRecMore.style.display = state.homeRecShown >= (state.homeRecs || []).length ? "none" : "";
+      return;
+    }
+    const plRecMore = e.target.closest("[data-plrec-more]");
+    if (plRecMore) {
+      state.plRecShown = (state.plRecShown || 9) + 9;
+      const sec = plRecMore.closest(".plrec-sec");
+      const grid = sec.querySelector(".card-grid");
+      if (grid) { grid.innerHTML = (state.plRecs || []).slice(0, state.plRecShown).map((s, i) => plRecCardHtml(s, i, state.plRecPid ?? null)).join(""); injectIcons(grid); }
+      plRecMore.style.display = state.plRecShown >= (state.plRecs || []).length ? "none" : "";
+      return;
+    }
     const plRecPlay = e.target.closest("[data-plrec-play]");
     if (plRecPlay && !e.target.closest("button")) {
       const s = (state.plRecs || [])[+plRecPlay.dataset.plrecPlay];
@@ -2957,7 +3129,13 @@ function wireEvents() {
               if (sec) {
                 if (state.plRecs.length) {
                   const grid = sec.querySelector(".card-grid");
-                  if (grid) { grid.innerHTML = state.plRecs.map((s, i) => plRecCardHtml(s, i, pid)).join(""); injectIcons(grid); }
+                  if (grid) {
+                    const shown = state.plRecShown || 9;
+                    grid.innerHTML = state.plRecs.slice(0, shown).map((s, i) => plRecCardHtml(s, i, pid)).join("");
+                    injectIcons(grid);
+                  }
+                  const moreBtn = sec.querySelector("#plRecMore");
+                  if (moreBtn) moreBtn.style.display = state.plRecShown >= state.plRecs.length ? "none" : "";
                 } else sec.remove();
               }
             }, 260);
@@ -3083,31 +3261,46 @@ function wireEvents() {
     }
   });
 
-  // right-click context menu on recommendation cards & song rows
+  // right-click floating context menu (thumbnails, song rows, cards)
   document.addEventListener("contextmenu", (e) => {
-    const card = e.target.closest(".rec-card");
-    if (card) {
+    const target = e.target.closest(".song-row, .rec-card, .plrec-card, .cl-item, .queue-item, [data-card], [data-local-pl], .recent-row, .artist-card");
+    if (!target) return;
+    const song = ctxSongOf(e.target);
+    if (song) {
       e.preventDefault();
-      const menu = card.querySelector("[data-more-menu]");
-      if (!menu) return;
-      closeMoreMenus();
-      menu.classList.add("open");
-      const r = card.getBoundingClientRect();
-      const mw = menu.offsetWidth || 210;
-      menu.style.left = Math.max(4, e.clientX - r.left - mw + 12) + "px";
-      menu.style.top = Math.max(4, e.clientY - r.top + 8) + "px";
+      showCtxMenu(e.clientX, e.clientY, ctxSongMenu(song), song.title);
       return;
     }
-    const row = e.target.closest(".song-row");
-    if (row) {
-      const menu = row.querySelector("[data-more-menu]");
-      if (menu) {
-        e.preventDefault();
-        closeMoreMenus();
-        menu.classList.add("open");
-      }
+    const card = e.target.closest("[data-card], .artist-card");
+    if (card) {
+      e.preventDefault();
+      const type = card.dataset.type || "playlist";
+      const bid = card.dataset.browse;
+      showCtxMenu(e.clientX, e.clientY, ctxBrowseMenu(type, bid), (card.querySelector(".card-title, .artist-name") || {}).textContent || "");
+      return;
+    }
+    const localPl = e.target.closest("[data-local-pl]");
+    if (localPl) {
+      e.preventDefault();
+      const pl = (state.playlists || []).find((x) => x.id === localPl.dataset.localPl);
+      showCtxMenu(e.clientX, e.clientY, ctxLocalPlMenu(pl), pl ? pl.name : "");
     }
   });
+  document.addEventListener("click", (e) => {
+    if (e.target.closest("#ctxMenu")) {
+      const item = e.target.closest(".ctx-item");
+      if (item) {
+        const idx = +item.dataset.ctxIdx;
+        const menu = $("#ctxMenu");
+        const fn = menu && menu._fns && menu._fns[idx];
+        hideCtxMenu();
+        if (fn) fn();
+      }
+      return;
+    }
+    hideCtxMenu();
+  });
+  window.addEventListener("blur", hideCtxMenu);
 
   // player buttons
   const bind = (id, fn) => { const b = $(id); if (b) b.addEventListener("click", fn); };
@@ -3222,7 +3415,11 @@ function wireEvents() {
   });
   audio.addEventListener("ended", () => {
     const fin = state.current;
-    if (state.xfadeActive) handoffXfade();
+    if (state.repeat === "one") {
+      if (state.xfadeActive) cancelXfade();
+      audio.currentTime = 0;
+      audio.play();
+    } else if (state.xfadeActive) handoffXfade();
     else next(false);
     if (!state.finishedIds) state.finishedIds = new Set();
     if (fin && fin.id && !state.finishedIds.has(fin.id)) {

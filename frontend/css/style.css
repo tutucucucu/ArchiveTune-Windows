@@ -339,9 +339,15 @@ body {
 .rec-card:hover .card-art { box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 40%, transparent); }
 .rec-card .card-art img { transition: transform 480ms cubic-bezier(0.16, 1, 0.3, 1); }
 .rec-card:hover .card-art img { transform: scale(1.07); }
-.rec-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.rec-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.rec-grid .card, .plrec-sec .card { padding: 10px 10px 13px; }
+.rec-grid .card-art, .plrec-sec .card-art { border-radius: calc(var(--radius-md) - 2px); }
+.rec-grid .card-title, .plrec-sec .card-title { font-size: 13.5px; margin-top: 9px; }
+.rec-grid .card-sub, .plrec-sec .card-sub { font-size: 12px; }
 @media (max-width: 820px) { .rec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 480px) { .rec-grid { grid-template-columns: 1fr; } }
+.rec-more-row { display: flex; justify-content: center; margin-top: 16px; }
+.rec-more-row .btn { border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); background: color-mix(in srgb, var(--primary) 8%, var(--surface-1)); }
 .rec-more {
   position: absolute; top: 20px; right: 20px; width: 34px; height: 34px; border-radius: 50%;
   background: rgba(0, 0, 0, 0.62); color: #fff; border: 0; cursor: pointer;
@@ -545,6 +551,31 @@ body {
 .m-item:active::after { opacity: 0.12; }
 .m-item .msym { font-size: 20px; color: var(--text-2); }
 .m-item:hover { background: var(--surface-1); }
+
+/* Floating right-click context menu */
+.ctx-menu {
+  position: fixed; z-index: 120; min-width: 220px; padding: 6px;
+  border-radius: var(--radius-md); background: var(--surface-2); box-shadow: var(--shadow-3);
+  display: flex; flex-direction: column; gap: 2px;
+  animation: zoomIn 180ms cubic-bezier(0.16, 1, 0.3, 1); transform-origin: top left;
+}
+.ctx-menu .ctx-head {
+  padding: 8px 12px 10px; font-size: 13px; font-weight: 700; color: var(--text-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--text-2) 18%, transparent); margin-bottom: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px;
+}
+.ctx-menu .ctx-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 10px 12px; border: 0; background: transparent; color: var(--text);
+  font-size: 14px; font-weight: 600; font-family: inherit; border-radius: var(--radius-sm);
+  cursor: pointer; position: relative; overflow: hidden; transition: background var(--t);
+}
+.ctx-menu .ctx-item:hover { background: var(--surface-1); }
+.ctx-menu .ctx-item:active { background: color-mix(in srgb, var(--primary) 14%, transparent); }
+.ctx-menu .ctx-item .msym { font-size: 20px; color: var(--text-2); }
+.ctx-menu .ctx-item.danger { color: var(--danger, #e5484d); }
+.ctx-menu .ctx-item.danger .msym { color: var(--danger, #e5484d); }
+.ctx-menu .ctx-sep { height: 1px; margin: 5px 8px; background: color-mix(in srgb, var(--text-2) 18%, transparent); }
 
 .song-table-head {
   display: grid; grid-template-columns: 32px 56px 1.5fr 1.1fr 1fr 60px 122px;

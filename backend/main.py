@@ -269,6 +269,15 @@ def lib_remove_song(pid: str, song_id: str):
     return p or JSONResponse({"error": "not found"}, 404)
 
 
+@app.post("/api/library/playlists/{pid}/thumb")
+def lib_gen_thumb(pid: str):
+    data_url = library.generate_playlist_thumb(pid)
+    if not data_url:
+        return JSONResponse({"error": "no art available"}, 400)
+    p = library.update_playlist(pid, art=data_url)
+    return {"art": data_url, "playlist": p}
+
+
 @app.get("/api/library/liked")
 def lib_liked():
     return {"songs": library.get_liked()}

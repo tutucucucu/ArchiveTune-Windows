@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 import os
 import sys
@@ -5,6 +7,13 @@ import threading
 import time
 import uuid
 from copy import deepcopy
+
+try:
+    import requests
+    from PIL import Image
+except Exception:
+    requests = None
+    Image = None
 
 
 def base_dir():
@@ -119,6 +128,86 @@ def update_playlist(pid, name=None, description=None, art=None):
             save_playlists(pls)
             return p
     return None
+
+
+def _fetch_art_bytes(song, local_module):
+    """Resolve song art to raw bytes. Returns (bytes, mime) or (None, None)."""
+    art = song.get("art")
+    if not art:
+        return None, None
+    # local art URL
+    if art.startswith("/api/local/art"):
+        import urllib.parse
+        qs = urllib.parse.urlparse(art).query
+        params = dict(urllib.parse.parse_qsl(qs))
+        fid = params.get("file")
+        if fid:
+            return local_module.get_art(fid)
+        return None, None
+    # data URL
+    if art.startswith("data:"):
+        import base64
+        try:
+            header, data = art.split(",", 1)
+            mime = header.split(";")[0].split(":")[1]
+            return base64.b64decode(data), mime
+        except Exception:
+            return None, None
+    # http(s) URL (YTM)
+    if art.startswith("http"):
+        try:
+            r = requests.get(art, timeout=8)
+            if r.status_code == 200:
+                ct = r.headers.get("content-type", "image/jpeg")
+                return r.content, ct
+        except Exception:
+            pass
+        return None, None
+    return None, None
+
+
+def generate_playlist_thumb(pid):
+    """Generate a 2x2 collage from first 4 songs' art. Returns data URL PNG or None."""
+    if not Image:
+        return None
+    pl = get_playlist(pid)
+    if not pl:
+        return None
+    songs = (pl.get("songs") or [])[:4]
+    if not songs:
+        return None
+
+    import local as local_module
+    tiles = []
+    for s in songs:
+        data, mime = _fetch_art_bytes(s, local_module)
+        if not data:
+            continue
+        try:
+            img = Image.open(io.BytesIO(data)).convert("RGBA")
+            img = img.resize((256, 256), Image.LANCZOS)
+            tiles.append(img)
+        except Exception:
+            continue
+
+    if not tiles:
+        return None
+
+    # pad to 4
+    while len(tiles) < 4:
+        blank = Image.new("RGBA", (256, 256), (30, 30, 35, 255))
+        tiles.append(blank)
+
+    canvas = Image.new("RGBA", (512, 512), (30, 30, 35, 255))
+    for idx, img in enumerate(tiles[:4]):
+        x = (idx % 2) * 256
+        y = (idx // 2) * 256
+        canvas.paste(img, (x, y))
+
+    buf = io.BytesIO()
+    canvas.save(buf, format="PNG")
+    b64 = base64.b64encode(buf.getvalue()).decode()
+    return f"data:image/png;base64,{b64}"
 
 
 def delete_playlist(pid):

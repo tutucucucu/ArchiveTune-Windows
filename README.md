@@ -1,12 +1,12 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="Donut Music — The cutest music player" width="100%"/>
+<img src="assets/banner.png" alt="Donut Music — The simple music client" width="100%"/>
 
 <br/>
 
 # 🌸 Donut Music
 
-**The cutest music player — now on your desktop.**
+**The simple music client — now on your desktop.**
 
 Rebranded continuation of [ArchiveTune](https://archive.tune.moe) with a Python (FastAPI) backend and an HTML/CSS/JS frontend. Ships as a Windows `.exe` **and** a Linux `.deb` for Ubuntu.
 
@@ -34,6 +34,7 @@ Rebranded continuation of [ArchiveTune](https://archive.tune.moe) with a Python 
 - **Playback speed** — 0.25× – 2×, persists per session
 - **Seek, volume & mute** — with smooth seek bars
 - **Smart recommendations** 🆕 — a 3×3 grid of "up next" suggestions on the Home screen. Right-click (or hover the ⋮) each card to **like / add to playlist / download / share** without leaving the page
+- **Right-click everywhere** 🆕 — a floating context menu on every song row, thumbnail and card: **play, add to playlist, like, download, share** for songs, and **open / rename / delete / generate thumbnail** for playlists
 
 ### 📥 Downloads & Offline
 - **Download page** — a dedicated library page listing every song you've saved offline
