@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller spec for ArchiveTune for Windows
+# PyInstaller spec for Donut Music for Windows
 from PyInstaller.utils.hooks import collect_data_files
 
 datas = [("frontend", "frontend"), ("assets/icon.png", "assets")]
@@ -52,7 +52,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name="ArchiveTune",
+    name="Donut Music",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

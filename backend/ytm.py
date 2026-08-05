@@ -298,6 +298,33 @@ def next_up(video_id, limit=20):
     return {"items": tracks}
 
 
+def playlist_recommendations(playlist_id, limit=9):
+    """Spotify-style: recommend songs to add to a playlist, seeded from its first tracks."""
+    try:
+        pl = get_client().get_playlist(playlist_id, limit=5)
+    except Exception as e:
+        return {"error": str(e), "items": []}
+    tracks = pl.get("tracks") or []
+    have = {t.get("videoId") for t in tracks if t.get("videoId")}
+    seeds = [t for t in tracks if t.get("videoId")][:3]
+    out = []
+    seen = set()
+    for seed in seeds:
+        if len(out) >= limit:
+            break
+        try:
+            for s in next_up(seed["videoId"], 12).get("items", []):
+                vid = s.get("videoId")
+                if vid and vid not in have and vid not in seen:
+                    seen.add(vid)
+                    out.append(s)
+                if len(out) >= limit:
+                    break
+        except Exception:
+            continue
+    return {"items": out[:limit], "seeds": len(seeds), "have": len(have)}
+
+
 def get_charts(country="US"):
     try:
         data = get_client().get_charts(country=country)

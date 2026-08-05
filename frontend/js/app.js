@@ -262,6 +262,8 @@ const T = {
   "eq.reset": { id: "Reset", en: "Reset", jp: "リセット" },
   "eq.enable": { id: "Aktifkan EQ", en: "Enable EQ", jp: "EQを有効にする" },
   "pl.save": { id: "Simpan ke playlist", en: "Save to playlist", jp: "プレイリストに保存" },
+  "pl.recs": { id: "Rekomendasi untuk playlist ini", en: "Recommended for this playlist", jp: "このプレイリストへのおすすめ" },
+  "pl.addRec": { id: "Tambah ke playlist ini", en: "Add to this playlist", jp: "このプレイリストに追加" },
   "pl.namePh": { id: "Nama playlist baru...", en: "New playlist name...", jp: "新しいプレイリスト名..." },
   "pl.create": { id: "Buat", en: "Create", jp: "作成" },
   "ytm.guest": { id: "YouTube Music: tamu", en: "YouTube Music: guest", jp: "YouTube Music: ゲスト" },
@@ -1128,7 +1130,6 @@ async function renderHome() {
     state.recentPlays = plays;
 
     let hero = null;
-    let side = [];
     let albums = [];
     if (vids.length) {
       const [trendTracks, albumRes] = await Promise.all([
@@ -1141,7 +1142,6 @@ async function renderHome() {
       } else {
         hero = vids[0];
       }
-      side = vids.slice(1, 5);
       albums = (albumRes.items || []).slice(0, 10);
     }
     state.homeHero = hero;
@@ -1150,15 +1150,14 @@ async function renderHome() {
     let recs = [];
     const seed = plays.length ? songFromPlay(plays[0]) : null;
     if (seed && seed.videoId) {
-      const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=8`).catch(() => null);
+      const r = await api(`/api/ytm/nextup/${encodeURIComponent(seed.videoId)}?limit=9`).catch(() => null);
       if (r && r.items && r.items.length) recs = r.items;
     }
     state.homeRecs = recs;
 
     const html = [
-      vids.length ? quickPicksHtml(hero, side) : "",
-      plays.length ? continueHtml(plays) : "",
       recs.length ? recommendationsHtml(recs) : "",
+      plays.length ? continueHtml(plays) : "",
       arts.length ? artistsHtml(arts) : "",
       albums.length ? albumsHtml(albums) : "",
       vids.length ? playlistsHtml(vids) : "",
@@ -1167,7 +1166,6 @@ async function renderHome() {
 
     if (!html) body.innerHTML = emptyState(t("charts.none"), t("charts.noneSub"));
     else body.innerHTML = html;
-    bindRecRows(body);
   } catch (e) {
     body.innerHTML = emptyState(t("ytm.unavailable"), e.message + " — " + t("ytm.unavailableSub"));
   }
@@ -1185,36 +1183,6 @@ function secHeadHtml(icon, title) {
   </div>`;
 }
 
-function quickPicksHtml(hero, side) {
-  const heroImg = hero.art
-    ? `<img class="qp-hero-art" src="${esc(hero.art)}" loading="lazy">`
-    : `<div class="qp-hero-art ph">${ICONS.music}</div>`;
-  const heroInner = `${heroImg}
-    <div class="qp-hero-grad"></div>
-    <div class="qp-hero-meta">
-      <div class="qp-hero-tag">${esc(t("home.quick"))}</div>
-      <div class="qp-hero-title">${esc(hero.title || t("home.quick"))}</div>
-      ${hero.artist ? `<div class="qp-hero-sub">${esc(hero.artist)}</div>` : hero.subtitle ? `<div class="qp-hero-sub">${esc(hero.subtitle)}</div>` : ""}
-    </div>
-    <div class="qp-hero-play">${ICONS.play}</div>`;
-  const heroAttrs = hero.videoId
-    ? `data-hero-play="1"`
-    : `data-card data-type="${hero.type === "chart" ? "playlist" : hero.type}" data-browse="${esc(hero.browseId)}"`;
-  const sideHtml = side.map((v) => `
-    <div class="qp-side-item" data-card data-type="playlist" data-browse="${esc(v.browseId)}">
-      ${v.art ? `<div class="qp-side-art"><img src="${esc(v.art)}" loading="lazy"></div>` : `<div class="qp-side-art ph">${ICONS.music}</div>`}
-      <div class="qp-side-meta">
-        <div class="qp-side-title">${esc(v.title || "Playlist")}</div>
-        <div class="qp-side-sub">${esc(v.subtitle || "Playlist")}</div>
-      </div>
-      <span class="qp-side-ic">${ICONS.play}</span>
-    </div>`).join("");
-  return `<section class="home-sec"><div class="quick-picks">
-    <div class="qp-hero" ${heroAttrs}>${heroInner}</div>
-    <div class="qp-side">${sideHtml}</div>
-  </div></section>`;
-}
-
 function continueHtml(plays) {
   const items = plays.map((p, i) => {
     const s = songFromPlay(p);
@@ -1227,19 +1195,52 @@ function continueHtml(plays) {
   return `<section class="home-sec">${secHeadHtml("history", t("home.continue"))}<div class="hscroll">${items}</div></section>`;
 }
 
-function recommendationsHtml(items) {
-  const rows = items.map((s, i) => songRowHtml(s, i, { showAlbum: true })).join("");
-  return `<section class="home-sec rec-sec">${secHeadHtml("smart", t("home.recs"))}<div class="song-table">${rows}</div></section>`;
+function recCardHtml(s, i) {
+  const art = hdArt(s.art);
+  return `<div class="card rec-card" data-rec-play="${i}">
+    <div class="card-art${art ? "" : " placeholder"}">${ICONS.music}${art ? `<img src="${esc(art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('placeholder')">` : ""}</div>
+      <button class="rec-more" data-more title="${t("common.more")}">${ICONS.more}</button>
+      <div class="s-more-menu rec-menu" data-more-menu>
+        <button class="m-item" data-rec-heart="${i}">${ICONS.heart}<span>${t("song.like")}</span></button>
+        <button class="m-item" data-rec-pl-add="${i}">${ICONS.plus}<span>${t("pl.addTo")}</span></button>
+        <button class="m-item" data-rec-dl="${i}">${ICONS.download}<span>${t("dl.download")}</span></button>
+        <button class="m-item" data-rec-share="${i}">${ICONS.share}<span>${t("common.share")}</span></button>
+      </div>
+    <div class="card-title" title="${esc(s.title)}">${esc(s.title)}</div>
+    <div class="card-sub${s.artist ? "" : " empty"}" title="${esc(s.artist || "")}">${esc(s.artist || "")}</div>
+  </div>`;
 }
 
-function bindRecRows(container) {
-  container.querySelectorAll(".rec-sec .song-row[data-i]").forEach((row) => {
-    row.addEventListener("click", (e) => {
-      if (e.target.closest("button")) return;
-      const s = (state.homeRecs || [])[+row.dataset.i];
-      if (s) playQueue([s], 0);
-    });
-  });
+function recommendationsHtml(items) {
+  const cards = items.slice(0, 9).map((s, i) => recCardHtml(s, i)).join("");
+  return `<section class="home-sec rec-sec">${secHeadHtml("smart", t("home.recs"))}<div class="card-grid rec-grid">${cards}</div></section>`;
+}
+
+function plRecCardHtml(s, i, pid) {
+  const art = hdArt(s.art);
+  const addBtn = pid
+    ? `<button class="plrec-add" data-plrec-add="${i}" data-pid="${esc(pid)}" title="${t("pl.addRec")}">${ICONS.plus}</button>`
+    : `<button class="plrec-add" data-plrec-plmodal="${i}" title="${t("pl.save")}">${ICONS.plus}</button>`;
+  return `<div class="card plrec-card" data-plrec-play="${i}">
+    <div class="card-art${art ? "" : " placeholder"}">${ICONS.music}${art ? `<img src="${esc(art)}" loading="lazy" onerror="var p=this.parentElement;this.remove();p.classList.add('placeholder')">` : ""}${addBtn}</div>
+    <div class="card-title" title="${esc(s.title)}">${esc(s.title)}</div>
+    <div class="card-sub${s.artist ? "" : " empty"}" title="${esc(s.artist || "")}">${esc(s.artist || "")}</div>
+  </div>`;
+}
+
+function plRecsHtml(list, pid) {
+  if (!list.length) return "";
+  return `<section class="home-sec plrec-sec"><div class="section-title">${ICONS.smart} ${t("pl.recs")}</div>
+    <div class="card-grid">${list.map((s, i) => plRecCardHtml(s, i, pid)).join("")}</div></section>`;
+}
+
+function recommendForLocalPlaylist(songs, all) {
+  const have = new Set((songs || []).map((s) => s.id));
+  const pool = (all || []).filter((s) => !have.has(s.id));
+  const artists = new Set((songs || []).map((s) => s.artist).filter(Boolean));
+  const byArtist = pool.filter((s) => artists.has(s.artist));
+  const others = pool.filter((s) => !artists.has(s.artist));
+  return [...byArtist, ...others].slice(0, 9);
 }
 
 function artistsHtml(arts) {
@@ -1973,6 +1974,13 @@ async function renderLocalPlaylist(pid) {
   state.renderList = songs;
   body.innerHTML = songs.length ? songTableHtml(songs) : emptyState(t("playlists.empty"), t("playlists.emptySub"));
   bindSongRows(body, songs);
+  const local = await api("/api/local/library").catch(() => ({ songs: [] }));
+  const recs = recommendForLocalPlaylist(songs, local.songs || []);
+  state.plRecs = recs;
+  if (recs.length) {
+    body.insertAdjacentHTML("beforeend", plRecsHtml(recs, p.id));
+    injectIcons(body);
+  }
   $("#lpPlay").addEventListener("click", () => playQueue(songs, 0));
   $("#lpShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(songs, Math.floor(Math.random() * songs.length)); syncShuffle(); });
   $("#lpRename").addEventListener("click", async () => {
@@ -2180,7 +2188,7 @@ async function renderPlaylist(browseId) {
           <button class="circ" id="plShuffle" data-ic="shuffle" title="${t("common.shuffle")}"></button>
           <button class="circ" id="plAdd" data-ic="plus" title="${t("pl.addTo")}"></button>
         </div>
-      </div></div><div id="plTracks"></div>`;
+      </div></div><div id="plTracks"></div><div id="plRecs"></div>`;
     state.renderList = tracks;
     $("#plTracks").innerHTML = songTableHtml(tracks, false, true, true, p.art || "");
     bindSongRows($("#plTracks"), tracks);
@@ -2188,6 +2196,15 @@ async function renderPlaylist(browseId) {
     $("#plShuffle").addEventListener("click", () => { state.shuffle = true; playQueue(tracks, Math.floor(Math.random() * tracks.length)); syncShuffle(); });
     $("#plAdd").addEventListener("click", () => openPlaylistModal(tracks));
     markPlaying();
+    try {
+      const rec = await api("/api/ytm/playlist_recs/" + browseId);
+      state.plRecs = rec.items || [];
+      if (state.plRecs.length) {
+        const recEl = $("#plRecs");
+        recEl.innerHTML = plRecsHtml(state.plRecs, null);
+        injectIcons(recEl);
+      }
+    } catch {}
   } catch (e) { viewEl.innerHTML = emptyState("Error", e.message); }
   injectIcons(viewEl);
 }
@@ -2729,19 +2746,31 @@ function bindRecentRows(container) {
 
 /* ---------------- event wiring ---------------- */
 function closeMoreMenus() {
-  $$("[data-more-menu].open").forEach((m) => m.classList.remove("open"));
+  $$("[data-more-menu].open").forEach((m) => {
+    m.classList.remove("open");
+    m.style.left = "";
+    m.style.top = "";
+  });
 }
 
 function wireEvents() {
   document.addEventListener("click", async (e) => {
     const moreBtn = e.target.closest("[data-more]");
     if (moreBtn) {
-      const row = moreBtn.closest(".song-row, .queue-item");
+      const row = moreBtn.closest(".song-row, .queue-item, .rec-card");
       const menu = row && row.querySelector("[data-more-menu]");
       if (menu) {
         const wasOpen = menu.classList.contains("open");
         closeMoreMenus();
-        if (!wasOpen) menu.classList.add("open");
+        if (!wasOpen) {
+          if (row.classList.contains("rec-card")) {
+            const r = row.getBoundingClientRect();
+            const b = moreBtn.getBoundingClientRect();
+            menu.style.left = Math.max(4, b.left - r.left - (menu.offsetWidth || 210) + b.width + 6) + "px";
+            menu.style.top = Math.max(4, b.bottom - r.top + 6) + "px";
+          }
+          menu.classList.add("open");
+        }
       }
       return;
     }
@@ -2841,6 +2870,45 @@ function wireEvents() {
     if (clPlay) {
       const p = state.recentPlays && state.recentPlays[+clPlay.dataset.clPlay];
       if (p) playQueue([songFromPlay(p)], 0);
+      return;
+    }
+    const recPlay = e.target.closest("[data-rec-play]");
+    if (recPlay) {
+      if (e.target.closest("button")) return;
+      const s = (state.homeRecs || [])[+recPlay.dataset.recPlay];
+      if (s) playQueue([s], 0);
+      return;
+    }
+    const recHeart = e.target.closest("[data-rec-heart]");
+    if (recHeart) { const s = (state.homeRecs || [])[+recHeart.dataset.recHeart]; if (s) toggleLike(s); return; }
+    const recPlAdd = e.target.closest("[data-rec-pl-add]");
+    if (recPlAdd) { const s = (state.homeRecs || [])[+recPlAdd.dataset.recPlAdd]; if (s) openPlaylistModal(s); return; }
+    const recDl = e.target.closest("[data-rec-dl]");
+    if (recDl) { const s = (state.homeRecs || [])[+recDl.dataset.recDl]; if (s) downloadSong(s); return; }
+    const recShare = e.target.closest("[data-rec-share]");
+    if (recShare) { const s = (state.homeRecs || [])[+recShare.dataset.recShare]; if (s) shareSong(s); return; }
+    const plRecPlay = e.target.closest("[data-plrec-play]");
+    if (plRecPlay) {
+      if (e.target.closest("button")) return;
+      const s = (state.plRecs || [])[+plRecPlay.dataset.plrecPlay];
+      if (s) playQueue([s], 0);
+      return;
+    }
+    const plRecAdd = e.target.closest("[data-plrec-add]");
+    if (plRecAdd) {
+      const s = (state.plRecs || [])[+plRecAdd.dataset.plrecAdd];
+      const pid = plRecAdd.dataset.pid;
+      if (s && pid) {
+        api(`/api/library/playlists/${encodeURIComponent(pid)}/songs`, { method: "POST", body: JSON.stringify(s) })
+          .then(() => { toast(t("toast.plAdded")); plRecAdd.classList.add("added"); plRecAdd.disabled = true; plRecAdd.dataset.ic = "check"; injectIcons(plRecAdd); })
+          .catch((err) => toast(err.message));
+      }
+      return;
+    }
+    const plRecModal = e.target.closest("[data-plrec-plmodal]");
+    if (plRecModal) {
+      const s = (state.plRecs || [])[+plRecModal.dataset.plrecPlmodal];
+      if (s) openPlaylistModal(s);
       return;
     }
     const scrollFwd = e.target.closest("[data-scroll-fwd]");
@@ -2951,6 +3019,32 @@ function wireEvents() {
       else if (what === "pick") $("#pickModal").classList.add("hidden");
       else if (what === "queue") { const qp = $("#queuePanel"); if (qp) qp.classList.add("hidden"); }
       return;
+    }
+  });
+
+  // right-click context menu on recommendation cards & song rows
+  document.addEventListener("contextmenu", (e) => {
+    const card = e.target.closest(".rec-card");
+    if (card) {
+      e.preventDefault();
+      const menu = card.querySelector("[data-more-menu]");
+      if (!menu) return;
+      closeMoreMenus();
+      menu.classList.add("open");
+      const r = card.getBoundingClientRect();
+      const mw = menu.offsetWidth || 210;
+      menu.style.left = Math.max(4, e.clientX - r.left - mw + 12) + "px";
+      menu.style.top = Math.max(4, e.clientY - r.top + 8) + "px";
+      return;
+    }
+    const row = e.target.closest(".song-row");
+    if (row) {
+      const menu = row.querySelector("[data-more-menu]");
+      if (menu) {
+        e.preventDefault();
+        closeMoreMenus();
+        menu.classList.add("open");
+      }
     }
   });
 

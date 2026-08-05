@@ -26,14 +26,14 @@ echo [1/2] Installing dependencies...
 %PY% -m pip install pyinstaller --disable-pip-version-check -q
 
 echo [2/2] Running PyInstaller...
-%PY% -m PyInstaller ArchiveTune.spec --noconfirm
+%PY% -m PyInstaller "Donut Music.spec" --noconfirm
 if errorlevel 1 (
   echo.
-  echo [!] Build failed - close ArchiveTune.exe first, then try again.
+  echo [!] Build failed - close "Donut Music.exe" first, then try again.
   pause
   exit /b 1
 )
 
 echo.
-echo Done! Your app is at:  dist\ArchiveTune.exe
+echo Done! Your app is at:  dist\Donut Music.exe
 pause

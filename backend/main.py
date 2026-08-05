@@ -110,6 +110,11 @@ def ytm_nextup(video_id: str, limit: int = 20):
     return ytm.next_up(video_id, limit)
 
 
+@app.get("/api/ytm/playlist_recs/{playlist_id}")
+def ytm_playlist_recs(playlist_id: str, limit: int = 9):
+    return ytm.playlist_recommendations(playlist_id, limit)
+
+
 @app.get("/api/ytm/charts")
 def ytm_charts(country: str = "US"):
     return ytm.get_charts(country)
